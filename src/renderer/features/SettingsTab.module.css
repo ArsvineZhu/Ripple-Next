@@ -99,6 +99,12 @@
   min-width: 0;
 }
 
+.prefRowStacked > .prefRowControl {
+  width: 100%;
+  max-width: none;
+  justify-content: center;
+}
+
 .prefCard {
   display: flex;
   flex-direction: column;

@@ -31,6 +31,8 @@ The music page presents A followed by stable player dots. Continuous vertical ge
 
 Ripple runs its transparent window on X11/XWayland. The window occupies the selected display's work area; only `ShapeInput` follows the animated Island. Preserve the statically bundled X11 client and `--ozone-platform=x11` in autostart entries. Using `ShapeBounding` for animation can produce black flashes. Startup waits for renderer readiness and confirmation of the first input region before showing the window.
 
+Snap players can restrict MPRIS access through AppArmor. A Ripple process launched from an IDE or coding tool can inherit its AppArmor label, causing a player such as Snap Spotify to reject reads while other players remain visible. When D-Bus reports `AccessDenied` with an AppArmor sender label, launch Ripple from the desktop or the normal user session and check the player again.
+
 | Symptom                                | Check or action                                                                                                                                                                                 |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `spawn pactl ENOENT` in an older build | Use the updated build. Current code switches to `pw-dump --no-colors` when `pactl` is missing. On PipeWire, install the distribution's tools providing `pw-dump` if neither command is present. |

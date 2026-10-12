@@ -66,11 +66,16 @@
     sans-serif;
   font-size: var(--settings-font-body);
   line-height: 1.35;
+  view-transition-name: none;
 }
 
 .app,
 .app * {
   user-select: none;
+}
+
+:global(html:has([data-settings])) {
+  view-transition-name: none;
 }
 
 .app input,
@@ -112,6 +117,8 @@
 }
 
 .navItem {
+  position: relative;
+  isolation: isolate;
   width: 100%;
   padding: 9px var(--settings-space-3);
   color: var(--settings-fg);
@@ -122,6 +129,7 @@
   border: none;
   border-radius: var(--settings-radius-md);
   cursor: pointer;
+  transition: color 160ms ease;
 }
 
 .navItem:hover {
@@ -130,12 +138,29 @@
 
 .navItemActive {
   font-weight: 600;
-  background: var(--settings-accent);
   color: var(--settings-bg);
 }
 
 .navItemActive:hover {
-  background: color-mix(in srgb, var(--settings-accent) 88%, var(--settings-bg));
+  background: transparent;
+}
+
+.navIndicator {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--settings-accent);
+  pointer-events: none;
+}
+
+.navLabel {
+  position: relative;
+}
+
+.navItem:focus-visible {
+  outline: 2px solid var(--settings-fg);
+  outline-offset: -2px;
 }
 
 .pane {
@@ -149,6 +174,56 @@
 .main {
   flex: 1;
   min-height: 0;
+  view-transition-name: settings-content;
+}
+
+:global(::view-transition) {
+  pointer-events: none;
+}
+
+:global(::view-transition-group(settings-content)) {
+  animation-duration: 240ms;
+}
+
+:global(::view-transition-old(settings-content)) {
+  animation: settings-content-out 140ms ease-in both;
+}
+
+:global(::view-transition-new(settings-content)) {
+  animation: settings-content-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes settings-content-out {
+  to {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes settings-content-in {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navItem {
+    transition: none;
+  }
+
+  :global(::view-transition-group(settings-content)),
+  :global(::view-transition-old(settings-content)),
+  :global(::view-transition-new(settings-content)) {
+    animation: none;
+  }
 }
 
 .overlay {

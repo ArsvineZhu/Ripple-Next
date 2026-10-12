@@ -31,6 +31,8 @@ Windows 通过共用的类型化 CLR 桥接读取 GSMTC 元数据、封面和控
 
 透明窗口使用 X11／XWayland，占据所选显示器的工作区；只有 `ShapeInput` 随 Island 动画变化。保持 X11 客户端静态打包，自启动入口保留 `--ozone-platform=x11`。用 `ShapeBounding` 做动画会导致黑色闪烁。启动先等待 renderer 就绪并确认首次输入区域，再显示窗口。
 
+Snap 播放器可通过 AppArmor 限制 MPRIS 访问。从 IDE 或编程工具启动的 Ripple 可能继承其 AppArmor 标签，使 Snap Spotify 等播放器拒绝读取，而其他播放器仍然可见。D-Bus 报告 `AccessDenied` 并指出发送方 AppArmor 标签时，从桌面入口或正常用户会话启动 Ripple，再检查该播放器。
+
 | 现象                            | 检查或处理                                                                                                                            |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | 旧构建报告 `spawn pactl ENOENT` | 使用更新构建。当前代码在 `pactl` 缺失时改用 `pw-dump --no-colors`；PipeWire 系统若两个命令都没有，安装发行版提供 `pw-dump` 的工具包。 |
