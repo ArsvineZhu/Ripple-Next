@@ -1,6 +1,8 @@
+import { islandPages } from '../src/renderer/lib/tabs';
+import { defaultPageLayoutContext } from '../src/renderer/lib/tabGeometry';
 import { describe, expect, it } from 'vitest';
 import { parseCommand, tokenizeArgs } from '../src/main/platform/windows/commands';
-import { visibleTabIds, nextTabId } from '../src/renderer/lib/navigation';
+import { nextTabId } from '../src/renderer/lib/navigation';
 import { modeReducer, resolveMode } from '../src/renderer/lib/modes';
 import { islandInputRectangle, toDeviceRectangle } from '../src/shared/inputGeometry';
 import { noticeAreaForCode, noticeAreaForPatch } from '../src/shared/contracts';
@@ -36,14 +38,20 @@ describe('Windows application commands', () => {
 });
 
 describe('Island navigation and modes', () => {
-  it('keeps configured order, hidden tabs and media availability', () => {
-    const visible = visibleTabIds([7, 3, 0, 6, 1, 2, 4, 5], [1, 4], false);
-    expect(visible).toEqual([7, 0, 6, 2, 5]);
-    expect(nextTabId(visible, 5, 1)).toBe(7);
-    expect(nextTabId(visible, 7, -1)).toBe(5);
-    expect(visibleTabIds([3, 0], [], true)).toEqual([3, 0]);
-    expect(visibleTabIds([7, 3, 0], [7], false)).toEqual([7, 0]);
-    expect(nextTabId([], 2, 1)).toBe(2);
+  it('keeps registered identities, configured order, hidden pages and media availability', () => {
+    const visible = islandPages.visible(
+      ['settings', 'playing', 'search', 'tasks', 'workflows', 'overview', 'assistant', 'clipboard'],
+      ['workflows', 'assistant'],
+      defaultPageLayoutContext,
+    );
+    expect(visible).toEqual(['search', 'tasks', 'overview', 'clipboard']);
+    expect(nextTabId(visible, 'clipboard', 1)).toBe('search');
+    expect(nextTabId(visible, 'search', -1)).toBe('clipboard');
+    expect(nextTabId([], 'overview', 1)).toBe('overview');
+  });
+  it('keeps Overview reachable when every available page is hidden', () => {
+    const hidden = islandPages.definitions.map((page) => page.id);
+    expect(islandPages.visible(hidden, hidden, defaultPageLayoutContext)).toEqual(['overview']);
   });
   it('preserves standby precedence and explicit expansion', () => {
     expect(resolveMode('still', true, true)).toBe('quick');

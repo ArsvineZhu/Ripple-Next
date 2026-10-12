@@ -5,7 +5,7 @@
 ## Use Ripple Next
 
 - Product tour: [English](../README.md), [简体中文](../README.zh-CN.md), [繁體中文](../README.zh-TW.md), [日本語](../README.ja.md).
-- [Usage](../instructions.md): navigation, eight pages, settings and data.
+- [Usage](../instructions.md): navigation, seven Island pages, the settings window and data.
 - [Platform support and troubleshooting](platform-compatibility.md): native integrations, recovery and local diagnostics.
 - [4.0.0 release notes](releases/4.0.0.en.md): the full stable-release feature set and history.
 - [Screenshot gallery and capture notes](assets/screenshots/README.md): real UI, demo data and refresh instructions.

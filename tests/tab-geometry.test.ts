@@ -1,16 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { expandedTabSize } from '../src/renderer/lib/tabGeometry';
-import { SETTINGS_TAB_ID } from '../src/shared/appState';
+import { defaultPageLayoutContext, expandedTabSize } from '../src/renderer/lib/tabGeometry';
+import { TABS } from '../src/renderer/lib/tabs';
 
 describe('expandedTabSize', () => {
-  it('uses the search page size for empty feature pages and restores populated workflow size', () => {
-    expect(expandedTabSize(1, true)).toEqual(expandedTabSize(0));
-    expect(expandedTabSize(6, true)).toEqual(expandedTabSize(0));
-    expect(expandedTabSize(1, false)).toEqual({ width: 480, height: 210 });
+  it('uses compact empty workflows while preserving the original Tasks layout', () => {
+    expect(expandedTabSize('workflows', { ...defaultPageLayoutContext, workflowCount: 0 })).toEqual(
+      expandedTabSize('search'),
+    );
+    expect(expandedTabSize('tasks', { ...defaultPageLayoutContext, taskCount: 0 })).toEqual({
+      width: 380,
+      height: 250,
+    });
+    expect(expandedTabSize('tasks')).toEqual({ width: 380, height: 250 });
+    expect(expandedTabSize('workflows')).toEqual({ width: 480, height: 210 });
   });
-  it('keeps the settings entry compact after the full settings page moved out', () => {
-    expect(expandedTabSize(SETTINGS_TAB_ID)).toEqual({ width: 260, height: 100 });
-    expect(expandedTabSize(0).width).toBeGreaterThan(expandedTabSize(SETTINGS_TAB_ID).width);
-    expect(expandedTabSize(7).height).toBeLessThan(200);
+  it('offers only the seven Island feature pages', () => {
+    expect(TABS.map((tab) => tab.id)).toEqual([
+      'search',
+      'workflows',
+      'overview',
+      'playing',
+      'assistant',
+      'clipboard',
+      'tasks',
+    ]);
+    expect(TABS.some((tab) => String(tab.nameKey) === 'tabSettings')).toBe(false);
   });
 });

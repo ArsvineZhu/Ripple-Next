@@ -6,6 +6,7 @@ const playerPath = '/org/mpris/MediaPlayer2';
 const playerInterface = 'org.mpris.MediaPlayer2.Player';
 let bus: ReturnType<typeof dbus.sessionBus> | undefined;
 const lastIds = new Map<string, string>();
+const raiseCapabilities = new Map<string, boolean>();
 function connection() {
   if (!bus) {
     const current = dbus.sessionBus({ timeout: 5000, maxMessageSize: 8 * 1024 * 1024 });
@@ -24,6 +25,7 @@ export function close() {
   bus?.connection.end();
   bus = undefined;
   lastIds.clear();
+  raiseCapabilities.clear();
 }
 const propertiesSchema = z.object({
   PlaybackStatus: z.enum(['Playing', 'Paused', 'Stopped']),
@@ -100,12 +102,23 @@ export async function getMediaSessions() {
               toggle: false,
             },
           };
+          if (typeof identity.CanRaise === 'boolean') raiseCapabilities.set(id, identity.CanRaise);
           return { session, id };
         } catch {
           return { session: null, id };
         }
       }),
   );
+  const currentIds = new Set(lastIds.values());
+  for (const [name, id] of lastIds) {
+    if (!names.includes(name)) {
+      lastIds.delete(name);
+      currentIds.delete(id);
+    }
+  }
+  for (const id of raiseCapabilities.keys()) {
+    if (!currentIds.has(id)) raiseCapabilities.delete(id);
+  }
   return {
     sessions: results.flatMap((result) =>
       result.status === 'fulfilled' && result.value.session ? [result.value.session] : [],
@@ -135,10 +148,25 @@ export async function controlSystemMedia(
 export async function openMediaSession(session: MediaSession): Promise<void> {
   const destination = session.id.split('|')[0];
   if (!/^:\d+\.\d+$/.test(destination)) throw new TypeError('Invalid MPRIS session');
+  if (raiseCapabilities.get(session.id) !== false) {
+    try {
+      await connection().invoke({
+        destination,
+        path: playerPath,
+        interface: 'org.mpris.MediaPlayer2',
+        member: 'Raise',
+      });
+      return;
+    } catch {
+      // Some players expose Raise but require their tray's activation entry point.
+    }
+  }
   await connection().invoke({
     destination,
-    path: playerPath,
-    interface: 'org.mpris.MediaPlayer2',
-    member: 'Raise',
+    path: '/StatusNotifierItem',
+    interface: 'org.kde.StatusNotifierItem',
+    member: 'Activate',
+    signature: 'ii',
+    body: [0, 0],
   });
 }

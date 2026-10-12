@@ -142,13 +142,13 @@ describe('Island position and overlay lifecycle', () => {
     await act(async () =>
       editor.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })),
     );
-    expect(navigation!.currentTabId).toBe(2);
+    expect(navigation!.currentTabId).toBe('overview');
     await act(async () =>
       document.body.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
       ),
     );
-    expect(navigation!.currentTabId).toBe(3);
+    expect(navigation!.currentTabId).toBe('playing');
     // Batched repeats must each use the latest tab, and reversal must not wait
     // for a timer or an outgoing animation to finish.
     await act(async () => {
@@ -158,7 +158,7 @@ describe('Island position and overlay lifecycle', () => {
         );
       }
     });
-    expect(navigation!.currentTabId).toBe(5);
+    expect(navigation!.currentTabId).toBe('clipboard');
     await act(async () => {
       document.body.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }),
@@ -167,24 +167,24 @@ describe('Island position and overlay lifecycle', () => {
         new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }),
       );
     });
-    expect(navigation!.currentTabId).toBe(3);
+    expect(navigation!.currentTabId).toBe('playing');
     const overlay = document.createElement('div');
     overlay.setAttribute('data-island-overlay', '');
     overlay.innerHTML = '<div role="menu"></div>';
     host.append(overlay);
     await act(async () =>
       document.body.dispatchEvent(
-        new KeyboardEvent('keydown', { key: '8', ctrlKey: true, bubbles: true }),
+        new KeyboardEvent('keydown', { key: '7', ctrlKey: true, bubbles: true }),
       ),
     );
-    expect(navigation!.currentTabId).toBe(3);
+    expect(navigation!.currentTabId).toBe('playing');
     overlay.remove();
     await act(async () =>
       document.body.dispatchEvent(
-        new KeyboardEvent('keydown', { key: '8', ctrlKey: true, bubbles: true }),
+        new KeyboardEvent('keydown', { key: '7', ctrlKey: true, bubbles: true }),
       ),
     );
-    expect(navigation!.currentTabId).toBe(7);
+    expect(navigation!.currentTabId).toBe('tasks');
     expect(setMode).toHaveBeenLastCalledWith('large');
   });
 });

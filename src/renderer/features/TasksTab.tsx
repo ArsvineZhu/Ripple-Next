@@ -21,7 +21,11 @@ export function TasksTab({
   const { t } = useTranslation();
   return (
     <div className={styles.container} id="tasks-container">
-      <ElasticScrollArea className={styles.list} id="task-list">
+      <ElasticScrollArea
+        className={styles.list}
+        id="task-list"
+        data-empty={tasks.length === 0 || undefined}
+      >
         <InlineNotices area="tasks" />
         <AnimatePresence propagate>
           {tasks.length === 0 ? (

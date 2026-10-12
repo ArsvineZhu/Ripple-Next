@@ -188,6 +188,8 @@ export interface InvokeMap {
   'read-clipboard-text': { args: []; result: string };
   'write-clipboard-text': { args: [text: string]; result: void };
   'update-app-state': { args: [patch: AppStatePatch]; result: AppState };
+  'set-island-preview': { args: [active: boolean]; result: void };
+  'get-island-preview': { args: []; result: boolean };
   'save-api-key': { args: [key: string]; result: void };
   'launch-quick-app': { args: [id: string]; result: void };
   'discover-apps': { args: [query: string]; result: AppEntry[] };
@@ -232,6 +234,9 @@ export interface ElectronAPI {
   readClipboardText(): Promise<string>;
   writeClipboardText(text: string): Promise<void>;
   updateAppState(patch: AppStatePatch): Promise<AppState>;
+  setIslandPreview(active: boolean): Promise<void>;
+  getIslandPreview(): Promise<boolean>;
+  onIslandPreviewChanged(callback: (active: boolean) => void): () => void;
   saveApiKey(key: string): Promise<void>;
   launchQuickApp(id: string): Promise<void>;
   discoverApps(query: string): Promise<AppEntry[]>;

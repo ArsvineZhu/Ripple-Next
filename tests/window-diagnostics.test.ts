@@ -9,7 +9,7 @@ import {
 import type { RendererDiagnosticContext } from '../src/shared/diagnostics';
 
 const context: RendererDiagnosticContext = {
-  tabId: 4,
+  tabId: 'assistant',
   mode: 'large',
   expanded: true,
   asked: true,

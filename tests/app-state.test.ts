@@ -31,6 +31,19 @@ afterEach(async () => {
 });
 
 describe('Ripple Next app state database', () => {
+  it('defaults an existing database corner radius and persists valid custom values', async () => {
+    const directory = await createTemporaryDirectory();
+    const store = trackStore(createAppStateStore(directory));
+    const database = new Database(store.filePath);
+    database.prepare('DELETE FROM app_settings WHERE key = ?').run('islandCornerRadius');
+    database.close();
+    expect((await store.load()).settings.islandCornerRadius).toBe(30);
+    await store.update({ settings: { islandCornerRadius: 0 } });
+    expect((await store.load()).settings.islandCornerRadius).toBe(0);
+    await store.update({ settings: { islandCornerRadius: 60 } });
+    expect((await store.load()).settings.islandCornerRadius).toBe(60);
+    await expect(store.update({ settings: { islandCornerRadius: 61 } })).rejects.toThrow();
+  });
   it('starts from defaults without importing a legacy JSON state file', async () => {
     const userDataPath = await createTemporaryDirectory();
     const legacyState = {
@@ -86,16 +99,39 @@ describe('Ripple Next app state database', () => {
     database.close();
   });
 
-  it('restores Settings visibility from stored state and rejects hiding it in later updates', async () => {
+  it('migrates old Settings page references while retaining page order, data and secrets', async () => {
     const userDataPath = await createTemporaryDirectory();
     const store = trackStore(createAppStateStore(userDataPath));
     await store.load();
+    await store.update({
+      tasks: ['keep task'],
+      workflows: [{ name: 'keep workflow', urls: ['https://example.com'] }],
+    });
+    store.setSecretCiphertext('api-key', Buffer.from('encrypted fixture'));
+    store.close();
 
     const database = new Database(path.join(userDataPath, 'ripple-next.sqlite'));
-    database.prepare('UPDATE app_settings SET value = ? WHERE key = ?').run('[7]', 'hiddenTabs');
+    database
+      .prepare('UPDATE app_settings SET value = ? WHERE key = ?')
+      .run('[5,7,2,0,1,3,6,4]', 'tabOrder');
+    database
+      .prepare('UPDATE app_settings SET value = ? WHERE key = ?')
+      .run('[1,7,4]', 'hiddenTabs');
+    database.prepare('UPDATE app_settings SET value = ? WHERE key = ?').run('7', 'defaultTabId');
+    database.pragma('user_version = 1');
     database.close();
 
-    expect((await store.load()).settings.hiddenTabs).toEqual([]);
+    const restored = trackStore(createAppStateStore(userDataPath));
+    expect(await restored.load()).toMatchObject({
+      settings: {
+        tabOrder: ['clipboard', 'overview', 'search', 'workflows', 'playing', 'tasks', 'assistant'],
+        hiddenTabs: ['workflows', 'assistant'],
+        defaultTabId: 'overview',
+      },
+      tasks: ['keep task'],
+      workflows: [{ name: 'keep workflow', urls: ['https://example.com'] }],
+    });
+    expect(restored.getSecretCiphertext('api-key')).toEqual(Buffer.from('encrypted fixture'));
 
     const repairedDatabase = new Database(path.join(userDataPath, 'ripple-next.sqlite'));
     expect(
@@ -105,11 +141,16 @@ describe('Ripple Next app state database', () => {
           .pluck()
           .get('hiddenTabs') as string,
       ),
-    ).toEqual([]);
+    ).toEqual(['workflows', 'assistant']);
+    expect(repairedDatabase.pragma('user_version', { simple: true })).toBe(3);
     repairedDatabase.close();
 
-    const updated = await store.update({ settings: { hiddenTabs: [7] } });
-    expect(updated.settings.hiddenTabs).toEqual([]);
+    await expect(restored.update({ settings: { defaultTabId: 7 as never } })).rejects.toThrow(
+      'Invalid',
+    );
+    await expect(restored.update({ settings: { hiddenTabs: [7] as never } })).rejects.toThrow(
+      'Invalid',
+    );
   });
 
   it('rolls back a settings update when a later quick app write fails', async () => {

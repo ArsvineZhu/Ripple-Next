@@ -9,7 +9,7 @@ Ripple Next 在 Windows、macOS、Linux 上共用界面和数据格式，通过�
 | 功能           | Windows                              | macOS                                                 | Linux                                                  |
 | -------------- | ------------------------------------ | ----------------------------------------------------- | ------------------------------------------------------ |
 | 音乐           | GSMTC 会话、控制能力与封面           | AppleScript 读取运行中的 Spotify、Music；Spotify 封面 | 会话 D-Bus 上的 MPRIS、控制能力与封面                  |
-| 唤起播放器     | 缓存的应用标识／路径                 | 激活正在运行的应用                                    | 支持时使用 MPRIS Raise                                 |
+| 唤起播放器     | 缓存的应用标识／路径                 | 激活正在运行的应用                                    | MPRIS Raise 或同一会话的托盘 Activate                  |
 | 已安装快捷应用 | 开始菜单 `.lnk` 与 Store 标识        | 系统、共享、用户 Applications，含 Utilities           | XDG 桌面条目，经 `gio launch` 启动                     |
 | 登录启动       | 系统登录设置                         | 打包应用的原生登录项                                  | 当前 XDG 自启动目录中的 `ripple-next.desktop`          |
 | 透明窗口输入   | 按原生光标／岛边界切换穿透           | Electron 岛外点击穿透                                 | XWayland 上的 X11 `ShapeInput`                         |
@@ -20,6 +20,8 @@ Ripple Next 在 Windows、macOS、Linux 上共用界面和数据格式，通过�
 ## 封面与多播放器
 
 Linux 从 `mpris:artUrl` 获取封面，本地读取上限为 5 MiB。保留已有扩展名格式支持；扩展名无法识别时，根据 PNG／JPEG／GIF／WebP 文件签名决定 data URL 的 MIME。文件缺失、过大或无法读取时，歌曲和控制仍保持可用。图片解码失败显示音乐占位图，切换会话或封面 URL 后重试。
+
+Linux 缓存 MPRIS 的 `CanRaise` 能力。Folia 等播放器报告 false，或 `Raise` 调用失败时，Ripple 向同一个 D-Bus 唯一所有者的 `/StatusNotifierItem` 调用 `org.kde.StatusNotifierItem.Activate`，激活已有托盘实例，不启动应用进程。两个激活接口都不可用时，音乐页显示打开失败；原会话退出后，不会转而激活替代进程。
 
 Windows 通过共用的类型化 CLR 桥接读取 GSMTC 元数据、封面和控制，将 WinRT `IAsyncOperation<T>` 经 `AsTask` 转换后等待。macOS 分别查询运行中的 Spotify／Music 字典，避免请求查找未安装的播放器。
 

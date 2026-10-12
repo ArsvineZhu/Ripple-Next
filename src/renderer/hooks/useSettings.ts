@@ -12,10 +12,6 @@ export function useSettings(initialHasApiKey: boolean) {
   const { notify } = useNotifications();
   const settings = state.settings;
   const [displays, setDisplays] = useState<DisplayInfo[]>([]);
-  const [manualPosition, setManualPosition] = useState({
-    x: settings.islandX,
-    y: settings.islandY,
-  });
   const [hasApiKey, setHasApiKey] = useState(initialHasApiKey);
   const updateSettings = useCallback(
     (patch: Partial<AppSettings>) => updateState({ settings: patch }),
@@ -65,18 +61,10 @@ export function useSettings(initialHasApiKey: boolean) {
     updateSettings({ displayId });
     void window.electronAPI?.setDisplay(displayId).catch(() => {});
   };
-  const handleIslandXChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setManualPosition((position) => ({
-      ...position,
-      x: Number(event.target.value),
-    }));
-  const handleIslandYChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setManualPosition((position) => ({
-      ...position,
-      y: Number(event.target.value),
-    }));
-  const savePosition = () =>
-    updateSettings({ islandX: manualPosition.x, islandY: manualPosition.y });
+  const handleIslandXChange = (input: number | ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    updateSettings({ islandX: typeof input === 'number' ? input : Number(input.target.value) });
+  const handleIslandYChange = (input: number | ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    updateSettings({ islandY: typeof input === 'number' ? input : Number(input.target.value) });
   const handleBgImageChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     updateSettings({ backgroundImage: event.target.value });
   const setTheme = (theme: string) => {
@@ -127,6 +115,9 @@ export function useSettings(initialHasApiKey: boolean) {
     handleLanguageChange,
     batteryAlertsEnabled: settings.batteryAlerts,
     islandBorderEnabled: settings.islandBorder,
+    islandCornerRadius: settings.islandCornerRadius,
+    handleIslandCornerRadiusChange: (input: string | number) =>
+      updateSettings({ islandCornerRadius: Number(input) }),
     standbyBorderEnabled: settings.standbyMode,
     largeStandbyEnabled: settings.largeStandbyMode,
     hideNotActiveIslandEnabled: settings.hideIslandWhenInactive,
@@ -150,8 +141,8 @@ export function useSettings(initialHasApiKey: boolean) {
     handleShowTrayChange,
     positionMode: settings.positionMode,
     setPositionMode,
-    islandX: manualPosition.x,
-    islandY: manualPosition.y,
+    islandX: settings.islandX,
+    islandY: settings.islandY,
     leaveDelayMs: settings.leaveDelayMs,
     hasApiKey,
     aiBaseUrl: settings.aiBaseUrl,
@@ -159,7 +150,7 @@ export function useSettings(initialHasApiKey: boolean) {
     saveApiKey,
     handleApiBaseUrlChange,
     handleAiModelChange,
-    handleLeaveDelayChange: (input: string) =>
+    handleLeaveDelayChange: (input: string | number) =>
       updateSettings({
         leaveDelayMs: Math.max(0, Math.min(2000, Number(input))),
       }),
@@ -177,7 +168,6 @@ export function useSettings(initialHasApiKey: boolean) {
     handleDisplayChange,
     handleIslandXChange,
     handleIslandYChange,
-    savePosition,
     handleBgImageChange,
   };
 }

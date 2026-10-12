@@ -6,6 +6,7 @@ import type { MotionValue } from 'motion/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useIslandGeometry } from '../src/renderer/hooks/useIslandGeometry';
 import { expandedTabSize } from '../src/renderer/lib/tabGeometry';
+import { islandPages } from '../src/renderer/lib/tabs';
 
 const motion = vi.hoisted(() => ({
   reduced: false,
@@ -29,8 +30,20 @@ let root: Root;
 let host: HTMLDivElement;
 let geometry: ReturnType<typeof useIslandGeometry>;
 type Options = Parameters<typeof useIslandGeometry>[0];
-const collapsed: Options = { width: 170, height: 40, expanded: false, tab: 0 };
-const search: Options = { ...expandedTabSize(0), expanded: true, tab: 0 };
+const collapsed: Options = {
+  width: 170,
+  height: 40,
+  getTabSize: expandedTabSize,
+  getTabRadius: islandPages.radius,
+  expanded: false,
+  tab: 'search',
+};
+const search: Options = {
+  ...collapsed,
+  ...expandedTabSize('search'),
+  expanded: true,
+  tab: 'search',
+};
 function Harness(props: Options) {
   const currentGeometry = useIslandGeometry(props);
   useLayoutEffect(() => {
@@ -78,6 +91,18 @@ afterEach(async () => {
 });
 
 describe('Island geometry ownership', () => {
+  it('updates configured corners while keeping collapsed capsules and limiting small pages', async () => {
+    motion.reduced = true;
+    await render({ ...search, cornerRadius: 0 });
+    expect(geometry.radius.get()).toBe(0);
+    expect(geometry.fallbackRadius.get()).toBe(0);
+    await render({ ...search, cornerRadius: 60 });
+    expect(geometry.radius.get()).toBe(60);
+    await render({ ...collapsed, cornerRadius: 0 });
+    expect(geometry.radius.get()).toBe(20);
+    await render({ ...search, width: 60, height: 40, cornerRadius: 60 });
+    expect(geometry.radius.get()).toBe(20);
+  });
   it('uses the actual collapsed height and preserves the round-corner fallback', async () => {
     await render(collapsed);
     expect(geometry.radius.get()).toBe(20);
@@ -114,12 +139,12 @@ describe('Island geometry ownership', () => {
     for (const animation of motion.animations.filter((item) => !item.stop.mock.calls.length))
       animation.value.set((animation.value.get() + animation.target) / 2);
     const before = dimensions();
-    geometry.followTabs(0, 1, 0, true);
+    geometry.followTabs('search', 'workflows', 0, true);
     expect(dimensions()).toEqual(before);
     await settle();
-    geometry.followTabs(0, 1, 0.5, true);
+    geometry.followTabs('search', 'workflows', 0.5, true);
     expect(dimensions()).toEqual([442.5, 165]);
-    geometry.followTabs(0, 1, 0.25, true);
+    geometry.followTabs('search', 'workflows', 0.25, true);
     expect(dimensions()).toEqual([423.75, 142.5]);
     const interrupted = dimensions();
     await render(collapsed);
@@ -136,10 +161,10 @@ describe('Island geometry ownership', () => {
     expect(geometry.radius.get()).toBe(30);
     expect(geometry.cornerK.get()).toBeCloseTo(1.62);
     expect(motion.animations).toHaveLength(0);
-    geometry.followTabs(7, 6, 0.5, true);
-    expect(dimensions()).toEqual([320, 175]);
-    geometry.followTabs(6, 6, 0, false);
-    await render({ width: 380, height: 600, expanded: true, tab: 4 });
+    geometry.followTabs('overview', 'tasks', 0.5, true);
+    expect(dimensions()).toEqual([380, 220]);
+    geometry.followTabs('tasks', 'tasks', 0, false);
+    await render({ ...collapsed, width: 380, height: 600, expanded: true, tab: 'assistant' });
     await new Promise((resolve) => requestAnimationFrame(resolve));
     expect(dimensions()).toEqual([380, 600]);
     expect(geometry.radius.get()).toBe(30);

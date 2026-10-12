@@ -1,5 +1,5 @@
 import { app, clipboard, ipcMain, screen, shell } from 'electron';
-import type { IpcMainInvokeEvent } from 'electron';
+import type { IpcMainInvokeEvent, WebContents } from 'electron';
 import { isLocale } from '../shared/i18n';
 import type { AppState, AppStatePatch } from '../shared/appState';
 import { noticeAreaForCode, noticeAreaForPatch } from '../shared/contracts';
@@ -10,7 +10,12 @@ import { QuickAppTargetSchema } from '../shared/contracts';
 import { setTrayLocale } from './tray';
 import type { DiagnosticsService } from './services/diagnostics';
 import { applyWindowInputRegion, getMainWindow, markRendererReady, showMainWindow } from './window';
-import { broadcastToRegisteredWindows, getWindowRole, isAllowedIpcSender } from './windowRoles';
+import {
+  broadcastToRegisteredWindows,
+  getWebContentsForRole,
+  getWindowRole,
+  isAllowedIpcSender,
+} from './windowRoles';
 import type { WindowRole } from './windowRoles';
 import { openSettingsWindow } from './settingsWindow';
 import { getWindowBoundsForDisplay } from './windowBounds';
@@ -164,6 +169,18 @@ function isInputRect(value: unknown): value is InputRect {
 }
 
 export function registerIPC(services: IPCServices) {
+  let previewActive = false;
+  let previewOwner: WebContents | null = null;
+  const publishPreview = (active: boolean) => {
+    previewActive = active;
+    getWebContentsForRole('island')?.send('island-preview-changed', active);
+    const window = getMainWindow();
+    if (window && !window.webContents.isDestroyed()) {
+      window.webContents.setBackgroundThrottling(!active && process.platform !== 'win32');
+    }
+    getWebContentsForRole('settings')?.setBackgroundThrottling(!active);
+    if (active) showMainWindow();
+  };
   const media = createMediaService(undefined, (error) =>
     services.diagnostics.recordError('media', error),
   );
@@ -172,6 +189,21 @@ export function registerIPC(services: IPCServices) {
     hasApiKey: await services.secretStore.hasApiKey(),
   }));
   handle(services, 'open-diagnostics-folder', (_event) => services.diagnostics.openFolder());
+  handle(services, 'get-island-preview', () => previewActive);
+  handle(services, 'set-island-preview', (event, active) => {
+    if (getWindowRole(event.sender) !== 'settings' || typeof active !== 'boolean')
+      throw new TypeError('Invalid settings preview request');
+    if (previewOwner !== event.sender) {
+      previewOwner = event.sender;
+      event.sender.once('destroyed', () => {
+        if (previewOwner === event.sender) {
+          previewOwner = null;
+          publishPreview(false);
+        }
+      });
+    }
+    publishPreview(active);
+  });
   handle(services, 'read-clipboard-text', (_event) => clipboard.readText());
   handle(services, 'write-clipboard-text', (_event, text) =>
     clipboard.writeText(getText(text, 'Clipboard text', 1_000_000)),
@@ -203,6 +235,7 @@ export function registerIPC(services: IPCServices) {
     const role = getWindowRole(event.sender);
     if (role === 'island') {
       markRendererReady();
+      publishPreview(previewActive);
       services.notices.rendererReady('island');
     } else if (role === 'settings') {
       services.notices.rendererReady('settings');
@@ -290,5 +323,9 @@ export function registerIPC(services: IPCServices) {
   handle(services, 'quit-app', (_event) => {
     app.quit();
   });
-  return media.close;
+  return () => {
+    previewOwner = null;
+    publishPreview(false);
+    media.close();
+  };
 }

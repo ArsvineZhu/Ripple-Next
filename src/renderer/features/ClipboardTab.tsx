@@ -7,7 +7,11 @@ type Props = Pick<IslandController, 'clipboard' | 'copyToClipboard'>;
 export function ClipboardTab({ clipboard, copyToClipboard }: Props) {
   const { t } = useTranslation();
   return (
-    <ElasticScrollArea className={styles.container} id="clipboard">
+    <ElasticScrollArea
+      className={styles.container}
+      id="clipboard"
+      data-empty={clipboard.length === 0 || undefined}
+    >
       {clipboard.length === 0 ? (
         <p className={styles.emptyState}>{t('clipboardEmpty')}</p>
       ) : (

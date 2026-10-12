@@ -15,3 +15,5 @@ Preload 通过明确的 `contextBridge` 方法暴露隔离的 `electronAPI`，�
 桥接还提供 `readClipboardText()` 和 `writeClipboardText(text)`，使用 Electron 原生剪贴板接口，避免桌面失焦时浏览器权限路径失败。
 
 `onScrollGestureStart(callback)` 通过 `scroll-gesture-start` 传递经过校验的原生触控板手势开始时间戳，并返回取消订阅函数；不暴露原始输入事件、鼠标坐标或按键内容。
+
+`setIslandPreview(active)` 仅允许设置窗口调用；`getIslandPreview()` 和 `onIslandPreviewChanged()` 将临时预览状态同步给 Island，订阅返回清理函数。预览状态不持久化。

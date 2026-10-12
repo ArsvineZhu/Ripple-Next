@@ -1,15 +1,21 @@
+import { useEffect } from 'react';
 import { useAppState } from '../components/AppStateProvider';
 import { useSettingsContext } from '../components/SettingsProvider';
 import { useBackgroundImage } from './useBackgroundImage';
 import { useQuickApps } from './useQuickApps';
 import { useWorkflows } from './useWorkflows';
-import { normalizeHiddenTabs, SETTINGS_TAB_ID } from '../../shared/appState';
-import { TABS } from '../lib/tabs';
+import { TABS, islandPages } from '../lib/tabs';
 
 /** Settings-window props for SettingsTab without island media, hover, or paging. */
 export function useSettingsWindowController() {
   const { state, updateState } = useAppState();
   const settings = useSettingsContext();
+  useEffect(() => {
+    void window.electronAPI
+      ?.getDisplays()
+      .then(settings.setDisplays)
+      .catch(() => {});
+  }, [settings.setDisplays]);
   const backgroundImage = useBackgroundImage(settings.bgImage);
   const {
     workflows,
@@ -43,8 +49,9 @@ export function useSettingsWindowController() {
     removeQuickApp,
   } = useQuickApps();
 
-  const { tabOrder, hiddenTabs, defaultTabId } = state.settings;
-  const setDefaultTabId = (defaultTabId: number) => updateState({ settings: { defaultTabId } });
+  const { hiddenTabs, defaultTabId } = state.settings;
+  const tabOrder = islandPages.orderedIds(state.settings.tabOrder);
+  const setDefaultTabId = (defaultTabId: string) => updateState({ settings: { defaultTabId } });
   const moveTabOrder = (fromIdx: number, toIdx: number) => {
     if (toIdx < 0 || toIdx >= tabOrder.length) return;
     const newOrder = [...tabOrder];
@@ -52,12 +59,10 @@ export function useSettingsWindowController() {
     if (moved !== undefined) newOrder.splice(toIdx, 0, moved);
     updateState({ settings: { tabOrder: newOrder } });
   };
-  const toggleTabVisibility = (id: number) => {
-    if (id === SETTINGS_TAB_ID) return;
-    const currentHiddenTabs = normalizeHiddenTabs(hiddenTabs);
-    const newHidden = currentHiddenTabs.includes(id)
-      ? currentHiddenTabs.filter((tab) => tab !== id)
-      : [...currentHiddenTabs, id];
+  const toggleTabVisibility = (id: string) => {
+    const newHidden = hiddenTabs.includes(id)
+      ? hiddenTabs.filter((tab) => tab !== id)
+      : [...hiddenTabs, id];
     if (newHidden.length < TABS.length) updateState({ settings: { hiddenTabs: newHidden } });
   };
   const handlePositionChange = (value: string) => {
@@ -96,15 +101,12 @@ export function useSettingsWindowController() {
     addQuickApp,
     removeQuickApp,
     tabOrder,
-    hiddenTabs: normalizeHiddenTabs(hiddenTabs),
+    hiddenTabs,
     defaultTabId,
     setDefaultTabId,
     moveTabOrder,
     toggleTabVisibility,
     handlePositionChange,
     isFree: settings.positionMode === 'free',
-    // Position sliders no longer drive island drag state in the settings window.
-    updateDragging: () => {},
-    handleDragEndChecks: () => {},
   };
 }

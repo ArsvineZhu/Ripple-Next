@@ -1,14 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
-import {
-  defaultAppState,
-  isAppState,
-  isAppStatePatch,
-  normalizeHiddenTabs,
-  parseAppState,
-  SETTINGS_TAB_ID,
-} from '../../shared/appState';
+import { defaultAppState, isAppState, isAppStatePatch, parseAppState } from '../../shared/appState';
 import type { AppState, AppStatePatch } from '../../shared/appState';
 import { migrateDatabase } from '../database/migrations';
 import { queries } from '../database/queries';
@@ -92,10 +85,6 @@ export function createAppStateStore(userDataPath: string) {
     );
     const state = parseAppState({ schemaVersion: 1, settings, tasks, workflows, quickApps });
     if (!state) throw new TypeError('Ripple Next database state does not match its schema');
-    if (state.settings.hiddenTabs.includes(SETTINGS_TAB_ID)) {
-      state.settings.hiddenTabs = normalizeHiddenTabs(state.settings.hiddenTabs);
-      settingUpsert.run({ key: 'hiddenTabs', value: JSON.stringify(state.settings.hiddenTabs) });
-    }
     return state;
   };
 
@@ -117,20 +106,11 @@ export function createAppStateStore(userDataPath: string) {
     },
     update: async (patch: AppStatePatch): Promise<AppState> => {
       if (!isAppStatePatch(patch)) throw new TypeError('Invalid Ripple Next app state update');
-      const normalizedPatch = patch.settings?.hiddenTabs
-        ? {
-            ...patch,
-            settings: {
-              ...patch.settings,
-              hiddenTabs: normalizeHiddenTabs(patch.settings.hiddenTabs),
-            },
-          }
-        : patch;
       const previous = readState();
       const next: AppState = {
         ...previous,
-        ...normalizedPatch,
-        settings: { ...previous.settings, ...normalizedPatch.settings },
+        ...patch,
+        settings: { ...previous.settings, ...patch.settings },
       };
       if (!isAppState(next)) throw new TypeError('Invalid Ripple Next app state');
       persistState.immediate(next);

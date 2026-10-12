@@ -197,7 +197,7 @@ describe('local diagnostics', () => {
   it('caches only valid context events from the renderer logger', async () => {
     const diagnostics = await initializeDiagnostics(await makeTemporaryDirectory());
     const context: RendererDiagnosticContext = {
-      tabId: 4,
+      tabId: 'assistant',
       mode: 'large',
       expanded: true,
       asked: true,
@@ -218,7 +218,7 @@ describe('local diagnostics', () => {
     sendContext({ ...context, tabId: 99 });
     sendContext({ ...context, viewport: { width: Number.NaN, height: 1080 } });
     sendContext({ ...context, extra: 'private' });
-    sendContext({ ...context, tabId: 6 }, 'main');
+    sendContext({ ...context, tabId: 'tasks' }, 'main');
 
     expect(diagnostics.getRendererContext()).toEqual(context);
   });

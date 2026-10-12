@@ -17,7 +17,7 @@ On Linux, development may need a matching Chromium sandbox helper owned by root 
 
 ## Tool ownership
 
-`pnpm start` uses the `Ripple Next Development` directory under Electron's app-data directory. Packaged builds keep `Ripple Next`. Data, Chromium caches and single-instance locks are separate, so development and the installed application can run together. Development starts with its own settings and credentials.
+`pnpm start` uses the `Ripple Next Development` directory under Electron's app-data directory. Packaged builds keep `Ripple Next`. Development has its own data, Chromium caches and credentials, while both builds share Electron's native instance lock. Launching either build opens the running instance's settings window; only one instance runs at a time. The lock uses the installed profile directory, with Linux resolving it from the home directory so alternate `XDG_CONFIG_HOME` profiles share the same lock.
 
 Tool configuration is centralized in [.config](../.config/README.md); package scripts select each file explicitly.
 
@@ -42,6 +42,10 @@ The state service stores settings, tasks, workflows, quick apps, and encrypted A
 Vercel AI SDK's `streamText` and OpenAI-compatible provider implement streaming chat in main. The default system prompt is maintained in `src/main/prompts/default-assistant.md` and bundled with the main process. `xstate` and `@xstate/react` implement cancellable interaction delays and re-entry gates. Linux quick apps discover XDG desktop entries and launch them through `gio launch`; custom commands use `spawn` with an argument array and no shell.
 
 The browser search URL template is persisted in settings and must contain `{query}`; direct HTTP(S) addresses still open as URLs. Clock and date formatting use the selected locale and either the system time zone or a saved IANA zone. Renderer errors are routed to their owning feature and rendered inline; `InlineNotices` uses the Island's existing Motion fade-and-blur transition. Long vertical panels use native scrolling; the AI answer panel grows with its content up to the available screen height. Range controls use the settings CSS Module for themed tracks, thumbs and focus states.
+
+## Page registration
+
+Page identity uses stable strings such as `overview` and `tasks`; its position comes from the saved order. `src/shared/pages.ts` owns built-in metadata and static or context-dependent layout policies. `src/renderer/lib/tabs.tsx` combines those policies with icons and render functions. Register additional definitions when creating the Island page registry, supplying an ID, title, icon, render function and layout. Availability, radius, alignment and collapse behavior are optional page capabilities. Navigation and animation consume the registry. SQLite migration 3 converts existing numeric IDs while preserving page order and feature data.
 
 ## Local diagnostics
 

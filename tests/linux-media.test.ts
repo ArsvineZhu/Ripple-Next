@@ -1,5 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import dbus from 'dbus-native';
+import { launchLinuxDesktopEntry } from '../src/main/platform/linux/apps';
 import {
   getMediaSessions,
   controlSystemMedia,
@@ -8,11 +9,15 @@ import {
 } from '../src/main/platform/linux/media';
 let broker: ReturnType<typeof dbus.createBroker> | undefined;
 let player: ReturnType<typeof dbus.createClient> | undefined;
+vi.mock('../src/main/platform/linux/apps', () => ({
+  launchLinuxDesktopEntry: vi.fn().mockResolvedValue(undefined),
+}));
 afterEach(async () => {
   close();
   player?.connection.end();
   await new Promise<void>((resolve) => (broker ? broker.close(resolve) : resolve()));
   vi.unstubAllEnvs();
+  vi.clearAllMocks();
 });
 it('reads capabilities and artwork over D-Bus and targets the exact unique owner', async () => {
   broker = dbus.createBroker();
@@ -86,4 +91,108 @@ it('reads capabilities and artwork over D-Bus and targets the exact unique owner
   await player.close();
   player = undefined;
   await expect(controlSystemMedia('playpause', session)).rejects.toThrow();
+  await expect(openMediaSession(session)).rejects.toThrow();
+  expect(launchLinuxDesktopEntry).not.toHaveBeenCalled();
 }, 10000);
+
+async function fallbackPlayer(
+  root: Record<string, unknown>,
+  raise = vi.fn(),
+  activate: ReturnType<typeof vi.fn> | null = vi.fn(),
+) {
+  broker = dbus.createBroker();
+  await new Promise<void>((resolve, reject) =>
+    broker!.listen({ host: '127.0.0.1', port: 0 }, (error) => (error ? reject(error) : resolve())),
+  );
+  const address = broker.address()!;
+  vi.stubEnv('DBUS_SESSION_BUS_ADDRESS', address);
+  player = dbus.createClient({ busAddress: address, timeout: 2000 });
+  player.on('error', () => {});
+  player.exportInterface({ ...root, Raise: raise }, '/org/mpris/MediaPlayer2', {
+    name: 'org.mpris.MediaPlayer2',
+    properties: {
+      Identity: 's',
+      ...(root.CanRaise !== undefined ? { CanRaise: 'b' } : {}),
+      ...(root.DesktopEntry !== undefined ? { DesktopEntry: 's' } : {}),
+    },
+    methods: { Raise: ['', '', [], []] },
+  });
+  player.exportInterface({ PlaybackStatus: 'Playing', Metadata: {} }, '/org/mpris/MediaPlayer2', {
+    name: 'org.mpris.MediaPlayer2.Player',
+    properties: { PlaybackStatus: 's', Metadata: 'a{sv}' },
+  });
+  if (activate) {
+    player.exportInterface({ Activate: activate }, '/StatusNotifierItem', {
+      name: 'org.kde.StatusNotifierItem',
+      methods: { Activate: ['ii', '', ['x', 'y'], []] },
+    });
+  }
+  await player.invokeDbus({
+    member: 'RequestName',
+    signature: 'su',
+    body: ['org.mpris.MediaPlayer2.chromium.instance123', 0],
+  });
+  const result = await getMediaSessions();
+  return { session: result.sessions[0], raise, activate };
+}
+
+it('activates the existing Folia-style tray owner when CanRaise=false, without launching a process', async () => {
+  const { session, raise, activate } = await fallbackPlayer({ Identity: 'Folia', CanRaise: false });
+  await openMediaSession(session);
+  expect(raise).not.toHaveBeenCalled();
+  expect(activate).toHaveBeenCalledWith(
+    0,
+    0,
+    expect.objectContaining({ destination: session.id.split('|')[0] }),
+  );
+  expect(launchLinuxDesktopEntry).not.toHaveBeenCalled();
+  await player!.close();
+  player = undefined;
+  vi.clearAllMocks();
+  await expect(openMediaSession(session)).rejects.toThrow();
+  expect(launchLinuxDesktopEntry).not.toHaveBeenCalled();
+});
+
+it('uses the same owner tray when Raise fails', async () => {
+  const raise = vi.fn(() => {
+    throw new Error('Raise unsupported');
+  });
+  const { session, activate } = await fallbackPlayer(
+    { Identity: 'Fixture', DesktopEntry: 'fixture-player', CanRaise: true },
+    raise,
+  );
+  await openMediaSession(session);
+  expect(raise).toHaveBeenCalledTimes(1);
+  expect(activate).toHaveBeenCalledWith(
+    0,
+    0,
+    expect.objectContaining({ destination: session.id.split('|')[0] }),
+  );
+  expect(launchLinuxDesktopEntry).not.toHaveBeenCalled();
+});
+
+it('reports unavailable activation rather than starting another application', async () => {
+  const { session } = await fallbackPlayer({ Identity: 'Unknown', CanRaise: false }, vi.fn(), null);
+  await expect(openMediaSession(session)).rejects.toThrow();
+  expect(launchLinuxDesktopEntry).not.toHaveBeenCalled();
+});
+
+it('does not redirect an expired session to a replacement player owner', async () => {
+  const { session } = await fallbackPlayer({ Identity: 'Folia', CanRaise: false });
+  await player!.close();
+  player = dbus.createClient({ busAddress: broker!.address()!, timeout: 2000 });
+  player.on('error', () => {});
+  const activate = vi.fn();
+  player.exportInterface({ Activate: activate }, '/StatusNotifierItem', {
+    name: 'org.kde.StatusNotifierItem',
+    methods: { Activate: ['ii', '', ['x', 'y'], []] },
+  });
+  await player.invokeDbus({
+    member: 'RequestName',
+    signature: 'su',
+    body: ['org.mpris.MediaPlayer2.chromium.instance123', 0],
+  });
+  await expect(openMediaSession(session)).rejects.toThrow();
+  expect(activate).not.toHaveBeenCalled();
+  expect(launchLinuxDesktopEntry).not.toHaveBeenCalled();
+});

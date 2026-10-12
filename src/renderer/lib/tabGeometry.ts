@@ -1,7 +1,15 @@
-/** Search and data-empty pages share one compact target; populated pages keep their own sizes. */
-export function expandedTabSize(id: number, empty = false) {
-  if (id === 0 || empty) return { width: 405, height: 120 };
-  const width = id === 7 ? 260 : id === 1 ? 480 : id === 3 ? 330 : 380;
-  const height = id === 7 ? 100 : id === 6 ? 250 : id === 3 ? 150 : id === 1 ? 210 : 190;
-  return { width, height };
+import type { PageLayoutContext } from '../../shared/pages';
+import { islandPages } from './tabs';
+
+export const defaultPageLayoutContext: PageLayoutContext = {
+  mediaAvailable: false,
+  workflowCount: 1,
+  taskCount: 1,
+  assistantActive: false,
+  answerHeight: 0,
+  viewportHeight: 768,
+};
+
+export function expandedTabSize(id: string, context = defaultPageLayoutContext) {
+  return islandPages.size(id, context);
 }

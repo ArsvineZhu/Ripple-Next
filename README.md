@@ -30,7 +30,7 @@ Start with a compact glance, hover for quick information, and click to open a fu
 
 > Screenshots show the running Linux application with sample media, AI responses, clipboard, weather and battery data. Read the [4.0.0 release notes](docs/releases/4.0.0.en.md) for the complete update.
 
-## Eight pages, one place to return to
+## Seven Island pages and a settings window
 
 | Page                       | What you can do                                                                                                                                            |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -41,7 +41,7 @@ Start with a compact glance, hover for quick information, and click to open a fu
 | **AI Assistant**           | Use your own OpenAI-compatible endpoint and model. Read streamed Markdown answers and copy code blocks.                                                    |
 | **Clipboard**              | Reuse recently copied text with a copy button beside each entry. History stays in the current session.                                                     |
 | **Tasks**                  | Add a quick to-do and check it off when finished. Your remaining tasks survive a restart.                                                                  |
-| **Settings**               | Make the Island fit your screen, habits and language: appearance, placement, visible pages, startup behavior and more.                                     |
+| **Settings window**        | Opens when you launch Ripple. Adjust appearance, placement, visible pages, startup behavior and language in a dedicated window.                            |
 
 ## Music without the window hunt
 
@@ -103,9 +103,9 @@ Clipboard history and tasks take care of two different kinds of loose ends: text
 
 ## Make the Island yours
 
-- **Place it where it belongs.** Select a display, use a snap position, or adjust its free position.
-- **Choose the appearance.** Default, Sleek Black and Windows 95 themes; custom colors, an image URL or a local background file; an optional border.
-- **Keep the pages you use.** Reorder or hide feature pages and choose the default page. Settings remains available.
+- **Place it where it belongs.** Select a display, use a snap position, or adjust its free position with immediate slider feedback. Appearance settings keeps a live Island preview visible. Sliders have endpoint labels and gentle snap markers, with free adjustment between them.
+- **Choose the appearance.** Default, Sleek Black and Windows 95 themes; custom colors, an image URL or a local background file; an optional border and adjustable expanded corners (0–60px).
+- **Keep the pages you use.** Reorder or hide seven Island feature pages and choose the default. Launch Ripple or use the tray menu to open Settings.
 - **Control when it stays visible.** Compact, hover and expanded modes; inactive hiding, Quick Standby, Large Standby and a configurable 0–2000 ms pointer-leave delay.
 - **Fit your desktop routine.** Startup control and, on macOS, a menu bar icon toggle; Windows and Linux always keep the tray. Platform specifics are in the guides.
 - **Use your language.** 简体中文, 繁體中文, English and 日本語. The interface follows the system by default; a manual choice applies immediately and is remembered.
@@ -124,7 +124,7 @@ This version is **Ripple Next 4.0.0**, the first stable release. Explore the [re
 | macOS    | Intel x64 / Apple Silicon arm64 | DMG or portable ZIP           |
 | Linux    | x64                             | DEB, RPM or portable ZIP      |
 
-Install the package for your platform, or extract its portable ZIP and launch Ripple Next. Hover over the Island, click its background to expand, then visit Settings. Local features can be used before AI is configured. See the [user guide](instructions.md) for your first workflow and detailed controls, and [platform compatibility](docs/platform-compatibility.md) for native permissions and limitations.
+Install the package for your platform, or extract its portable ZIP and launch Ripple Next. Each launch opens Settings; launching again focuses the existing instance's settings window. Hover over the Island for a quick view and click its background to expand. Local features can be used before AI is configured. See the [user guide](instructions.md) for your first workflow and detailed controls, and [platform compatibility](docs/platform-compatibility.md) for native permissions and limitations.
 
 ### Run the current source
 
@@ -149,7 +149,7 @@ Ripple Next uses its own profile. Installed-app targets remain platform-specific
 
 ## Explore, contribute, report
 
-- [User guide](instructions.md) — modes, navigation, all eight pages and troubleshooting.
+- [User guide](instructions.md) — modes, navigation, seven Island pages, Settings and troubleshooting.
 - [Documentation catalog](docs/INDEX.md) — development, release validation and current platform behavior.
 - [Repository map](INDEX.md) — source ownership and configuration boundaries.
 - [Contributing](CONTRIBUTING.md) — checks, documentation and localization expectations.

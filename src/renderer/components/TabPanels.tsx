@@ -14,19 +14,19 @@ import {
 } from '../lib/wheelGesture';
 import styles from './TabPanels.module.css';
 
-interface Props {
-  tabs: number[];
-  activeId: number;
+interface Props<Id extends string | number> {
+  tabs: Id[];
+  activeId: Id;
   direction: number;
   width: MotionValue<number>;
   disabled: boolean;
-  onSelect(id: number, direction?: number): void;
-  onProgress(from: number, to: number, progress: number, moving: boolean): void;
-  renderTab(id: number): ReactNode;
+  onSelect(id: Id, direction?: number): void;
+  onProgress(from: Id, to: Id, progress: number, moving: boolean): void;
+  renderTab(id: Id): ReactNode;
 }
 
-function tabAt(tabs: number[], index: number): number {
-  return tabs[((index % tabs.length) + tabs.length) % tabs.length] ?? 0;
+function tabAt<Id>(tabs: Id[], index: number): Id {
+  return tabs[((index % tabs.length) + tabs.length) % tabs.length]!;
 }
 
 /**
@@ -91,7 +91,7 @@ function Page({
   active,
   children,
 }: {
-  id: number;
+  id: string | number;
   index: number;
   count: number;
   position: MotionValue<number>;
@@ -123,7 +123,7 @@ function Page({
   );
 }
 
-export function TabPanels(props: Props) {
+export function TabPanels<Id extends string | number = number>(props: Props<Id>) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const propsRef = useRef(props);
   const initialIndex = Math.max(0, props.tabs.indexOf(props.activeId));
@@ -149,16 +149,16 @@ export function TabPanels(props: Props) {
     vertical: boolean;
   } | null>(null);
   const gesture = useRef<{
-    anchor: number;
-    next: number;
+    anchor: Id;
+    next: Id;
     direction: number;
-    intent: number;
+    intent: Id;
     distance: number;
     peak: number;
     startedAt: number;
     lastWheelAt: number;
     lastIntentAt: number;
-    previousIntent: number;
+    previousIntent: Id;
     lastDirection: number;
     lastDelta: number;
     tailMin: number;

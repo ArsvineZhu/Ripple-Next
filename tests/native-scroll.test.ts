@@ -15,7 +15,7 @@ async function gestureHarness() {
   const onSelect = vi.fn();
   function Harness() {
     const [[activeId, direction], setSelection] = useState([0, 0]);
-    return createElement(TabPanels, {
+    return createElement(TabPanels<number>, {
       tabs: [0, 1, 2, 3],
       activeId,
       direction,
@@ -207,7 +207,7 @@ it('triggers on tiny directional input and bounds a long gesture with elastic re
   const onProgress = vi.fn();
   function Harness() {
     const [[activeId, direction], setSelection] = useState([0, 0]);
-    return createElement(TabPanels, {
+    return createElement(TabPanels<number>, {
       tabs,
       activeId,
       direction,
@@ -257,7 +257,7 @@ it('wraps in the requested direction and reverses a transition without waiting',
   const onSelect = vi.fn();
   function Harness() {
     const [[activeId, direction], setSelection] = useState([2, 0]);
-    return createElement(TabPanels, {
+    return createElement(TabPanels<number>, {
       tabs: [0, 1, 2],
       activeId,
       direction,
@@ -291,7 +291,7 @@ it('continues a returning rebound from its current position when fresh input arr
   const width = motionValue(400);
   function Harness() {
     const [[activeId, direction], setSelection] = useState([0, 0]);
-    return createElement(TabPanels, {
+    return createElement(TabPanels<number>, {
       tabs: [0, 1, 2],
       activeId,
       direction,
@@ -328,7 +328,7 @@ it('returns from the edge while a low-energy trackpad tail is still delivering e
   const onSelect = vi.fn();
   function Harness() {
     const [[activeId, direction], setSelection] = useState([0, 0]);
-    return createElement(TabPanels, {
+    return createElement(TabPanels<number>, {
       tabs: [0, 1, 2],
       activeId,
       direction,
@@ -368,7 +368,7 @@ it('continues through the entering page when a fresh native gesture requests ano
   const onSelect = vi.fn();
   function Harness() {
     const [[activeId, direction], setSelection] = useState([0, 0]);
-    return createElement(TabPanels, {
+    return createElement(TabPanels<number>, {
       tabs: [0, 1, 2, 3],
       activeId,
       direction,
@@ -419,7 +419,7 @@ it('does not advance twice when a native boundary arrives after the first revers
   const onSelect = vi.fn();
   function Harness() {
     const [[activeId, direction], setSelection] = useState([0, 0]);
-    return createElement(TabPanels, {
+    return createElement(TabPanels<number>, {
       tabs: [0, 1, 2],
       activeId,
       direction,
@@ -458,7 +458,7 @@ it('reverses a keyboard transition before completion without duplicating page no
   const width = motionValue(400);
   const render = (activeId: number, direction: number) =>
     root.render(
-      createElement(TabPanels, {
+      createElement(TabPanels<number>, {
         tabs,
         activeId,
         direction,
@@ -552,7 +552,7 @@ it('prioritizes vertical input even when X is larger and ignores its horizontal 
   const width = motionValue(400);
   await act(async () =>
     root.render(
-      createElement(TabPanels, {
+      createElement(TabPanels<number>, {
         tabs: [0, 1, 2],
         activeId: 0,
         direction: 0,

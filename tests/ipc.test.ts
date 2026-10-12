@@ -1,8 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mock = vi.hoisted(() => ({
   sender: { id: 99, isDestroyed: () => false, send: vi.fn(), once: vi.fn() },
-  island: { id: 1, isDestroyed: () => false, send: vi.fn(), once: vi.fn() },
-  settings: { id: 2, isDestroyed: () => false, send: vi.fn(), once: vi.fn() },
+  island: {
+    id: 1,
+    isDestroyed: () => false,
+    send: vi.fn(),
+    once: vi.fn(),
+    setBackgroundThrottling: vi.fn(),
+  },
+  settings: {
+    id: 2,
+    isDestroyed: () => false,
+    send: vi.fn(),
+    once: vi.fn(),
+    setBackgroundThrottling: vi.fn(),
+  },
   handlers: new Map<string, (event: { sender: unknown }, ...args: unknown[]) => unknown>(),
   events: new Map<string, (event: { sender: unknown }, ...args: unknown[]) => unknown>(),
   shape: vi.fn(),
@@ -97,6 +109,9 @@ describe('IPC boundary', () => {
     mock.island.send.mockClear();
     mock.settings.send.mockClear();
     mock.markRendererReady.mockClear();
+    mock.island.setBackgroundThrottling.mockClear();
+    mock.settings.setBackgroundThrottling.mockClear();
+    mock.settings.once.mockClear();
     mock.showMainWindow.mockClear();
     mock.openDiagnosticsFolder.mockReset().mockResolvedValue(undefined);
     mock.recordApplicationError.mockClear();
@@ -150,6 +165,25 @@ describe('IPC boundary', () => {
     await mock.handlers.get('renderer-ready')!({ sender: mock.island });
     expect(mock.markRendererReady).toHaveBeenCalledOnce();
     expect(services.notices.rendererReady).toHaveBeenCalledWith('island');
+  });
+  it('allows only Settings to hold preview and releases it when the owner closes', async () => {
+    const setPreview = mock.handlers.get('set-island-preview')!;
+    await expect(setPreview({ sender: mock.island }, true)).rejects.toThrow();
+    await expect(setPreview({ sender: mock.settings }, 'true')).rejects.toThrow();
+    await setPreview({ sender: mock.settings }, true);
+    expect(mock.island.send).toHaveBeenCalledWith('island-preview-changed', true);
+    expect(mock.island.setBackgroundThrottling).toHaveBeenLastCalledWith(false);
+    expect(mock.settings.setBackgroundThrottling).toHaveBeenLastCalledWith(false);
+    expect(mock.showMainWindow).toHaveBeenCalled();
+    await expect(mock.handlers.get('get-island-preview')!({ sender: mock.island })).resolves.toBe(
+      true,
+    );
+    const destroyed = mock.settings.once.mock.calls.at(-1)![1] as () => void;
+    destroyed();
+    expect(mock.island.send).toHaveBeenLastCalledWith('island-preview-changed', false);
+    await expect(mock.handlers.get('get-island-preview')!({ sender: mock.island })).resolves.toBe(
+      false,
+    );
   });
   it('reads the system locale and accepts only supported resolved tray languages', async () => {
     const event = { sender: mock.island };

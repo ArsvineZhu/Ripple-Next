@@ -15,3 +15,5 @@ See the [developer guide](../../docs/development.md) and [repository map](../../
 The bridge also exposes `readClipboardText()` and `writeClipboardText(text)` so desktop clipboard operations use Electron's native API without browser focus/permission assumptions.
 
 `onScrollGestureStart(callback)` delivers validated native touchpad start timestamps through `scroll-gesture-start` and returns an unsubscribe function. It exposes no raw input events or pointer/key data.
+
+`setIslandPreview(active)` is restricted to the Settings role. `getIslandPreview()` and `onIslandPreviewChanged()` synchronize transient preview visibility with Island; subscriptions return cleanup functions. Preview is not persisted.

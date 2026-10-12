@@ -9,7 +9,7 @@ Ripple Next shares one interface and state format across Windows, macOS and Linu
 | Feature              | Windows                                                | macOS                                                          | Linux                                                       |
 | -------------------- | ------------------------------------------------------ | -------------------------------------------------------------- | ----------------------------------------------------------- |
 | Music                | GSMTC sessions, capabilities and artwork               | Running Spotify and Music through AppleScript; Spotify artwork | MPRIS over session D-Bus, capabilities and artwork          |
-| Open a player        | Cached app identity/path                               | Activate the running application                               | MPRIS Raise when supported                                  |
+| Open a player        | Cached app identity/path                               | Activate the running application                               | MPRIS Raise or same-owner tray Activate                     |
 | Installed quick apps | Start Menu `.lnk` files and Store identifiers          | System/shared/user Applications, including Utilities           | XDG desktop entries launched with `gio launch`              |
 | Launch at login      | Native login settings                                  | Native login items for packaged apps                           | `ripple-next.desktop` in the active XDG autostart directory |
 | Transparent input    | Native cursor/bounds with click-through outside Island | Electron click-through outside Island                          | X11 `ShapeInput` through XWayland                           |
@@ -20,6 +20,8 @@ A player must publish a supported session to appear. Controls follow its reporte
 ## Music covers and multiple players
 
 Linux artwork comes from `mpris:artUrl`. Local files are read within a 5 MiB limit. Recognized filename formats retain their existing support; when the extension is unknown, PNG/JPEG/GIF/WebP signatures determine the data-URL MIME type. Missing, oversized or unreadable files leave the song and controls available. Renderer decode failures show the music placeholder; a different session or artwork URL resets that failure.
+
+Linux caches the MPRIS `CanRaise` capability. When it is false, as reported by Folia, or `Raise` fails, Ripple calls `org.kde.StatusNotifierItem.Activate` at `/StatusNotifierItem` on the same D-Bus unique owner. This activates the existing tray-backed instance without starting an application process. If neither activation interface is available, the music page shows an opening error. An expired session cannot redirect activation to a replacement owner.
 
 Windows reads metadata, artwork and controls through the shared typed GSMTC CLR bridge. WinRT `IAsyncOperation<T>` values are converted with `AsTask` before awaiting. macOS queries the dictionaries of running Spotify/Music separately, avoiding requests to locate an uninstalled player.
 

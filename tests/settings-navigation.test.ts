@@ -3,6 +3,7 @@ import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import SettingsApp from '../src/renderer/SettingsApp';
+import type { ElectronAPI } from '../src/shared/contracts';
 
 const preferences = vi.hoisted(() => ({ reduced: false }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
@@ -28,6 +29,9 @@ beforeEach(async () => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   preferences.reduced = false;
   snapshots = [];
+  window.electronAPI = {
+    setIslandPreview: vi.fn().mockResolvedValue(undefined),
+  } as unknown as ElectronAPI;
   Object.defineProperty(document, 'startViewTransition', {
     configurable: true,
     value: vi.fn((commit: () => void) => {
@@ -74,6 +78,29 @@ it('retains editor state and the mounted control during category transitions', a
   await act(async () => snapshots[0].commit());
   expect(host.querySelector('input')).toBe(input);
   expect(input.value).toBe('unsaved draft');
+});
+
+it('holds preview only in Appearance and releases it when leaving or unmounting', async () => {
+  await choose(1);
+  await act(async () => snapshots[0].commit());
+  expect(window.electronAPI.setIslandPreview).toHaveBeenLastCalledWith(true);
+  await choose(2);
+  await act(async () => snapshots[1].commit());
+  expect(window.electronAPI.setIslandPreview).toHaveBeenLastCalledWith(false);
+});
+
+it('keeps Appearance preview active when the window is occluded', async () => {
+  await choose(1);
+  await act(async () => snapshots[0].commit());
+  const calls = vi.mocked(window.electronAPI.setIslandPreview).mock.calls.length;
+  Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+  try {
+    await act(async () => document.dispatchEvent(new Event('visibilitychange')));
+    expect(window.electronAPI.setIslandPreview).toHaveBeenCalledTimes(calls);
+    expect(window.electronAPI.setIslandPreview).toHaveBeenLastCalledWith(true);
+  } finally {
+    Reflect.deleteProperty(document, 'visibilityState');
+  }
 });
 
 it.each(['reduced motion', 'no View Transition API'])(

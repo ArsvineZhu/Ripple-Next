@@ -1,16 +1,7 @@
 import { z } from 'zod';
 import type { InvokeMap, IslandMode, NoticeCode } from './contracts';
+import { PageIdSchema } from './pages';
 
-const IslandTabIdSchema = z.union([
-  z.literal(0),
-  z.literal(1),
-  z.literal(2),
-  z.literal(3),
-  z.literal(4),
-  z.literal(5),
-  z.literal(6),
-  z.literal(7),
-]);
 const DimensionsSchema = z
   .object({
     width: z.number().finite().nonnegative(),
@@ -20,7 +11,7 @@ const DimensionsSchema = z
 
 export const RendererDiagnosticContextSchema = z
   .object({
-    tabId: IslandTabIdSchema,
+    tabId: PageIdSchema,
     mode: z.enum(['still', 'quick', 'large']),
     expanded: z.boolean(),
     asked: z.boolean(),
@@ -83,7 +74,7 @@ export function serializeDiagnosticError(error: unknown, depth = 0): SerializedD
 }
 
 export type RendererDiagnosticContext = {
-  tabId: number;
+  tabId: string;
   mode: IslandMode;
   expanded: boolean;
   asked: boolean;

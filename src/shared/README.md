@@ -4,6 +4,8 @@
 
 `MediaSnapshot` describes all sessions, automatic/manual selection, freshness and errors. `MediaSession` includes playback state and nullable control capabilities. `media.ts` owns pure automatic selection and capability rules. The control IPC requires a session ID; selection and control return a refreshed snapshot plus a domain error instead of treating failure as an empty player list.
 
+`pages.ts` owns stable page IDs, default order and built-in layout policies. Persisted page IDs are strings; the state schema accepts additional named pages independently of their navigation position.
+
 `backgroundImage.ts` normalizes background settings and encodes local paths into the dedicated image URL without CSS backslash escaping. It performs no file access.
 
 Shared defines serializable IPC and domain contracts, Zod schemas for persisted app state and quick-app targets, and pure input-geometry helpers. Main, preload and renderer consume these definitions; runtime services stay in their owning layers.

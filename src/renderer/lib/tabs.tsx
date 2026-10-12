@@ -1,51 +1,83 @@
-import { Sun } from 'lucide-react';
-import { Search } from 'lucide-react';
-import { Zap } from 'lucide-react';
-import { Music } from 'lucide-react';
-import { Mic } from 'lucide-react';
-import { List } from 'lucide-react';
-import { Check } from 'lucide-react';
-import { Settings } from 'lucide-react';
-import { SETTINGS_TAB_ID } from '../../shared/appState';
-export const TABS = [
-  {
-    id: 0,
-    nameKey: 'tabSearch' as const,
-    icon: (color: string) => <Search size={16} color={color} />,
+import { Sun, Search, Zap, Music, Mic, List, Check } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { BUILTIN_PAGES, DEFAULT_PAGE_ID } from '../../shared/pages';
+import type { BuiltinPageId, PageLayoutContext, PageSize } from '../../shared/pages';
+import type { en } from '../../shared/i18n/en';
+import type { IslandController } from '../hooks/useIslandController';
+import { BrowserSearchTab } from '../features/BrowserSearchTab';
+import { WorkflowsTab } from '../features/WorkflowsTab';
+import { OverviewTab } from '../features/OverviewTab';
+import { NowPlayingTab } from '../features/NowPlayingTab';
+import { AssistantTab } from '../features/AssistantTab';
+import { ClipboardTab } from '../features/ClipboardTab';
+import { TasksTab } from '../features/TasksTab';
+import { createPageRegistry } from './pageRegistry';
+
+interface RenderContext {
+  controller: IslandController;
+  onAnswerContentSizeChange(height: number): void;
+  resetAnswerContentSize(): void;
+}
+export interface IslandPageDefinition {
+  id: string;
+  nameKey?: keyof typeof en;
+  title?: string;
+  icon(color: string): ReactNode;
+  render(context: RenderContext): ReactNode;
+  layout: PageSize | ((context: PageLayoutContext) => PageSize);
+  available?: (context: PageLayoutContext) => boolean;
+  radius?: number;
+  alignment?: 'center' | 'flex-start';
+  blocksCollapse?: (context: PageLayoutContext) => boolean;
+}
+
+const renderers: Record<BuiltinPageId, Pick<IslandPageDefinition, 'icon' | 'render'>> = {
+  search: {
+    icon: (color) => <Search size={16} color={color} />,
+    render: ({ controller }) => <BrowserSearchTab {...controller} />,
   },
-  {
-    id: 1,
-    nameKey: 'tabWorkflows' as const,
-    icon: (color: string) => <Zap size={16} color={color} />,
+  workflows: {
+    icon: (color) => <Zap size={16} color={color} />,
+    render: ({ controller }) => <WorkflowsTab {...controller} />,
   },
-  {
-    id: 2,
-    nameKey: 'tabOverview' as const,
-    icon: (color: string) => <Sun size={16} color={color} />,
+  overview: {
+    icon: (color) => <Sun size={16} color={color} />,
+    render: ({ controller }) => <OverviewTab {...controller} />,
   },
-  {
-    id: 3,
-    nameKey: 'tabPlaying' as const,
-    icon: (color: string) => <Music size={16} color={color} />,
+  playing: {
+    icon: (color) => <Music size={16} color={color} />,
+    render: ({ controller }) => <NowPlayingTab {...controller} />,
   },
-  {
-    id: 4,
-    nameKey: 'tabAssistant' as const,
-    icon: (color: string) => <Mic size={16} color={color} />,
+  assistant: {
+    icon: (color) => <Mic size={16} color={color} />,
+    render: ({ controller, onAnswerContentSizeChange, resetAnswerContentSize }) => (
+      <AssistantTab
+        {...controller}
+        onAnswerContentSizeChange={onAnswerContentSizeChange}
+        resetAnswerContentSize={resetAnswerContentSize}
+      />
+    ),
   },
-  {
-    id: 5,
-    nameKey: 'tabClipboard' as const,
-    icon: (color: string) => <List size={16} color={color} />,
+  clipboard: {
+    icon: (color) => <List size={16} color={color} />,
+    render: ({ controller }) => <ClipboardTab {...controller} />,
   },
-  {
-    id: 6,
-    nameKey: 'tabTasks' as const,
-    icon: (color: string) => <Check size={16} color={color} />,
+  tasks: {
+    icon: (color) => <Check size={16} color={color} />,
+    render: ({ controller }) => <TasksTab {...controller} />,
   },
-  {
-    id: SETTINGS_TAB_ID,
-    nameKey: 'tabSettings' as const,
-    icon: (color: string) => <Settings size={16} color={color} />,
-  },
-];
+};
+
+const definitions: IslandPageDefinition[] = Object.entries(BUILTIN_PAGES).map(([id, metadata]) => ({
+  id,
+  ...metadata,
+  ...renderers[id as BuiltinPageId],
+}));
+export function createIslandPageRegistry(additionalPages: readonly IslandPageDefinition[] = []) {
+  return createPageRegistry<PageLayoutContext, IslandPageDefinition>(
+    [...definitions, ...additionalPages],
+    DEFAULT_PAGE_ID,
+  );
+}
+export const islandPages = createIslandPageRegistry();
+export const TABS = islandPages.definitions;

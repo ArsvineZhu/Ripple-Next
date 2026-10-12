@@ -80,7 +80,7 @@ async function carousel(initial: string | null = null, nested = false) {
         createElement('button', { 'data-session': item?.id ?? 'auto' }, item?.playerName ?? 'auto'),
     });
     return nested
-      ? createElement(TabPanels, {
+      ? createElement(TabPanels<number>, {
           tabs: [0, 3],
           activeId: tab,
           direction,

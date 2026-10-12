@@ -5,7 +5,7 @@
 ## 使用 Ripple Next
 
 - 产品介绍：[简体中文](../README.zh-CN.md)、[繁體中文](../README.zh-TW.md)、[English](../README.md)、[日本語](../README.ja.md)。
-- [使用指南](../instructions.zh-CN.md)：导航、八个页面、设置与数据。
+- [使用指南](../instructions.zh-CN.md)：导航、七个 Island 页面、设置窗口与数据。
 - [平台支持与排障](platform-compatibility.zh-CN.md)：原生集成、恢复方法与本地诊断。
 - [4.0.0 正式版说明](releases/4.0.0.zh-CN.md)：正式版完整功能与历史。
 - [截图画廊与拍摄说明（英语）](assets/screenshots/README.md)：真实界面、演示数据与更新方法。

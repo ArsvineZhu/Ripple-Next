@@ -2,12 +2,7 @@ import { z } from 'zod';
 import { QuickAppSchema, WorkflowSchema } from './contracts';
 import type { QuickApp, Workflow } from './contracts';
 import type { LanguagePreference } from './i18n';
-
-export const SETTINGS_TAB_ID = 7 as const;
-
-export function normalizeHiddenTabs(hiddenTabs: readonly number[]): number[] {
-  return hiddenTabs.filter((id) => id !== SETTINGS_TAB_ID);
-}
+import { DEFAULT_PAGE_ID, DEFAULT_PAGE_IDS, PageIdSchema } from './pages';
 
 const HourFormatSchema = z.enum(['12-hr', '24-hr']);
 const WeatherUnitSchema = z.enum(['f', 'c']);
@@ -43,6 +38,7 @@ const AppSettingsSchema = z
     showTray: z.boolean(),
     batteryAlerts: z.boolean(),
     islandBorder: z.boolean(),
+    islandCornerRadius: z.number().finite().min(0).max(60).default(30),
     standbyMode: z.boolean(),
     largeStandbyMode: z.boolean(),
     hideIslandWhenInactive: z.boolean(),
@@ -59,15 +55,17 @@ const AppSettingsSchema = z
     positionMode: PositionModeSchema,
     islandX: z.number().finite().min(0).max(100),
     islandY: z.number().finite().min(0).max(2000),
-    defaultTabId: z.number().int().min(0).max(7),
+    defaultTabId: PageIdSchema,
     tabOrder: z
-      .array(z.number().int().min(0).max(7))
-      .length(8)
+      .array(PageIdSchema)
+      .min(1)
+      .max(128)
       .refine((values) => new Set(values).size === values.length),
     hiddenTabs: z
-      .array(z.number().int().min(0).max(7))
+      .array(PageIdSchema)
+      .max(128)
       .refine((values) => new Set(values).size === values.length),
-    leaveDelayMs: z.number().int().min(0).max(2000).multipleOf(50),
+    leaveDelayMs: z.number().finite().min(0).max(2000),
     welcomeShown: z.boolean(),
   })
   .strict();
@@ -105,6 +103,7 @@ export const defaultAppState: AppState = {
     showTray: true,
     batteryAlerts: true,
     islandBorder: false,
+    islandCornerRadius: 30,
     standbyMode: false,
     largeStandbyMode: false,
     hideIslandWhenInactive: false,
@@ -121,8 +120,8 @@ export const defaultAppState: AppState = {
     positionMode: 'free',
     islandX: 50,
     islandY: 20,
-    defaultTabId: 2,
-    tabOrder: [0, 1, 2, 3, 4, 5, 6, 7],
+    defaultTabId: DEFAULT_PAGE_ID,
+    tabOrder: [...DEFAULT_PAGE_IDS],
     hiddenTabs: [],
     leaveDelayMs: 400,
     welcomeShown: false,

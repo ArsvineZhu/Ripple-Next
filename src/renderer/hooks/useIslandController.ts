@@ -19,8 +19,10 @@ import { modeReducer, resolveMode } from '../lib/modes';
 import { useNavigation } from './useNavigation';
 import { useWindowInput } from './useWindowInput';
 import { useAppState } from '../components/AppStateProvider';
-import { expandedTabSize } from '../lib/tabGeometry';
+import { islandPages } from '../lib/tabs';
 import { useBackgroundImage } from './useBackgroundImage';
+import { useIslandPreview } from './useIslandPreview';
+import { freeIslandPosition } from '../lib/islandPosition';
 export function useIslandController() {
   const { t } = useTranslation();
   const { state: appState, updateState } = useAppState();
@@ -28,6 +30,7 @@ export function useIslandController() {
   const {
     batteryAlertsEnabled,
     islandBorderEnabled,
+    islandCornerRadius,
     standbyBorderEnabled,
     largeStandbyEnabled,
     hideNotActiveIslandEnabled,
@@ -51,7 +54,6 @@ export function useIslandController() {
     textColor,
     bgImage,
     displays,
-    setDisplays,
     currentDisplayId,
     weatherLocation,
     setWeatherLocation,
@@ -62,6 +64,7 @@ export function useIslandController() {
     islandY,
     handleBatteryAlertsChange,
     handleIslandBorderChange,
+    handleIslandCornerRadiusChange,
     handleStandbyChange,
     handleLargeStandbyChange,
     handleHourFormatChange,
@@ -75,10 +78,12 @@ export function useIslandController() {
     handleDisplayChange,
     handleIslandXChange,
     handleIslandYChange,
-    savePosition,
     handleBgImageChange,
   } = useSettingsContext();
-  const mode = resolveMode(requestedMode, standbyBorderEnabled, largeStandbyEnabled);
+  const isPreview = useIslandPreview();
+  const mode = isPreview
+    ? 'large'
+    : resolveMode(requestedMode, standbyBorderEnabled, largeStandbyEnabled);
   const backgroundImage = useBackgroundImage(bgImage);
   const {
     mediaTrack,
@@ -95,7 +100,6 @@ export function useIslandController() {
     isHovered,
     setIsHovered,
     isDragging,
-    updateDragging,
     beginPositionChange,
     finishPositionChange,
     setAssistantActive,
@@ -197,8 +201,24 @@ export function useIslandController() {
     setMode,
   });
   useLayoutEffect(() => {
-    setAssistantActive(currentTab === 4 && asked);
-  }, [asked, currentTab, setAssistantActive]);
+    setAssistantActive(
+      islandPages.get(currentTab)?.blocksCollapse?.({
+        mediaAvailable: mediaSnapshot.sessions.length > 0,
+        workflowCount: workflows.length,
+        taskCount: tasks.length,
+        assistantActive: asked,
+        answerHeight: 0,
+        viewportHeight: window.innerHeight,
+      }) ?? false,
+    );
+  }, [
+    asked,
+    currentTab,
+    mediaSnapshot.sessions.length,
+    workflows.length,
+    tasks.length,
+    setAssistantActive,
+  ]);
   const { islandElementRef, syncWindowInputRegion, trackPointerPosition } =
     useWindowInput(geometryExited);
   let isPlaying = mediaTrack?.state === 'playing';
@@ -207,8 +227,15 @@ export function useIslandController() {
   const nowPlayingText = mediaTrack ? `${trackTitle} • ${trackArtist}` : '';
   const textWidth = measureTextWidth(nowPlayingText) || nowPlayingText.length * 7;
   const nowPlayingWidth = Math.min(300, Math.max(122, Math.ceil(textWidth + 24 + 6 + 20)));
-  const getExpandedTabSize = (id: number) =>
-    expandedTabSize(id, id === 1 && workflows.length === 0);
+  const getExpandedTabSize = (id: string, answerHeight = 0) =>
+    islandPages.size(id, {
+      mediaAvailable: mediaSnapshot.sessions.length > 0,
+      workflowCount: workflows.length,
+      taskCount: tasks.length,
+      assistantActive: asked,
+      answerHeight,
+      viewportHeight: window.innerHeight,
+    });
   const expandedSize = getExpandedTabSize(currentTab);
   let width =
     mode === 'large'
@@ -248,16 +275,7 @@ export function useIslandController() {
       return () => clearTimeout(timer);
     }
   }, [appState.settings.displayId, appState.settings.welcomeShown, updateState]);
-  useEffect(() => {
-    if (currentTab === 7 && window.electronAPI?.getDisplays) {
-      window.electronAPI.getDisplays().then(setDisplays);
-    }
-  }, [currentTab, setDisplays]);
 
-  const handleDragEndChecks = () => {
-    updateDragging(false);
-    clearClickSuppression();
-  };
   const isFree = positionMode === 'free';
   const getSideStyles = () => {
     switch (positionMode) {
@@ -274,11 +292,17 @@ export function useIslandController() {
       case 'bottom-center':
         return { left: '49.8%', top: 'auto', bottom: '45px', x: '-50%' };
       default:
-        return { left: `${islandX}%`, top: `${islandY}px`, x: '-50%' };
+        return freeIslandPosition(
+          islandX,
+          islandY,
+          { width, height },
+          { width: window.innerWidth, height: window.innerHeight },
+        );
     }
   };
   const sideStyles = getSideStyles();
   return {
+    isPreview,
     leave,
     finishPositionChange,
     isOverlayOpen,
@@ -311,6 +335,7 @@ export function useIslandController() {
     bgImage,
     ...backgroundImage,
     islandBorderEnabled,
+    islandCornerRadius,
     cameraInUse,
     microphoneInUse,
     charging,
@@ -385,13 +410,11 @@ export function useIslandController() {
     handlePositionChange,
     isFree,
     islandX,
-    updateDragging,
     handleIslandXChange,
-    savePosition,
-    handleDragEndChecks,
     islandY,
     handleIslandYChange,
     handleIslandBorderChange,
+    handleIslandCornerRadiusChange,
     handlehideNotActiveIslandChange,
     handleBgColorChange,
     handleTextColorChange,

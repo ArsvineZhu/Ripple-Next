@@ -90,6 +90,7 @@ export function AssistantTab({
             <ElasticScrollArea
               className={styles.answerContent}
               id="result"
+              data-empty={(!aiAnswer && !assistantError) || undefined}
               onContentSizeChange={onAnswerContentSizeChange}
             >
               {assistantError ? (

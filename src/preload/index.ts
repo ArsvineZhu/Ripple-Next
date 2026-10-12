@@ -17,6 +17,15 @@ const api: ElectronAPI = {
   setUILocale: (locale) => invoke('set-ui-locale', locale),
   getAppBootstrap: () => invoke('get-app-bootstrap'),
   updateAppState: (patch) => invoke('update-app-state', patch),
+  setIslandPreview: (active) => invoke('set-island-preview', active),
+  getIslandPreview: () => invoke('get-island-preview'),
+  onIslandPreviewChanged: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, active: unknown) => {
+      if (typeof active === 'boolean') callback(active);
+    };
+    ipcRenderer.on('island-preview-changed', listener);
+    return () => ipcRenderer.removeListener('island-preview-changed', listener);
+  },
   saveApiKey: (key) => invoke('save-api-key', key),
   launchQuickApp: (id) => invoke('launch-quick-app', id),
   discoverApps: (query) => invoke('discover-apps', query),

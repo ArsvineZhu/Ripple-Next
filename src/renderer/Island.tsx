@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { islandPages } from './lib/tabs';
 import styles from './styles/Island.module.css';
 import { useOverlay } from './components/OverlayProvider';
 import { motion } from 'motion/react';
@@ -6,17 +6,9 @@ import { TabPanels } from './components/TabPanels';
 import { useIslandController } from './hooks/useIslandController';
 import { useIslandGeometry } from './hooks/useIslandGeometry';
 import { QuickView } from './components/QuickView';
-import { BrowserSearchTab } from './features/BrowserSearchTab';
-import { WorkflowsTab } from './features/WorkflowsTab';
-import { OverviewTab } from './features/OverviewTab';
-import { NowPlayingTab } from './features/NowPlayingTab';
-import { AssistantTab } from './features/AssistantTab';
-import { ClipboardTab } from './features/ClipboardTab';
-import { TasksTab } from './features/TasksTab';
 import { useCallback, useEffect, useState } from 'react';
 import { recordIslandContext } from './lib/diagnostics';
 export default function Island() {
-  const { t } = useTranslation();
   const controller = useIslandController();
   const [assistantAnswerHeight, setAssistantAnswerHeight] = useState(0);
   const resetAssistantAnswerHeight = useCallback(() => setAssistantAnswerHeight(0), []);
@@ -44,10 +36,12 @@ export default function Island() {
     bgColor,
     textColor,
     isHovered,
+    isPreview,
     theme,
     currentTab,
     syncWindowInputRegion,
     islandBorderEnabled,
+    islandCornerRadius,
     cameraInUse,
     microphoneInUse,
     charging,
@@ -79,27 +73,17 @@ export default function Island() {
     return () => window.removeEventListener('resize', reportIslandContext);
   }, [reportIslandContext]);
   const animatedHeight =
-    mode === 'large' && currentTab === 4 && controller.asked
-      ? Math.min(Math.max(height, window.innerHeight - 80), Math.max(height, assistantAnswerHeight))
+    mode === 'large'
+      ? controller.getExpandedTabSize(currentTab, assistantAnswerHeight).height
       : height;
   const geometry = useIslandGeometry({
     width,
     height: animatedHeight,
     expanded: mode === 'large',
     tab: currentTab,
-    getTabSize: (id) => {
-      const size = controller.getExpandedTabSize(id);
-      return {
-        ...size,
-        height:
-          id === 4 && controller.asked
-            ? Math.min(
-                Math.max(size.height, window.innerHeight - 80),
-                Math.max(size.height, assistantAnswerHeight),
-              )
-            : size.height,
-      };
-    },
+    getTabRadius: islandPages.radius,
+    cornerRadius: islandCornerRadius,
+    getTabSize: (id) => controller.getExpandedTabSize(id, assistantAnswerHeight),
   });
   const { width: visualWidth, height: visualHeight, radius, cornerK, fallbackRadius } = geometry;
   useEffect(() => {
@@ -123,7 +107,7 @@ export default function Island() {
       if (frame !== undefined) cancelAnimationFrame(frame);
     };
   }, [visualWidth, visualHeight, radius, cornerK, syncWindowInputRegion]);
-  const handleTabProgress = (from: number, to: number, progress: number, moving: boolean) => {
+  const handleTabProgress = (from: string, to: string, progress: number, moving: boolean) => {
     geometry.followTabs(from, to, progress, moving);
     syncWindowInputRegion();
   };
@@ -179,13 +163,13 @@ export default function Island() {
       initial={{
         x: sideStyles.x,
         left: sideStyles.left,
-        top: sideStyles.top || 'auto',
-        bottom: sideStyles.bottom || 'auto',
+        top: sideStyles.top ?? 'auto',
+        bottom: sideStyles.bottom ?? 'auto',
       }}
       animate={{
         left: sideStyles.left,
-        top: sideStyles.top || 'auto',
-        bottom: sideStyles.bottom || 'auto',
+        top: sideStyles.top ?? 'auto',
+        bottom: sideStyles.bottom ?? 'auto',
         backgroundColor: hideNotActiveIslandEnabled && mode === 'still' ? 'rgba(0,0,0,0)' : bgColor,
         color: hideNotActiveIslandEnabled && mode === 'still' ? 'rgba(0,0,0,0)' : textColor,
         scale: isHovered ? 1.05 : 1,
@@ -202,16 +186,22 @@ export default function Island() {
         stiffness: 400,
         damping: 40,
         mass: 2.5,
-        x: { duration: 0.15 },
+        x: { duration: isPreview ? 0 : 0.15 },
+        left: isPreview ? { duration: 0 } : undefined,
+        top: isPreview ? { duration: 0 } : undefined,
+        bottom: isPreview ? { duration: 0 } : undefined,
       }}
       style={{
         width: visualWidth,
         height: visualHeight,
         backgroundImage: controller.backgroundImageStyle,
-        justifyContent: mode === 'large' && currentTab === 3 ? 'flex-start' : 'center',
+        justifyContent:
+          mode === 'large' ? (islandPages.get(currentTab)?.alignment ?? 'center') : 'center',
         border:
           theme === 'win95'
-            ? '2px solid rgb(254, 254, 254)'
+            ? hideNotActiveIslandEnabled && mode === 'still'
+              ? 'none'
+              : undefined
             : islandBorderEnabled
               ? cameraInUse
                 ? `1px solid rgba(255, 215, 0, 0.8)`
@@ -227,14 +217,14 @@ export default function Island() {
                           ? 'none'
                           : `1px solid color-mix(in srgb, ${textColor}, transparent 70%)`
               : 'none',
-        borderColor: theme === 'win95' ? '#FFFFFF #808080 #808080 #FFFFFF' : 'none',
-
         boxShadow:
           hideNotActiveIslandEnabled && mode === 'still'
             ? 'none'
-            : isHovered
-              ? '0 0 32px rgba(0, 0, 0, 0.25)'
-              : '0 0 24px rgba(0, 0, 0, 0.12)',
+            : theme === 'win95'
+              ? undefined
+              : isHovered
+                ? '0 0 32px rgba(0, 0, 0, 0.25)'
+                : '0 0 24px rgba(0, 0, 0, 0.12)',
         ...({
           '--island-text-color': textColor,
           '--island-bg-color': bgColor,
@@ -257,48 +247,13 @@ export default function Island() {
             disabled={isOverlayOpen}
             onProgress={handleTabProgress}
             onSelect={selectTab}
-            renderTab={(tab) => (
-              <>
-                {/*Browser Search*/}
-                {tab === 0 && <BrowserSearchTab {...controller} />}
-                {/* Workflows & Quick Apps */}
-                {tab === 1 && <WorkflowsTab {...controller} />}
-
-                {/*Overview tab*/}
-                {tab === 2 && <OverviewTab {...controller} />}
-
-                {/* Now Playing*/}
-                {tab === 3 && <NowPlayingTab {...controller} />}
-
-                {/* AI tab container */}
-                {tab === 4 && (
-                  <AssistantTab
-                    {...controller}
-                    onAnswerContentSizeChange={setAssistantAnswerHeight}
-                    resetAnswerContentSize={resetAssistantAnswerHeight}
-                  />
-                )}
-
-                {/*Clipboard*/}
-                {tab === 5 && <ClipboardTab {...controller} />}
-
-                {/*Tasks*/}
-                {tab === 6 && <TasksTab {...controller} />}
-
-                {/* Settings opens the dedicated window; the tab stays as the entry. */}
-                {tab === 7 && (
-                  <div className={styles.settingsLaunch}>
-                    <button
-                      type="button"
-                      className={styles.settingsLaunchButton}
-                      onClick={() => void window.electronAPI.openSettings()}
-                    >
-                      {t('openSettings')}
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
+            renderTab={(tab) =>
+              islandPages.get(tab)?.render({
+                controller,
+                onAnswerContentSizeChange: setAssistantAnswerHeight,
+                resetAnswerContentSize: resetAssistantAnswerHeight,
+              })
+            }
           />
         )}
         <div ref={setContainer} data-island-overlay className={styles.overlay} />

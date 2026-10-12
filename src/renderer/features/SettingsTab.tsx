@@ -12,7 +12,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { author, bugs, license, productName, repository, version } from '../../../package.json';
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { TABS } from '../lib/tabs';
 import { Select } from '../components/Select';
@@ -21,8 +21,8 @@ import { useSettingsContext } from '../components/SettingsProvider';
 import { languagePreference } from '../../shared/i18n';
 import { InlineNotices } from '../components/InlineNotices';
 import { ElasticScrollArea } from '../components/ElasticScrollArea';
+import { PreferenceSlider } from '../components/PreferenceSlider';
 import { supportedTimeZones } from '../lib/date';
-import { SETTINGS_TAB_ID } from '../../shared/appState';
 import { isValidSearchUrlTemplate } from '../lib/search';
 import type { SettingsCategoryId } from '../lib/settingsCategories';
 import type { IslandController } from '../hooks/useIslandController';
@@ -92,10 +92,10 @@ type Props = Pick<
   | 'handleBgColorChange'
   | 'handleBgImageChange'
   | 'handleDisplayChange'
-  | 'handleDragEndChecks'
   | 'handleHourFormatChange'
   | 'handleAiModelChange'
   | 'handleIslandBorderChange'
+  | 'handleIslandCornerRadiusChange'
   | 'handleIslandXChange'
   | 'handleIslandYChange'
   | 'handleLargeStandbyChange'
@@ -113,6 +113,7 @@ type Props = Pick<
   | 'hourFormat'
   | 'isFree'
   | 'islandBorderEnabled'
+  | 'islandCornerRadius'
   | 'islandX'
   | 'islandY'
   | 'hasApiKey'
@@ -134,7 +135,6 @@ type Props = Pick<
   | 'quickApps'
   | 'removeQuickApp'
   | 'removeWorkflow'
-  | 'savePosition'
   | 'saveApiKey'
   | 'searchUrlTemplate'
   | 'setSearchUrlTemplate'
@@ -154,7 +154,6 @@ type Props = Pick<
   | 'textColor'
   | 'theme'
   | 'toggleTabVisibility'
-  | 'updateDragging'
   | 'weatherLocation'
   | 'weatherUnit'
   | 'workflowName'
@@ -190,8 +189,6 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
     }),
   ];
   const validSearchUrlTemplate = isValidSearchUrlTemplate(p.searchUrlTemplate);
-  const rangeStyle = (value: number, maximum: number) =>
-    ({ '--range-progress': `${(value / maximum) * 100}%` }) as CSSProperties;
   const number = (value: number, decimals = 0) =>
     new Intl.NumberFormat(i18n.language, {
       minimumFractionDigits: decimals,
@@ -299,6 +296,19 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
                 ]}
               />
             </PrefRow>
+            <PrefRow label={t('islandCornerRadius')} hint={t('islandCornerRadiusHint')} stacked>
+              <PreferenceSlider
+                label={t('islandCornerRadius')}
+                startLabel={t('sliderSquare')}
+                endLabel={t('sliderRounded')}
+                min={0}
+                max={60}
+                stages={5}
+                value={p.islandCornerRadius}
+                disabled={p.theme === 'win95'}
+                onValueChange={p.handleIslandCornerRadiusChange}
+              />
+            </PrefRow>
             <PrefRow label={t('islandBorder')}>
               <Select
                 label={t('islandBorder')}
@@ -360,49 +370,29 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.15 }}
                   >
-                    <PrefRow label={t('positionX', { value: number(p.islandX, 1) })} stacked>
-                      <input
-                        className={styles.range}
-                        aria-label={t('positionX', { value: number(p.islandX, 1) })}
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="0.1"
+                    <PrefRow label={t('positionX')} stacked>
+                      <PreferenceSlider
+                        label={t('positionX')}
+                        startLabel={t('sliderLeft')}
+                        endLabel={t('sliderRight')}
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        stages={5}
                         value={p.islandX}
-                        style={rangeStyle(p.islandX, 100)}
-                        onPointerDown={(event) => {
-                          event.stopPropagation();
-                          p.updateDragging(true);
-                        }}
-                        onChange={p.handleIslandXChange}
-                        onPointerUp={(event) => {
-                          event.stopPropagation();
-                          p.savePosition();
-                          p.handleDragEndChecks();
-                          event.currentTarget.blur();
-                        }}
+                        onValueChange={p.handleIslandXChange}
                       />
                     </PrefRow>
-                    <PrefRow label={t('positionY', { value: number(p.islandY) })} stacked>
-                      <input
-                        className={styles.range}
-                        aria-label={t('positionY', { value: number(p.islandY) })}
-                        type="range"
-                        min="0"
-                        max="500"
+                    <PrefRow label={t('positionY')} stacked>
+                      <PreferenceSlider
+                        label={t('positionY')}
+                        startLabel={t('sliderTop')}
+                        endLabel={t('sliderBottom')}
+                        min={0}
+                        max={500}
+                        stages={7}
                         value={p.islandY}
-                        style={rangeStyle(p.islandY, 500)}
-                        onPointerDown={(event) => {
-                          event.stopPropagation();
-                          p.updateDragging(true);
-                        }}
-                        onChange={p.handleIslandYChange}
-                        onPointerUp={(event) => {
-                          event.stopPropagation();
-                          p.savePosition();
-                          p.handleDragEndChecks();
-                          event.currentTarget.blur();
-                        }}
+                        onValueChange={p.handleIslandYChange}
                       />
                     </PrefRow>
                   </motion.div>
@@ -485,21 +475,17 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
                 options={boolOptions}
               />
             </PrefRow>
-            <PrefRow
-              label={t('mouseLeaveDelay', { value: number(p.leaveDelayMs) })}
-              hint={t('mouseLeaveDelayHint')}
-              stacked
-            >
-              <input
-                className={styles.range}
-                aria-label={t('mouseLeaveDelay', { value: number(p.leaveDelayMs) })}
-                type="range"
-                min="0"
-                max="2000"
-                step="50"
+            <PrefRow label={t('mouseLeaveDelay')} hint={t('mouseLeaveDelayHint')} stacked>
+              <PreferenceSlider
+                label={t('mouseLeaveDelay')}
+                startLabel={t('sliderImmediate')}
+                endLabel={t('sliderLater')}
+                min={0}
+                max={2000}
+                step={50}
+                stages={3}
                 value={p.leaveDelayMs}
-                style={rangeStyle(p.leaveDelayMs, 2000)}
-                onChange={(event) => p.handleLeaveDelayChange(event.target.value)}
+                onValueChange={p.handleLeaveDelayChange}
               />
             </PrefRow>
           </PrefGroup>
@@ -513,9 +499,8 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
               {p.tabOrder.map((id, index) => {
                 const tab = TABS.find((item) => item.id === id);
                 if (!tab) return null;
-                const hidden = id !== SETTINGS_TAB_ID && p.hiddenTabs.includes(id);
-                const visibilityLabel =
-                  id === SETTINGS_TAB_ID ? t('settingsAlwaysVisible') : t(hidden ? 'show' : 'hide');
+                const hidden = p.hiddenTabs.includes(id);
+                const visibilityLabel = t(hidden ? 'show' : 'hide');
                 return (
                   <div
                     key={id}
@@ -544,7 +529,9 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
                   >
                     <GripVertical size={14} className={styles.grip} />
                     {tab.icon(p.textColor)}
-                    <span className={styles.tabName}>{t(tab.nameKey)}</span>
+                    <span className={styles.tabName}>
+                      {tab.title ?? t(tab.nameKey ?? 'tabOverview')}
+                    </span>
                     <button
                       className={styles.iconButton}
                       title={t('defaultTab')}
@@ -561,7 +548,6 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
                     </button>
                     <button
                       className={styles.iconButton}
-                      disabled={id === SETTINGS_TAB_ID}
                       title={visibilityLabel}
                       aria-label={visibilityLabel}
                       onClick={() => p.toggleTabVisibility(id)}

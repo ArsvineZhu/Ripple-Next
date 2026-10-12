@@ -45,6 +45,18 @@
 .Island[data-theme='win95'] {
   border-radius: 0;
   corner-shape: round;
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  box-shadow:
+    inset 1px 1px #dfdfdf,
+    inset -1px -1px #404040;
+}
+
+.Island[data-theme='win95'] *,
+.Island[data-theme='win95'] *::before,
+.Island[data-theme='win95'] *::after {
+  border-radius: 0;
+  corner-shape: round;
 }
 
 .content {
@@ -70,27 +82,4 @@
 .Island button {
   white-space: nowrap;
   flex-shrink: 0;
-}
-
-.settingsLaunch {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  padding: 12px;
-}
-
-.settingsLaunchButton {
-  padding: 10px 18px;
-  color: inherit;
-  font: inherit;
-  background: color-mix(in srgb, currentColor 12%, transparent);
-  border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
-  border-radius: 12px;
-  cursor: pointer;
-}
-
-.settingsLaunchButton:hover {
-  background: color-mix(in srgb, currentColor 18%, transparent);
 }

@@ -17,7 +17,7 @@ Linux 开发时可能需要与 Electron 构建匹配、root 所有且权限为 `
 
 ## 工具职责
 
-`pnpm start` 使用 Electron 应用数据目录下的 `Ripple Next Development`，打包版继续使用 `Ripple Next`。数据、Chromium 缓存和单实例锁相互独立，开发版与已安装的正式版可以同时运行。开发版使用自己的设置和凭据。
+`pnpm start` 使用 Electron 应用数据目录下的 `Ripple Next Development`，打包版继续使用 `Ripple Next`。开发版的数据、Chromium 缓存和凭据独立，但两个版本共用 Electron 原生单实例锁。启动任意版本都会打开当前实例的设置窗口，同时只运行一个实例。锁使用正式版配置目录；Linux 从用户主目录确定锁位置，不同 `XDG_CONFIG_HOME` 配置也共用该锁。
 
 工具配置集中在 [.config](../.config/README.zh-CN.md)，由 package scripts 显式选择。
 
@@ -42,6 +42,10 @@ Main 拥有应用生命周期、托盘、透明窗口、系统能力和 typed IP
 AI SDK 的 `streamText` 与 OpenAI 兼容 provider 在 main 实现流式对话。默认 system prompt 保存在 `src/main/prompts/default-assistant.md`，并随 main bundle 打包。`xstate` 和 `@xstate/react` 管理可取消的交互延迟与重入门控。Linux 快捷应用从 XDG 桌面入口发现并通过 `gio launch` 启动；自定义命令通过 `spawn` 接收参数数组，不经过 shell。
 
 浏览器搜索地址模板保存在设置中，必须包含 `{query}`；直接输入 HTTP(S) 地址仍会作为网址打开。时钟和日期使用当前语言，并可跟随系统时区或指定 IANA 时区。错误会路由到所属功能区行内展示；`InlineNotices` 沿用 Island 的 Motion 淡入与模糊过渡。长内容区使用系统原生纵向滚动，横向页签使用可接续的连续动画与有界回弹；AI 回答会随内容增长，并限制在当前屏幕可用高度内。设置页滑块由对应 CSS Module 统一管理主题轨道、滑块和焦点样式。
+
+## 页面注册
+
+页面使用 `overview`、`tasks` 等稳定字符串标识，位置由保存的排序决定。`src/shared/pages.ts` 管理内置页面元信息，以及固定或依内容计算的尺寸策略；`src/renderer/lib/tabs.tsx` 将它们与图标、渲染函数组合。创建 Island 页面注册表时可添加新定义，提供 ID、标题、图标、渲染函数及尺寸策略。可用条件、圆角、对齐和阻止折叠能力可按需设置。导航与动画从注册表读取页面。SQLite migration 3 转换已有数字 ID，保留页面排序及功能数据。
 
 ## 本地诊断
 

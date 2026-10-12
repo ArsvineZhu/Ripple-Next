@@ -2,7 +2,7 @@
 
 # Using Ripple Next
 
-Ripple Next puts eight small tools in a floating Island. Start with Overview, open a song in your music player, then add the apps and websites you use together as a workflow. The [README](README.md) includes screenshots; this guide explains the controls and the data they use.
+Ripple Next puts seven feature pages in a floating Island and configuration in a dedicated settings window. Each launch opens Settings. Launching again focuses the existing instance's settings window. Start with Overview, open a song in your music player, then add the apps and websites you use together as a workflow. The [README](README.md) includes screenshots; this guide explains the controls and the data they use.
 
 ## Find your way around
 
@@ -11,14 +11,14 @@ Hover over the Island to reveal **Quick** mode. Click a non-interactive part of 
 | Action                     | Control                                                                                  |
 | -------------------------- | ---------------------------------------------------------------------------------------- |
 | Move between feature pages | Left/Right outside interactive controls, or a horizontal wheel/trackpad gesture          |
-| Jump to a visible page     | Ctrl+1 through Ctrl+8, in your configured visible-page order                             |
+| Jump to a visible page     | Ctrl+1 through Ctrl+7, in your configured visible-page order                             |
 | Scroll a long page         | Vertical wheel/trackpad scrolling                                                        |
 | Choose a music source      | Vertical scrolling in Now Playing; click A/a dot; focus the music area and press Up/Down |
 | First/last music page      | Home/End while the music area has focus                                                  |
 | Use a dropdown             | Arrow keys and Enter; Escape closes it and returns focus                                 |
-| Recover a hidden Island    | Tray menu → Show                                                                         |
+| Open Settings              | Launch Ripple again, or use the tray's Settings item                                     |
 
-Settings lets you reorder and hide feature pages and choose a default. Now Playing becomes available when Ripple detects a supported media session. Settings remains available even when other pages are hidden. One continuous horizontal gesture moves one feature page; feature navigation wraps around. Music source navigation stops at the first and last card.
+Settings lets you reorder and hide feature pages and choose a default. Now Playing becomes available when Ripple detects a supported media session. Settings lives outside the Island's page navigation. If every available page is hidden, Overview remains reachable. One continuous horizontal gesture moves one feature page; feature navigation wraps around. Music source navigation stops at the first and last card.
 
 ## Search and open addresses
 
@@ -75,8 +75,8 @@ Questions are sent to the configured service. The API key is encrypted using OS-
 Settings groups appearance, interaction and feature configuration in one scrollable page:
 
 - Choose **Default**, **Sleek Black** or **Windows 95**, then adjust text/background colors, a local or remote background image, and the border.
-- Choose the display and snap/free positioning. Position changes keep Settings open. In free mode, save your edited coordinates.
-- **Standby** keeps Quick mode visible; **Large Standby** keeps the expanded view. Inactive hiding conceals the idle Island. On macOS you can hide the menu bar icon; Windows and Linux always keep the tray. The Island stays off the Dock and taskbar; on macOS a Dock icon appears only while the Settings window is open (LuLu-style activation policy; the packaged app remains an LSUIElement agent). Open Settings from the Island, tray, or a second launch.
+- Choose the display and snap/free positioning. Appearance settings keeps a live Island preview visible. Free-position sliders and arrow keys update and save immediately. Slider endpoints explain their direction; only the large marked stops gently snap on release, with continuous movement between them. Labels sit inside the rounded control, and the rail extends past the inset endpoint stops without changing their minimum/maximum effects. Numeric values are hidden. Horizontal 0% and 100% align with the screen edges; vertical position uses CSS pixels. Expanded corners range from 0 to 60px (default 30px); Windows 95 keeps square corners.
+- **Standby** keeps Quick mode visible; **Large Standby** keeps the expanded view. Inactive hiding conceals the idle Island. On macOS you can hide the menu bar icon; Windows and Linux always keep the tray. The Island stays off the Dock and taskbar; on macOS a Dock icon appears only while the Settings window is open. Open Settings from the tray or launch Ripple again; closing Settings keeps the Island running.
 - Set the pointer-leave delay from **0–2000 ms**. Re-entering, focusing an input, opening a menu or dragging prevents an unintended collapse.
 - Configure launch at login, battery alerts, idle information, weather, search, workflows, quick apps and AI.
 - In **General → Language**, choose Follow system, 简体中文, English, 繁體中文 or 日本語. The interface and tray update immediately; preferences and input drafts survive a language switch. User text and AI responses are not translated.

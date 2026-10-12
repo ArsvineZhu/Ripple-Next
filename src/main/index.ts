@@ -1,6 +1,6 @@
 import { app, powerMonitor, safeStorage, screen } from 'electron';
 import os from 'node:os';
-import { configureApplicationProfile } from './appProfile';
+import { configureApplicationProfile, requestApplicationInstanceLock } from './appProfile';
 import { defaultAppState } from '../shared/appState';
 import { registerIPC } from './ipc';
 import {
@@ -34,7 +34,7 @@ if (process.platform === 'win32') app.setAppUserModelId('com.arsvinezhu.ripple-n
 // LSUIElement agent: start accessory; Settings open switches to regular (LuLu-style).
 if (process.platform === 'darwin') app.setActivationPolicy('accessory');
 
-if (!app.requestSingleInstanceLock()) {
+if (!requestApplicationInstanceLock(app, userDataPath)) {
   app.quit();
 } else {
   void startApplication();
@@ -60,16 +60,13 @@ async function startApplication() {
     notices.report('showTrayFailed', detail, 'warning', 'settings');
   }
 
-  app.on('second-instance', () => {
+  const presentApplication = () => {
     if (!startupComplete || !diagnostics) return;
     if (!getMainWindow()) createWindow(diagnostics, reportWindowLoadError);
     openSettingsWindow();
-  });
-  app.on('activate', () => {
-    if (!startupComplete || !diagnostics) return;
-    if (!getMainWindow()) createWindow(diagnostics, reportWindowLoadError);
-    openSettingsWindow();
-  });
+  };
+  app.on('second-instance', presentApplication);
+  app.on('activate', presentApplication);
 
   const diagnosticsService = await initializeDiagnostics(userDataPath);
   diagnostics = diagnosticsService;
@@ -228,6 +225,7 @@ async function startApplication() {
     initializeLinuxInputShape(diagnosticsService, reportInputShapeError);
     createWindow(diagnosticsService, reportWindowLoadError);
     startupComplete = true;
+    presentApplication();
   });
 
   app.on('before-quit', () => {

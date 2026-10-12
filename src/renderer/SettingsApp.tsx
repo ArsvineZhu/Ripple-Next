@@ -18,6 +18,12 @@ export default function SettingsApp() {
   const transitionRef = useRef<ViewTransition | null>(null);
   const requestedCategory = useRef(category);
   const active = SETTINGS_CATEGORIES.find((item) => item.id === category) ?? SETTINGS_CATEGORIES[0];
+  useEffect(() => {
+    void window.electronAPI?.setIslandPreview?.(category === 'appearance').catch(() => {});
+    return () => {
+      void window.electronAPI?.setIslandPreview?.(false).catch(() => {});
+    };
+  }, [category]);
 
   const selectCategory = (next: SettingsCategoryId) => {
     if (next === requestedCategory.current) return;
