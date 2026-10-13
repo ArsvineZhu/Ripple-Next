@@ -10,6 +10,7 @@ function invoke<K extends keyof InvokeMap>(
   return ipcRenderer.invoke(channel, ...args);
 }
 const api: ElectronAPI = {
+  showColorPicker: (initialColor) => invoke('show-color-picker', initialColor),
   openDiagnosticsFolder: () => invoke('open-diagnostics-folder'),
   readClipboardText: () => invoke('read-clipboard-text'),
   writeClipboardText: (text) => invoke('write-clipboard-text', text),

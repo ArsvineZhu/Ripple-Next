@@ -6,6 +6,10 @@ Ripple Next shares one interface and state format across Windows, macOS and Linu
 
 ## Native integrations
 
+Color fields open the operating system's picker through Settings-only IPC: Windows uses `ColorDialog` in a hidden STA PowerShell host, macOS uses AppleScript `choose color`, and Linux uses kdialog on KDE or zenity on other desktops, falling back when the preferred executable is missing. Install either `zenity` or `kdialog` for Linux color selection. The native chooser edits RGB; existing CSS alpha is preserved. Cancel leaves the saved color unchanged. Closing Settings aborts the dialog helper. Only one picker is active at a time.
+
+API references: [Windows ColorDialog](https://learn.microsoft.com/dotnet/api/system.windows.forms.colordialog), [macOS color prompt](https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/PromptforaColor.html), [KDE dialogs](https://develop.kde.org/docs/administration/kdialog/).
+
 | Feature              | Windows                                                | macOS                                                          | Linux                                                       |
 | -------------------- | ------------------------------------------------------ | -------------------------------------------------------------- | ----------------------------------------------------------- |
 | Music                | GSMTC sessions, capabilities and artwork               | Running Spotify and Music through AppleScript; Spotify artwork | MPRIS over session D-Bus, capabilities and artwork          |

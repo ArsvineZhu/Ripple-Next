@@ -81,7 +81,7 @@ export function useQuickApps() {
 
   const addQuickApp = () => {
     const name = newQuickApp.trim();
-    if (!name) return;
+    if (!name) return false;
     let target: QuickAppTarget | null = selectedAppRef.current?.target || null;
     if (!target && mode === 'command' && executable.trim()) {
       target = {
@@ -104,7 +104,7 @@ export function useQuickApps() {
     }
     if (!target) {
       notify({ severity: 'error', code: 'invalidQuickApp', area: 'quick-apps' });
-      return;
+      return false;
     }
     updateState({
       quickApps: [...quickApps, { id: crypto.randomUUID(), name, target }],
@@ -116,6 +116,7 @@ export function useQuickApps() {
     setAppUrl('');
     selectedAppRef.current = null;
     setShowSuggestions(false);
+    return true;
   };
 
   const removeQuickApp = (index: number) =>

@@ -164,6 +164,7 @@
 }
 
 .pane {
+  view-transition-name: settings-content;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -174,7 +175,21 @@
 .main {
   flex: 1;
   min-height: 0;
-  view-transition-name: settings-content;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-height: 64px;
+  padding: 12px var(--settings-space-6);
+  background: var(--settings-bg);
+}
+.detailHeader h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 :global(::view-transition) {
@@ -214,6 +229,51 @@
   }
 }
 
+:global(html[data-settings-motion='forward']::view-transition-old(settings-content)) {
+  animation: detail-old-forward 220ms ease both;
+}
+:global(html[data-settings-motion='forward']::view-transition-new(settings-content)) {
+  animation: detail-new-forward 240ms ease both;
+}
+:global(html[data-settings-motion='back']::view-transition-old(settings-content)) {
+  animation: detail-old-back 220ms ease both;
+}
+:global(html[data-settings-motion='back']::view-transition-new(settings-content)) {
+  animation: detail-new-back 240ms ease both;
+}
+@keyframes detail-old-forward {
+  to {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+@keyframes detail-new-forward {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes detail-old-back {
+  to {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+}
+@keyframes detail-new-back {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .navItem {
     transition: none;
@@ -222,7 +282,7 @@
   :global(::view-transition-group(settings-content)),
   :global(::view-transition-old(settings-content)),
   :global(::view-transition-new(settings-content)) {
-    animation: none;
+    animation: none !important;
   }
 }
 

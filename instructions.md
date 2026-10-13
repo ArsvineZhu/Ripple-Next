@@ -28,7 +28,7 @@ A workflow entry such as `localhost:3000/` or `127.0.0.1:3000/admin?view=usage#t
 
 ## Build a workflow and pin quick apps
 
-In Settings, give a workflow a name and enter its application/website targets. Separate targets with commas or semicolons; Chinese comma, enumeration comma and semicolon are also accepted. Select the workflow on the Workflows page to launch its targets in order. A failed target shows an error on that workflow, and later targets are still attempted. Retrying clears the old message.
+In Settings → Shortcuts, choose **Add workflow**, give it a name and enter its application/website targets, then save. Separate targets with commas or semicolons; Chinese comma, enumeration comma and semicolon are also accepted. Select the workflow on the Workflows page to launch its targets in order. A failed target shows an error on that workflow, and later targets are still attempted. Retrying clears the old message.
 
 For example, an **API gateway** workflow can contain `localhost:3000/`. A **Reading** workflow can contain two documentation URLs. A workflow is a launch list; it does not execute conditional steps or schedule jobs.
 
@@ -56,15 +56,15 @@ Covers appear in both the expanded page and QuickView. Missing, unsupported or u
 
 ## Ask your own AI service
 
-In Settings, enter an OpenAI-compatible **Base URL**, the provider's exact **model** name and your **API key**, then save the key. Use the endpoint and credentials supplied by your provider or local gateway. Ripple does not include a paid AI subscription.
+In Settings → Integrations, open **Base URL** and **API key** to edit and save them. The provider's exact **model** name stays inline with an explanation. Use the endpoint and credentials supplied by your provider or local gateway. Ripple does not include a paid AI subscription.
 
 Submit a question on AI Assistant. Output streams into the Island with Markdown formatting and copy buttons for code blocks. **Ask another** cancels/resets the current exchange. This is a single-question assistant; it does not save a conversation history. Errors appear on the assistant page.
 
-Questions are sent to the configured service. The API key is encrypted using OS-backed secure storage; its ciphertext is saved in Ripple's database, and the saved key is never sent back to the renderer. On Linux, saving fails if secure encryption is unavailable. The settings field cannot reveal a previously stored key; save an empty key to remove it. The [diagnostics guide](docs/platform-compatibility.md) explains what local logs contain.
+Questions are sent to the configured service. The API key is encrypted using OS-backed secure storage; its ciphertext is saved in Ripple's database, and the saved key is never sent back to the renderer. On Linux, saving fails if secure encryption is unavailable. The editor cannot reveal a previously stored key; **Remove API key** deletes it. The [diagnostics guide](docs/platform-compatibility.md) explains what local logs contain.
 
 ## Overview, clipboard and tasks
 
-**Overview** displays the clock, localized date, current weather and battery state. Settings provides 12/24-hour time, system or IANA time zone, weather location and Celsius/Fahrenheit. Weather needs network access to WeatherAPI; battery details depend on the OS and hardware. The minute-only clock updates at minute boundaries.
+**Overview** displays the clock, localized date, current weather and battery state. Settings provides 12/24-hour time, system or IANA time zone, weather location and Celsius/Fahrenheit. With 12-hour time enabled, **Show A.M. / P.M.** controls the suffix; it starts off. In the location editor, choose automatic IP-based location or enter city, region and country separately. Automatic location uses [WeatherAPI's IP lookup](https://www.weatherapi.com/docs/request-parameters/); a VPN or proxy can change the estimated place. Leaving the manual location blank disables weather. Weather needs network access to WeatherAPI; battery details depend on the OS and hardware. The minute-only clock updates at minute boundaries.
 
 **Clipboard** collects text during the current run and lets you copy an item back to the system clipboard. It checks every two seconds and when Ripple gains focus. Empty and image-only clipboard values are skipped. Very brief changes between checks may not be captured. History stays in memory and disappears on restart; it continues collecting while the Island is collapsed.
 
@@ -72,11 +72,14 @@ Questions are sent to the configured service. The API key is encrypted using OS-
 
 ## Make the Island yours
 
-Settings groups appearance, interaction and feature configuration in one scrollable page:
+Settings groups appearance, interaction and feature configuration by category. Rows with **>** open secondary editors. Their glass capsule back button stays at the top left and responds to the mouse; returning restores the main page's scroll and focus. Save commits the editor's changes; Back does not submit them. Conditional rows and page entry/return animate; reduced motion switches immediately.
+
+The main controls are:
 
 - Choose **Default**, **Sleek Black** or **Windows 95**, then adjust text/background colors, a local or remote background image, and the border.
+- On/off settings use sliding switches; their labels describe the enabled effect, such as **Show the Island border**. The 12-hour clock switch uses 24-hour time when off; Celsius uses Fahrenheit when off. Multi-option menus have right-aligned closed values and animated glass cards with left-aligned names and descriptions. Color fields have a plain swatch and value: click to open the system color picker. Cancel keeps the color; choosing RGB preserves its existing alpha. Linux requires zenity or kdialog.
 - Choose the display and snap/free positioning. Appearance settings keeps a live Island preview visible. Free-position sliders and arrow keys update and save immediately. Slider endpoints explain their direction; only the large marked stops gently snap on release, with continuous movement between them. Labels sit inside the rounded control, and the rail extends past the inset endpoint stops without changing their minimum/maximum effects. Numeric values are hidden. Horizontal 0% and 100% align with the screen edges; vertical position uses CSS pixels. Expanded corners range from 0 to 60px (default 30px); Windows 95 keeps square corners.
-- **Standby** keeps Quick mode visible; **Large Standby** keeps the expanded view. Inactive hiding conceals the idle Island. On macOS you can hide the menu bar icon; Windows and Linux always keep the tray. The Island stays off the Dock and taskbar; on macOS a Dock icon appears only while the Settings window is open. Open Settings from the tray or launch Ripple again; closing Settings keeps the Island running.
+- **Keep the Island quick view open** keeps Quick mode visible; **Keep the full Island page open** keeps the expanded view when quick-view standby is off. **Hide Island when inactive** conceals the idle Island. On macOS you can hide the menu bar icon; Windows and Linux always keep the tray. The Island stays off the Dock and taskbar; on macOS a Dock icon appears only while the Settings window is open. Open Settings from the tray or launch Ripple again; closing Settings keeps the Island running.
 - Set the pointer-leave delay from **0–2000 ms**. Re-entering, focusing an input, opening a menu or dragging prevents an unintended collapse.
 - Configure launch at login, battery alerts, idle information, weather, search, workflows, quick apps and AI.
 - In **General → Language**, choose Follow system, 简体中文, English, 繁體中文 or 日本語. The interface and tray update immediately; preferences and input drafts survive a language switch. User text and AI responses are not translated.

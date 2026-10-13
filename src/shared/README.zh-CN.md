@@ -10,10 +10,12 @@
 
 Shared 定义可序列化的 IPC 与领域契约、用于持久化状态和快捷应用目标的 Zod schema，以及纯输入区域计算。Main、preload 和 renderer 共用这些定义，运行时服务放在各自所属层。
 
-`contracts.ts` 定义请求、响应、通知和 AI 流事件；`appState.ts` 定义新状态结构及初始值；`i18n/` 管理语言类型、系统语言解析和随应用打包的词条。Renderer 初始化 i18next，main 使用词条生成托盘文案。
+`contracts.ts` 定义请求、响应、通知和 AI 流事件；`appState.ts` 定义新状态结构及初始值。`showAmPm` 缺省为关闭，保留原有 12 小时显示；位置编辑继续使用天气字符串契约，`auto:ip` 选择现有服务的自动查询。`i18n/` 管理语言类型、系统语言解析和随应用打包的词条。Renderer 初始化 i18next，main 使用词条生成托盘文案。
 
 参见[开发指南](../../docs/development.zh-CN.md)和[仓库地图](../../INDEX.zh-CN.md)。
 
 `diagnostics.ts` 定义安全错误字段，以及 IPC、平台能力和生命周期事件。原生剪贴板读写是明确的 IPC 契约，诊断不记录文本内容。
 
 `ScrollGestureStartSchema` 校验原生触控板边界的时间戳载荷；main 产生事件，preload 校验并转发，renderer 据此区分新手势与旧惯性。
+
+`color.ts` 解析保存的 RGB／hex CSS 颜色，在应用原生 RGB 选色时保留透明度。`show-color-picker` 返回 hex 或 null，`colorPickerFailed` 的反馈属于设置窗口。

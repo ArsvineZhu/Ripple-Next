@@ -1,0 +1,28 @@
+.surface.surface {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.surface :global(.lg__tint),
+.surface :global(.lg__specular),
+.surface :global(.lg__glow) {
+  corner-shape: inherit;
+}
+
+.actor {
+  transform: translate(var(--motion-x, 0px), var(--motion-y, 0px))
+    scale(var(--motion-sx, 1), var(--motion-sy, 1)) !important;
+  transform-origin: center;
+  transition: transform var(--motion-duration, 0.2s) ease-out;
+}
+
+.external.external {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actor {
+    transition: none;
+  }
+}

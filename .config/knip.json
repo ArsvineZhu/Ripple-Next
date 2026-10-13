@@ -14,5 +14,6 @@
     ".config/**/*.ts",
     ".config/**/*.mts"
   ],
+  "ignore": ["src/renderer/components/liquidGlass/vendor/**"],
   "ignoreBinaries": ["gio"]
 }

@@ -25,7 +25,10 @@ const config: ForgeConfig = {
     executableName: 'ripple-next',
     appBundleId: 'com.arsvinezhu.ripple-next',
     icon: 'src/assets/icons/icon',
-    extraResource: [path.join(projectRoot, 'src/assets/icons/icon.png')],
+    extraResource: [
+      path.join(projectRoot, 'src/assets/icons/icon.png'),
+      path.join(projectRoot, 'src/assets/third-party/liquid-glass-notices.txt'),
+    ],
     ...(process.platform === 'darwin'
       ? {
           extendInfo: {

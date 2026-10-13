@@ -105,6 +105,7 @@ Clipboard history and tasks take care of two different kinds of loose ends: text
 
 - **Place it where it belongs.** Select a display, use a snap position, or adjust its free position with immediate slider feedback. Appearance settings keeps a live Island preview visible. Sliders have endpoint labels and gentle snap markers, with free adjustment between them.
 - **Choose the appearance.** Default, Sleek Black and Windows 95 themes; custom colors, an image URL or a local background file; an optional border and adjustable expanded corners (0–60px).
+- **Adjust settings directly.** Liquid Glass slider thumbs and animated option menus, simple on/off switches, and your system's color picker. Longer fields open compact editors with a glass back button; conditional settings and page changes animate. Linux color selection uses zenity or kdialog.
 - **Keep the pages you use.** Reorder or hide seven Island feature pages and choose the default. Launch Ripple or use the tray menu to open Settings.
 - **Control when it stays visible.** Compact, hover and expanded modes; inactive hiding, Quick Standby, Large Standby and a configurable 0–2000 ms pointer-leave delay.
 - **Fit your desktop routine.** Startup control and, on macOS, a menu bar icon toggle; Windows and Linux always keep the tray. Platform specifics are in the guides.

@@ -1,12 +1,15 @@
 import * as Primitive from '@radix-ui/react-dropdown-menu';
-import { Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { useEffect, useId } from 'react';
+import { GlassPanel } from './liquidGlass/GlassPanel';
+import panel from './liquidGlass/GlassPanel.module.css';
 import { useOverlay } from './OverlayProvider';
 import styles from './Select.module.css';
 interface Option {
   value: string;
   label: string;
   disabled?: boolean;
+  description?: string;
 }
 interface Props {
   value: string;
@@ -37,13 +40,13 @@ export function Select({ value, options, onValueChange, label, disabled }: Props
           {options.find((option) => option.value === value)?.label ?? label}
         </span>
         <span>
-          <ChevronDown size={14} />
+          <ChevronsUpDown size={14} />
         </span>
       </Primitive.Trigger>
       {container && (
         <Primitive.Portal container={container}>
           <Primitive.Content
-            className={styles.content}
+            className={`${styles.content} ${panel.menu}`}
             sideOffset={6}
             align="end"
             collisionBoundary={container}
@@ -58,17 +61,27 @@ export function Select({ value, options, onValueChange, label, disabled }: Props
             onClick={(event) => event.stopPropagation()}
             onKeyDown={(event) => event.stopPropagation()}
           >
-            <div className={styles.viewport}>
+            <GlassPanel />
+            <div className={`${styles.viewport} ${panel.text}`}>
               <Primitive.RadioGroup value={value} onValueChange={onValueChange}>
-                {options.map((option) => (
+                {options.map((option, index) => (
                   <Primitive.RadioItem
                     className={styles.item}
                     key={option.value}
                     value={option.value}
                     disabled={option.disabled}
                     textValue={option.label}
+                    aria-label={option.label}
+                    aria-describedby={option.description ? `${id}-${index}-description` : undefined}
                   >
-                    {option.label}
+                    <span className={styles.itemText}>
+                      <span>{option.label}</span>
+                      {option.description && (
+                        <span id={`${id}-${index}-description`} className={styles.description}>
+                          {option.description}
+                        </span>
+                      )}
+                    </span>
                     <Primitive.ItemIndicator className={styles.indicator}>
                       <Check size={14} />
                     </Primitive.ItemIndicator>

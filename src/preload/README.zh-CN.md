@@ -17,3 +17,5 @@ Preload 通过明确的 `contextBridge` 方法暴露隔离的 `electronAPI`，�
 `onScrollGestureStart(callback)` 通过 `scroll-gesture-start` 传递经过校验的原生触控板手势开始时间戳，并返回取消订阅函数；不暴露原始输入事件、鼠标坐标或按键内容。
 
 `setIslandPreview(active)` 仅允许设置窗口调用；`getIslandPreview()` 和 `onIslandPreviewChanged()` 将临时预览状态同步给 Island，订阅返回清理函数。预览状态不持久化。
+
+`showColorPicker(initialColor)` 打开设置窗口所属的原生 RGB 选择器，返回六位 hex，取消时返回 null；发送方及参数由 main 校验。

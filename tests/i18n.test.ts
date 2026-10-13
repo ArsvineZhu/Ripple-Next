@@ -64,6 +64,12 @@ describe('bundled messages and formatting', () => {
     const instant = new Date('2026-10-04T13:05:00.000Z');
     expect(formatTime('en', false, instant, 'UTC')).toBe('13:05');
     expect(formatTime('en', false, instant, 'Asia/Tokyo')).toBe('22:05');
+    expect(formatTime('en', true, instant, 'UTC', true)).toBe('1:05 P.M.');
+    expect(formatTime('en', true, new Date('2026-10-04T00:05:00Z'), 'UTC', true)).toBe(
+      '12:05 A.M.',
+    );
+    expect(formatTime('ja', true, instant, 'Asia/Tokyo', true)).toBe('10:05 P.M.');
+    expect(formatTime('en', false, instant, 'UTC', true)).toBe('13:05');
     const acrossDay = new Date('2026-10-04T23:30:00.000Z');
     expect(formatDateShort('en', acrossDay, 'UTC')).not.toBe(
       formatDateShort('en', acrossDay, 'Asia/Tokyo'),

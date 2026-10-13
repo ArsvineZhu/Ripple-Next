@@ -6,6 +6,10 @@ Ripple Next 在 Windows、macOS、Linux 上共用界面和数据格式，通过�
 
 ## 原生功能对照
 
+颜色框通过仅允许设置窗口调用的 IPC 打开系统选择器：Windows 使用隐藏的 STA PowerShell 进程承载 `ColorDialog`；macOS 使用 AppleScript `choose color`；Linux 在 KDE 优先使用 kdialog，其他桌面优先使用 zenity，命令缺失时尝试另一种。Linux 选色需要安装 `zenity` 或 `kdialog`。系统对话框编辑 RGB，已有 CSS 透明度保持不变；取消不修改保存的颜色。关闭设置会终止对话框进程，同一时间只打开一个选择器。
+
+接口来源：[Windows ColorDialog](https://learn.microsoft.com/dotnet/api/system.windows.forms.colordialog)、[macOS 颜色对话框](https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/PromptforaColor.html)、[KDE 对话框](https://develop.kde.org/docs/administration/kdialog/)。
+
 | 功能           | Windows                              | macOS                                                 | Linux                                                  |
 | -------------- | ------------------------------------ | ----------------------------------------------------- | ------------------------------------------------------ |
 | 音乐           | GSMTC 会话、控制能力与封面           | AppleScript 读取运行中的 Spotify、Music；Spotify 封面 | 会话 D-Bus 上的 MPRIS、控制能力与封面                  |

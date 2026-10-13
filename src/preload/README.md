@@ -10,6 +10,8 @@ The bridge covers app-state bootstrap and patches, secure API-key save/removal, 
 
 Keep this bundle sandbox-compatible and keep each bridge method aligned with its shared request, response and event contract.
 
+`showColorPicker(initialColor)` opens the Settings-owned native RGB chooser and returns a six-digit hex color or null on Cancel. Main validates the sender and payload.
+
 See the [developer guide](../../docs/development.md) and [repository map](../../INDEX.md).
 
 The bridge also exposes `readClipboardText()` and `writeClipboardText(text)` so desktop clipboard operations use Electron's native API without browser focus/permission assumptions.

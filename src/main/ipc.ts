@@ -1,4 +1,4 @@
-import { app, clipboard, ipcMain, screen, shell } from 'electron';
+import { app, BrowserWindow, clipboard, ipcMain, screen, shell } from 'electron';
 import type { IpcMainInvokeEvent, WebContents } from 'electron';
 import { isLocale } from '../shared/i18n';
 import type { AppState, AppStatePatch } from '../shared/appState';
@@ -27,6 +27,8 @@ import { getCameraStatus } from './services/getCameraStatus';
 import { getMicrophoneStatus } from './services/getMicrophoneStatus';
 import { serializeDiagnosticError } from '../shared/diagnostics';
 import type { AssistantEvent } from '../shared/contracts';
+import { RGB_HEX } from '../shared/color';
+import { showNativeColorPicker } from './services/colorPicker';
 
 interface StateStore {
   load(): Promise<AppState>;
@@ -85,6 +87,8 @@ function channelErrorCode(channel: keyof InvokeMap): NoticeCode | null {
       return 'autoLaunchFailed';
     case 'open-diagnostics-folder':
       return 'diagnosticsFolderOpenFailed';
+    case 'show-color-picker':
+      return 'colorPickerFailed';
     default:
       return null;
   }
@@ -189,6 +193,17 @@ export function registerIPC(services: IPCServices) {
     hasApiKey: await services.secretStore.hasApiKey(),
   }));
   handle(services, 'open-diagnostics-folder', (_event) => services.diagnostics.openFolder());
+  handle(services, 'show-color-picker', (event, initialColor) => {
+    if (
+      getWindowRole(event.sender) !== 'settings' ||
+      typeof initialColor !== 'string' ||
+      !RGB_HEX.test(initialColor)
+    )
+      throw new TypeError('Invalid settings color request');
+    const owner = BrowserWindow.fromWebContents(event.sender);
+    if (!owner || owner.isDestroyed()) return null;
+    return showNativeColorPicker(owner, initialColor);
+  });
   handle(services, 'get-island-preview', () => previewActive);
   handle(services, 'set-island-preview', (event, active) => {
     if (getWindowRole(event.sender) !== 'settings' || typeof active !== 'boolean')

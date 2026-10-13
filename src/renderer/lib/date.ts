@@ -21,7 +21,13 @@ export const supportedTimeZones = [
   ...(typeof Intl.supportedValuesOf === 'function' ? Intl.supportedValuesOf('timeZone') : []),
 ].filter((timeZone, index, values) => values.indexOf(timeZone) === index);
 
-export function formatTime(locale: string, hour12: boolean, input: Date, timeZone = 'system') {
+export function formatTime(
+  locale: string,
+  hour12: boolean,
+  input: Date,
+  timeZone = 'system',
+  showAmPm = false,
+) {
   const options: Intl.DateTimeFormatOptions = {
     hour: 'numeric',
     minute: '2-digit',
@@ -29,9 +35,14 @@ export function formatTime(locale: string, hour12: boolean, input: Date, timeZon
     ...(timeZone === 'system' ? {} : { timeZone }),
   };
   const parts = new Intl.DateTimeFormat(locale, options).formatToParts(input);
-  return parts
+  const text = parts
     .filter((part) => part.type !== 'dayPeriod')
     .map((part) => part.value)
     .join('')
     .trim();
+  if (!hour12 || !showAmPm) return text;
+  const period = new Intl.DateTimeFormat('en-US', options)
+    .formatToParts(input)
+    .find((part) => part.type === 'dayPeriod')?.value;
+  return `${text} ${period === 'AM' ? 'A.M.' : 'P.M.'}`;
 }

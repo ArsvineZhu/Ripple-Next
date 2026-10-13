@@ -25,6 +25,8 @@ const mock = vi.hoisted(() => ({
   recordDiagnostic: vi.fn(),
   markRendererReady: vi.fn(),
   showMainWindow: vi.fn(),
+  showColorPicker: vi.fn(),
+  colorOwner: { isDestroyed: () => false },
   window: {
     webContents: null as unknown,
     focus: vi.fn(),
@@ -34,6 +36,7 @@ const mock = vi.hoisted(() => ({
 }));
 mock.window.webContents = mock.island;
 vi.mock('electron', () => ({
+  BrowserWindow: { fromWebContents: () => mock.colorOwner },
   clipboard: { readText: mock.readClipboard, writeText: mock.writeClipboard },
   ipcMain: {
     handle: (
@@ -70,6 +73,9 @@ vi.mock('../src/main/services/media', () => ({
 }));
 vi.mock('../src/main/tray', () => ({ setTrayLocale: vi.fn() }));
 vi.mock('../src/main/settingsWindow', () => ({ openSettingsWindow: vi.fn() }));
+vi.mock('../src/main/services/colorPicker', () => ({
+  showNativeColorPicker: mock.showColorPicker,
+}));
 import { setTrayLocale } from '../src/main/tray';
 import { registerIPC } from '../src/main/ipc';
 import { defaultAppState } from '../src/shared/appState';
@@ -113,6 +119,7 @@ describe('IPC boundary', () => {
     mock.settings.setBackgroundThrottling.mockClear();
     mock.settings.once.mockClear();
     mock.showMainWindow.mockClear();
+    mock.showColorPicker.mockReset().mockResolvedValue(null);
     mock.openDiagnosticsFolder.mockReset().mockResolvedValue(undefined);
     mock.recordApplicationError.mockClear();
     services.notices.report.mockClear();
@@ -132,6 +139,32 @@ describe('IPC boundary', () => {
     await expect(
       mock.handlers.get('get-app-bootstrap')!({ sender: mock.settings }),
     ).resolves.toEqual({ state: defaultAppState, hasApiKey: false });
+  });
+  it('restricts the native color picker to Settings and validates RGB before invoking it', async () => {
+    const choose = mock.handlers.get('show-color-picker')!;
+    await expect(choose({ sender: mock.sender }, '#123456')).rejects.toThrow('Unknown IPC sender');
+    await expect(choose({ sender: mock.island }, '#123456')).rejects.toThrow(
+      'Invalid settings color',
+    );
+    for (const value of ['#123', 'red', '#123456;exit', null, 123])
+      await expect(choose({ sender: mock.settings }, value)).rejects.toThrow(
+        'Invalid settings color',
+      );
+    expect(mock.showColorPicker).not.toHaveBeenCalled();
+    await expect(choose({ sender: mock.settings }, '#123456')).resolves.toBeNull();
+    expect(mock.showColorPicker).toHaveBeenCalledWith(mock.colorOwner, '#123456');
+    mock.showColorPicker.mockResolvedValue('#ABCDEF');
+    await expect(choose({ sender: mock.settings }, '#123456')).resolves.toBe('#ABCDEF');
+    mock.showColorPicker.mockRejectedValue(new Error('Picker unavailable'));
+    await expect(choose({ sender: mock.settings }, '#123456')).rejects.toThrow(
+      'Picker unavailable',
+    );
+    expect(services.notices.report).toHaveBeenLastCalledWith(
+      'colorPickerFailed',
+      'Picker unavailable',
+      'error',
+      'settings',
+    );
   });
   it('accepts only valid input rectangles from an allowed renderer', () => {
     const rect = { x: 10, y: 20, width: 170, height: 40, scaleFactor: 1.5 };

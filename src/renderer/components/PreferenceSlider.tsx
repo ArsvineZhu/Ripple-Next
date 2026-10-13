@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import styles from './PreferenceSlider.module.css';
+import { GlassSurface } from './liquidGlass/GlassSurface';
 
 interface Props {
   label: string;
@@ -29,6 +30,7 @@ export function PreferenceSlider({
   onValueChange,
 }: Props) {
   const dragging = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const range = max - min;
   const stops = useMemo(
     () => [
@@ -64,6 +66,7 @@ export function PreferenceSlider({
           ))}
         </div>
         <input
+          ref={inputRef}
           className={styles.input}
           type="range"
           aria-label={label}
@@ -112,6 +115,14 @@ export function PreferenceSlider({
           onLostPointerCapture={() => {
             dragging.current = false;
           }}
+        />
+        <GlassSurface
+          controlRef={inputRef}
+          disabled={disabled}
+          slider
+          radius={14}
+          cornerK={1.15}
+          className={styles.thumb}
         />
       </div>
       <span className={styles.endpoint} aria-hidden="true">

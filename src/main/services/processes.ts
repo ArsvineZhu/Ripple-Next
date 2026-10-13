@@ -3,7 +3,7 @@ import { execFile, spawn } from 'node:child_process';
 export function runCommand(
   executable: string,
   args: string[],
-  options: { timeout?: number; maxBuffer?: number } = {},
+  options: { timeout?: number; maxBuffer?: number; signal?: AbortSignal } = {},
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     execFile(

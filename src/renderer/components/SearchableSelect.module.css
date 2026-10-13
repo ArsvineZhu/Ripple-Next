@@ -1,7 +1,8 @@
 .trigger {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 10px;
   width: max-content;
   min-width: 96px;
@@ -9,17 +10,23 @@
   flex: 0 0 auto;
   min-height: 36px;
   padding: 7px 12px;
-  color: var(--island-text-color);
-  background: var(--control-bg);
-  border: 1px solid var(--control-border);
+  color: var(--settings-muted, var(--island-text-color));
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: var(--control-radius);
   font: inherit;
   font-size: 14px;
-  text-align: left;
+  text-align: right;
   cursor: pointer;
 }
 
-.trigger > span:first-child {
+.trigger > span {
+  position: relative;
+}
+
+.trigger > [data-select-value] {
+  flex: 1;
+  text-align: right;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -28,8 +35,7 @@
 
 .trigger:hover,
 .trigger[data-state='open'] {
-  background: var(--control-hover);
-  border-color: var(--control-focus);
+  color: var(--island-text-color);
 }
 
 .trigger:focus-visible {
@@ -48,24 +54,31 @@
 }
 
 .content {
+  --glass-menu-origin: var(--radix-popover-content-transform-origin);
+  position: relative;
   z-index: 2;
   pointer-events: auto;
   width: min(
-    max(240px, var(--radix-popover-trigger-width)),
-    var(--radix-popover-content-available-width)
+    max(240px, var(--radix-popover-trigger-width, 240px)),
+    var(--radix-popover-content-available-width, calc(100vw - 24px))
   );
-  max-width: var(--radix-popover-content-available-width);
-  max-height: var(--radix-popover-content-available-height);
+  max-width: var(--radix-popover-content-available-width, calc(100vw - 24px));
+  max-height: var(
+    --radix-popover-content-available-height,
+    var(--glass-menu-space, calc(100vh - 24px))
+  );
   color: var(--island-text-color);
-  background: var(--menu-bg);
-  border: 1px solid var(--control-focus);
-  border-radius: var(--control-radius);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 30%);
+  background: transparent;
+  border: none;
+  border-radius: 24px;
+  corner-shape: superellipse(1.62);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 24%);
   overflow: hidden;
   font-size: 14px;
 }
 
 .command {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -106,8 +119,11 @@
 }
 
 .list {
-  max-height: min(320px, calc(var(--radix-popover-content-available-height) - 44px));
-  padding: 4px;
+  max-height: min(
+    320px,
+    calc(var(--radix-popover-content-available-height, var(--glass-menu-space, 100vh)) - 44px)
+  );
+  padding: 8px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scroll-padding-block: 6px;
@@ -116,11 +132,11 @@
 .item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px;
   min-height: 36px;
-  padding: 8px 10px;
-  border-radius: calc(var(--control-radius) - 4px);
+  padding: 10px 12px;
+  border-radius: 16px;
   outline: none;
   cursor: pointer;
   user-select: none;
@@ -136,6 +152,7 @@
 }
 
 .indicator {
+  order: -1;
   display: flex;
   flex: 0 0 14px;
   align-items: center;
@@ -147,4 +164,18 @@
   color: var(--island-text-color);
   opacity: 0.56;
   text-align: center;
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  text-align: left;
+}
+
+.description {
+  color: var(--settings-muted, var(--island-text-color));
+  font-size: 12px;
+  line-height: 1.4;
 }

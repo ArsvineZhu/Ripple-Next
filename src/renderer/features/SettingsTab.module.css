@@ -58,6 +58,68 @@
   border-bottom: none;
 }
 
+.detailLink {
+  width: 100%;
+  min-height: 44px;
+  text-align: left;
+  font: inherit;
+  background: transparent;
+  color: var(--settings-fg);
+  border: 0;
+  border-bottom: 1px solid var(--settings-divider);
+  cursor: pointer;
+}
+.detailLink:hover {
+  background: var(--control-hover);
+}
+.detailLink:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+.linkValue {
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--settings-muted);
+}
+.fieldLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.editRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+.editRow .input {
+  flex: 1;
+  min-width: 0;
+}
+.editRow .primaryButton {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 36px;
+  white-space: nowrap;
+}
+.prefStack > .primaryButton {
+  align-self: flex-end;
+  width: auto;
+}
+.compactItem {
+  display: flex;
+  align-items: center;
+  padding-right: 12px;
+  border-bottom: 1px solid var(--settings-divider);
+}
+.compactItem .detailLink {
+  border: 0;
+}
+
 .prefRowStacked {
   flex-direction: column;
   align-items: stretch;
@@ -308,11 +370,6 @@
   overflow-wrap: anywhere;
 }
 
-.row > .colorInput {
-  width: 100px;
-  flex: 0 0 100px;
-}
-
 .tabList {
   display: flex;
   flex-direction: column;
@@ -558,16 +615,13 @@
 }
 
 .suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 2;
+  position: relative;
+  max-height: 220px;
   margin-top: 4px;
   border: 1px solid var(--control-focus);
   border-radius: var(--control-radius);
   background: var(--menu-bg);
-  overflow: hidden;
+  overflow: auto;
   box-shadow: 0 4px 20px rgb(0 0 0 / 30%);
 }
 
@@ -705,4 +759,18 @@
   align-items: flex-start;
   gap: 10px;
   padding: 14px 16px 16px;
+}
+.animatedFields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+.saveActions {
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+.appSearch > .fieldLabel {
+  margin-bottom: 8px;
 }

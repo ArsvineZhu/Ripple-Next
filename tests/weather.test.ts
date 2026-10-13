@@ -43,4 +43,17 @@ describe('current weather', () => {
       status: 'Partly cloudy',
     });
   });
+  it('uses the provider IP lookup when automatic location is selected', async () => {
+    const fetcher = vi.fn(async (url: URL) => {
+      expect(url.searchParams.get('q')).toBe('auto:ip');
+      return {
+        ok: true,
+        json: async () => ({ current: { temp_c: 18, temp_f: 64, condition: { text: 'Sunny' } } }),
+      };
+    });
+    await expect(fetchCurrentWeather('auto:ip', 'c', fetcher)).resolves.toEqual({
+      temp: 18,
+      status: 'Sunny',
+    });
+  });
 });

@@ -46,6 +46,7 @@ export function useIslandController() {
     handleAiModelChange,
     handleLeaveDelayChange,
     hourFormat,
+    showAmPm,
     timeZone,
     weatherUnit,
     theme,
@@ -164,7 +165,13 @@ export function useIslandController() {
   const { browserSearch, setBrowserSearch, searchBrowser, searchError, setSearchError } =
     useBrowserSearch();
   const { clipboard, copyToClipboard } = useClipboard();
-  const { time, weather } = useOverview(hourFormat, timeZone, weatherLocation, weatherUnit);
+  const { time, weather } = useOverview(
+    hourFormat,
+    timeZone,
+    weatherLocation,
+    weatherUnit,
+    showAmPm,
+  );
   const { percent, charging } = useBattery();
   const { alert, chargingAlert } = useBatteryAlerts({
     percent,

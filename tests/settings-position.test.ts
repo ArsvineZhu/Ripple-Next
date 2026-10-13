@@ -122,6 +122,32 @@ it('reports a failed save and applies authoritative position again', async () =>
   expect(views.get('settings')!.islandX).toBe(defaultAppState.settings.islandX);
 });
 
+it('persists switch booleans and protects an in-flight autostart change from overlapping requests', async () => {
+  const settings = views.get('settings')!;
+  await act(async () => settings.handleIslandBorderChange(true));
+  expect(requests[0].patch.settings?.islandBorder).toBe(true);
+  expect(views.get('settings')!.islandBorderEnabled).toBe(true);
+  let rejectStartup!: (error: Error) => void;
+  const startup = vi.fn(
+    () =>
+      new Promise<void>((_resolve, reject) => {
+        rejectStartup = reject;
+      }),
+  );
+  window.electronAPI.setAutoLaunch = startup;
+  await act(async () => {
+    void settings.handleAutoLaunchChange(true);
+    void settings.handleAutoLaunchChange(false);
+  });
+  expect(startup).toHaveBeenCalledOnce();
+  expect(startup).toHaveBeenCalledWith(true);
+  expect(views.get('settings')!.autoLaunchPending).toBe(true);
+  await act(async () => rejectStartup(new Error('Startup unavailable')));
+  expect(views.get('settings')!.autoLaunchPending).toBe(false);
+  expect(views.get('settings')!.autoLaunchEnabled).toBe(defaultAppState.settings.autoLaunch);
+  expect(notify).toHaveBeenCalledWith(expect.objectContaining({ code: 'autoLaunchFailed' }));
+});
+
 it('maps horizontal endpoints to visible edges and preserves vertical zero', () => {
   const size = { width: 380, height: 250 };
   const viewport = { width: 1920, height: 1080 };

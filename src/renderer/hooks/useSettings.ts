@@ -1,5 +1,5 @@
 import type { ChangeEvent } from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { AppSettings, PositionMode } from '../../shared/appState';
 import type { DisplayInfo } from '../../shared/contracts';
 import type { LanguagePreference } from '../../shared/i18n';
@@ -13,6 +13,8 @@ export function useSettings(initialHasApiKey: boolean) {
   const settings = state.settings;
   const [displays, setDisplays] = useState<DisplayInfo[]>([]);
   const [hasApiKey, setHasApiKey] = useState(initialHasApiKey);
+  const [autoLaunchPending, setAutoLaunchPending] = useState(false);
+  const autoLaunchRequest = useRef(false);
   const updateSettings = useCallback(
     (patch: Partial<AppSettings>) => updateState({ settings: patch }),
     [updateState],
@@ -22,18 +24,18 @@ export function useSettings(initialHasApiKey: boolean) {
     updateSettings({ language: value });
     void changeLanguagePreference(value);
   };
-  const handleBatteryAlertsChange = (input: string) =>
-    updateSettings({ batteryAlerts: input === 'true' });
-  const handleIslandBorderChange = (input: string) =>
-    updateSettings({ islandBorder: input === 'true' });
-  const handleStandbyChange = (input: string) => updateSettings({ standbyMode: input === 'true' });
-  const handleLargeStandbyChange = (input: string) =>
-    updateSettings({ largeStandbyMode: input === 'true' });
+  const handleBatteryAlertsChange = (batteryAlerts: boolean) => updateSettings({ batteryAlerts });
+  const handleIslandBorderChange = (islandBorder: boolean) => updateSettings({ islandBorder });
+  const handleStandbyChange = (standbyMode: boolean) => updateSettings({ standbyMode });
+  const handleLargeStandbyChange = (largeStandbyMode: boolean) =>
+    updateSettings({ largeStandbyMode });
   const handleHourFormatChange = (input: string) =>
     updateSettings({ hourFormat: input === '12-hr' ? '12-hr' : '24-hr' });
   const handleTimeZoneChange = (timeZone: string) => updateSettings({ timeZone });
-  const handleAutoLaunchChange = async (input: string) => {
-    const enable = input === 'true';
+  const handleAutoLaunchChange = async (enable: boolean) => {
+    if (autoLaunchRequest.current) return;
+    autoLaunchRequest.current = true;
+    setAutoLaunchPending(true);
     try {
       await window.electronAPI?.setAutoLaunch(enable);
       updateSettings({ autoLaunch: enable });
@@ -44,19 +46,20 @@ export function useSettings(initialHasApiKey: boolean) {
         area: 'settings',
         detail: error instanceof Error ? error.message : String(error),
       });
+    } finally {
+      autoLaunchRequest.current = false;
+      setAutoLaunchPending(false);
     }
   };
-  const handleShowTrayChange = (input: string) => updateSettings({ showTray: input === 'true' });
-  const handlehideNotActiveIslandChange = (input: string) =>
-    updateSettings({ hideIslandWhenInactive: input === 'true' });
-  const handleShowInfoWhenIdleChange = (input: string) =>
-    updateSettings({ showInfoWhenIdle: input === 'true' });
+  const handleShowTrayChange = (showTray: boolean) => updateSettings({ showTray });
+  const handlehideNotActiveIslandChange = (hideIslandWhenInactive: boolean) =>
+    updateSettings({ hideIslandWhenInactive });
+  const handleShowInfoWhenIdleChange = (showInfoWhenIdle: boolean) =>
+    updateSettings({ showInfoWhenIdle });
   const handleWeatherUnitChange = (input: string) =>
     updateSettings({ weatherUnit: input === 'c' ? 'c' : 'f' });
-  const handleBgColorChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    updateSettings({ backgroundColor: event.target.value });
-  const handleTextColorChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    updateSettings({ textColor: event.target.value });
+  const handleBgColorChange = (backgroundColor: string) => updateSettings({ backgroundColor });
+  const handleTextColorChange = (textColor: string) => updateSettings({ textColor });
   const handleDisplayChange = (displayId: string) => {
     updateSettings({ displayId });
     void window.electronAPI?.setDisplay(displayId).catch(() => {});
@@ -65,8 +68,7 @@ export function useSettings(initialHasApiKey: boolean) {
     updateSettings({ islandX: typeof input === 'number' ? input : Number(input.target.value) });
   const handleIslandYChange = (input: number | ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     updateSettings({ islandY: typeof input === 'number' ? input : Number(input.target.value) });
-  const handleBgImageChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    updateSettings({ backgroundImage: event.target.value });
+  const handleBgImageChange = (backgroundImage: string) => updateSettings({ backgroundImage });
   const setTheme = (theme: string) => {
     if (theme === 'sleek-black') {
       updateSettings({
@@ -123,6 +125,8 @@ export function useSettings(initialHasApiKey: boolean) {
     hideNotActiveIslandEnabled: settings.hideIslandWhenInactive,
     showInfoWhenIdleEnabled: settings.showInfoWhenIdle,
     hourFormat: settings.hourFormat === '12-hr',
+    showAmPm: settings.showAmPm,
+    setShowAmPm: (showAmPm: boolean) => updateSettings({ showAmPm }),
     timeZone: settings.timeZone,
     handleTimeZoneChange,
     weatherUnit: settings.weatherUnit,
@@ -137,6 +141,7 @@ export function useSettings(initialHasApiKey: boolean) {
     weatherLocation: settings.weatherLocation,
     setWeatherLocation: (weatherLocation: string) => updateSettings({ weatherLocation }),
     autoLaunchEnabled: settings.autoLaunch,
+    autoLaunchPending,
     showTrayEnabled: settings.showTray,
     handleShowTrayChange,
     positionMode: settings.positionMode,

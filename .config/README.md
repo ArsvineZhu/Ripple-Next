@@ -11,3 +11,5 @@ Paths consumed by pnpm tasks and analysis tools refer to the repository root. Ty
 See [development](../docs/development.md) and the [repository map](../INDEX.md).
 
 Windows MSI configuration supplies the bundled `.ico` explicitly. Its optional native EXE icon extractor is disabled in `allowBuilds`; building that unused addon fails against the declared Node version on Windows. The explicit icon avoids that dependency at installer creation.
+
+Forge ships `src/assets/third-party/liquid-glass-notices.txt` as an extra resource. Pinned glass vendor sources retain their original formatting and are excluded from lint, format, Knip and duplication reports; the scoped TypeScript checks still include them.

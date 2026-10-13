@@ -14,11 +14,28 @@ vi.mock('../src/renderer/hooks/useReducedMotionPreference', () => ({
   useReducedMotionPreference: () => preferences.reduced,
 }));
 vi.mock('../src/renderer/components/OverlayProvider', () => ({
-  useOverlay: () => ({ setContainer: () => {} }),
+  useOverlay: () => ({ setContainer: () => {}, setOpenId: () => {} }),
 }));
 vi.mock('../src/renderer/features/SettingsTab', () => ({
-  SettingsTab: ({ category }: { category: string }) =>
-    createElement('input', { 'data-category': category, defaultValue: '' }),
+  SettingsTab: ({
+    category,
+    detail,
+    onOpenDetail,
+  }: {
+    category: string;
+    detail?: { page: string };
+    onOpenDetail(detail: { page: string }): void;
+  }) =>
+    createElement(
+      'div',
+      {},
+      createElement('input', { 'data-category': category, defaultValue: '' }),
+      createElement(
+        'button',
+        { 'data-settings-entry': 'aiBaseUrl', onClick: () => onOpenDetail({ page: 'aiBaseUrl' }) },
+        detail ? 'detail' : 'edit',
+      ),
+    ),
 }));
 
 let host: HTMLDivElement;
@@ -69,6 +86,27 @@ it('keeps the latest selection when snapshot callbacks complete out of order', a
   await act(async () => snapshots[0].commit());
   expect(host.querySelector('input')?.dataset.category).toBe('behavior');
   expect(host.querySelector('[aria-current="page"]')?.textContent).toBe('settingsNavBehavior');
+});
+it('opens a detail with a fixed back header and restores its opener focus', async () => {
+  await act(async () => host.querySelector<HTMLButtonElement>('[data-settings-entry]')!.click());
+  await act(async () => snapshots.at(-1)!.commit());
+  const back = host.querySelector<HTMLButtonElement>('button[aria-label="backToSettings"]')!;
+  expect(back).not.toBeNull();
+  expect(back.closest('header')).not.toBeNull();
+  await act(async () => back.click());
+  await act(async () => snapshots.at(-1)!.commit());
+  expect(host.querySelector('header')).toBeNull();
+  expect(document.activeElement).toBe(host.querySelector('[data-settings-entry]'));
+});
+
+it('can return to the current category before an editor snapshot commits', async () => {
+  await act(async () => host.querySelector<HTMLButtonElement>('[data-settings-entry]')!.click());
+  await choose(0);
+  expect(snapshots).toHaveLength(2);
+  await act(async () => snapshots[1].commit());
+  await act(async () => snapshots[0].commit());
+  expect(host.querySelector('header')).toBeNull();
+  expect(host.querySelector('[data-settings-entry]')?.textContent).toBe('edit');
 });
 
 it('retains editor state and the mounted control during category transitions', async () => {

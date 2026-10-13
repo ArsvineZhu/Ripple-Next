@@ -115,6 +115,7 @@ export type NoticeCode =
   | 'stateSaveFailed'
   | 'stateLoadFailed'
   | 'diagnosticsFolderOpenFailed'
+  | 'colorPickerFailed'
   | 'inputShapeFailed'
   | 'windowLoadFailed'
   | 'missingApiKey'
@@ -150,6 +151,7 @@ export function noticeAreaForCode(code: NoticeCode): NoticeArea {
     case 'showTrayFailed':
     case 'stateSaveFailed':
     case 'diagnosticsFolderOpenFailed':
+    case 'colorPickerFailed':
     case 'secretStorageUnavailable':
       return 'settings';
     case 'stateLoadFailed':
@@ -185,6 +187,7 @@ interface AppBootstrap {
 export interface InvokeMap {
   'get-app-bootstrap': { args: []; result: AppBootstrap };
   'open-diagnostics-folder': { args: []; result: void };
+  'show-color-picker': { args: [initialColor: string]; result: string | null };
   'read-clipboard-text': { args: []; result: string };
   'write-clipboard-text': { args: [text: string]; result: void };
   'update-app-state': { args: [patch: AppStatePatch]; result: AppState };
@@ -229,6 +232,7 @@ export interface InvokeMap {
   'quit-app': { args: []; result: void };
 }
 export interface ElectronAPI {
+  showColorPicker(initialColor: string): Promise<string | null>;
   getAppBootstrap(): Promise<AppBootstrap>;
   openDiagnosticsFolder(): Promise<void>;
   readClipboardText(): Promise<string>;

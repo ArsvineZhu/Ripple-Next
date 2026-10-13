@@ -6,14 +6,12 @@ import {
   GripVertical,
   ChevronUp,
   ChevronDown,
-  Plus,
   Star,
   Trash2,
   ExternalLink,
 } from 'lucide-react';
 import { author, bugs, license, productName, repository, version } from '../../../package.json';
-import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { TABS } from '../lib/tabs';
 import { Select } from '../components/Select';
 import { SearchableSelect } from '../components/SearchableSelect';
@@ -22,153 +20,35 @@ import { languagePreference } from '../../shared/i18n';
 import { InlineNotices } from '../components/InlineNotices';
 import { ElasticScrollArea } from '../components/ElasticScrollArea';
 import { PreferenceSlider } from '../components/PreferenceSlider';
+import { NativeColorField } from '../components/NativeColorField';
+import { PreferenceSwitch } from '../components/PreferenceSwitch';
 import { supportedTimeZones } from '../lib/date';
-import { isValidSearchUrlTemplate } from '../lib/search';
 import type { SettingsCategoryId } from '../lib/settingsCategories';
-import type { IslandController } from '../hooks/useIslandController';
+import { SettingsEditor, type SettingsFormProps } from './SettingsEditor';
+import { PrefGroup, PrefCard, PrefRow, PreferenceLink } from './SettingsPreferences';
+import { detailEntryId, type SettingsDetail } from '../lib/settingsDetails';
+import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
 import styles from './SettingsTab.module.css';
 
 const repositoryUrl = repository.url.replace(/\.git$/, '');
 const licenseUrl = `${repositoryUrl}/blob/main/LICENSE`;
-/** Continuous preference card: rows share one surface with hairline dividers. */
-function PrefGroup({ caption, children }: { caption?: string; children: ReactNode }) {
-  return (
-    <div className={styles.prefGroupBlock}>
-      {caption ? <h3 className={styles.prefGroupCaption}>{caption}</h3> : null}
-      <div className={styles.prefGroup}>{children}</div>
-    </div>
-  );
-}
-
-/** Standalone preference card for complex editors (colors, lists, secrets, forms). */
-function PrefCard({ caption, children }: { caption?: string; children: ReactNode }) {
-  return (
-    <div className={styles.prefGroupBlock}>
-      {caption ? <h3 className={styles.prefGroupCaption}>{caption}</h3> : null}
-      <div className={styles.prefCard}>{children}</div>
-    </div>
-  );
-}
-
-function PrefRow({
-  label,
-  hint,
-  children,
-  stacked = false,
-}: {
-  label: string;
-  hint?: string;
-  children: ReactNode;
-  stacked?: boolean;
-}) {
-  return (
-    <div className={`${styles.prefRow} ${stacked ? styles.prefRowStacked : ''}`}>
-      <div className={styles.prefRowText}>
-        <span className={styles.prefRowLabel}>{label}</span>
-        {hint ? <p className={styles.prefRowHint}>{hint}</p> : null}
-      </div>
-      <div className={styles.prefRowControl}>{children}</div>
-    </div>
-  );
-}
-type Props = Pick<
-  IslandController,
-  | 'addQuickApp'
-  | 'addWorkflow'
-  | 'aiBaseUrl'
-  | 'aiModel'
-  | 'appSuggestions'
-  | 'autoLaunchEnabled'
-  | 'batteryAlertsEnabled'
-  | 'bgColor'
-  | 'bgImage'
-  | 'backgroundImageError'
-  | 'currentDisplayId'
-  | 'defaultTabId'
-  | 'displays'
-  | 'handleAutoLaunchChange'
-  | 'handleApiBaseUrlChange'
-  | 'handleBatteryAlertsChange'
-  | 'handleBgColorChange'
-  | 'handleBgImageChange'
-  | 'handleDisplayChange'
-  | 'handleHourFormatChange'
-  | 'handleAiModelChange'
-  | 'handleIslandBorderChange'
-  | 'handleIslandCornerRadiusChange'
-  | 'handleIslandXChange'
-  | 'handleIslandYChange'
-  | 'handleLargeStandbyChange'
-  | 'handlePositionChange'
-  | 'handleQaChange'
-  | 'handleQuickAppInput'
-  | 'handleShowInfoWhenIdleChange'
-  | 'handleStandbyChange'
-  | 'handleTextColorChange'
-  | 'handleWeatherUnitChange'
-  | 'handleLeaveDelayChange'
-  | 'handlehideNotActiveIslandChange'
-  | 'hiddenTabs'
-  | 'hideNotActiveIslandEnabled'
-  | 'hourFormat'
-  | 'isFree'
-  | 'islandBorderEnabled'
-  | 'islandCornerRadius'
-  | 'islandX'
-  | 'islandY'
-  | 'hasApiKey'
-  | 'largeStandbyEnabled'
-  | 'moveTabOrder'
-  | 'newQuickApp'
-  | 'quickAppMode'
-  | 'setQuickAppMode'
-  | 'executable'
-  | 'setExecutable'
-  | 'argumentLines'
-  | 'setArgumentLines'
-  | 'workingDirectory'
-  | 'setWorkingDirectory'
-  | 'appUrl'
-  | 'setAppUrl'
-  | 'leaveDelayMs'
-  | 'positionMode'
-  | 'quickApps'
-  | 'removeQuickApp'
-  | 'removeWorkflow'
-  | 'saveApiKey'
-  | 'searchUrlTemplate'
-  | 'setSearchUrlTemplate'
-  | 'timeZone'
-  | 'handleTimeZoneChange'
-  | 'selectQuickApp'
-  | 'setDefaultTabId'
-  | 'setShowSuggestions'
-  | 'setTheme'
-  | 'setWeatherLocation'
-  | 'setWorkflowName'
-  | 'setWorkflowUrls'
-  | 'showInfoWhenIdleEnabled'
-  | 'showSuggestions'
-  | 'standbyBorderEnabled'
-  | 'tabOrder'
-  | 'textColor'
-  | 'theme'
-  | 'toggleTabVisibility'
-  | 'weatherLocation'
-  | 'weatherUnit'
-  | 'workflowName'
-  | 'workflowUrls'
-  | 'workflows'
->;
-export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
+export function SettingsTab(
+  p: SettingsFormProps & {
+    category: SettingsCategoryId;
+    detail?: SettingsDetail | null;
+    onOpenDetail(detail: SettingsDetail): void;
+    onBack(): void;
+  },
+) {
   const { t, i18n } = useTranslation();
-  const { language, handleLanguageChange, showTrayEnabled, handleShowTrayChange } =
-    useSettingsContext();
-  const [apiKeyDraft, setApiKeyDraft] = useState('');
-  const boolOptions = [
-    { value: 'true', label: t('enabled') },
-    { value: 'false', label: t('disabled') },
-  ];
+  const reduced = useReducedMotionPreference();
+  const {
+    language,
+    handleLanguageChange,
+    showTrayEnabled,
+    handleShowTrayChange,
+    autoLaunchPending,
+  } = useSettingsContext();
   const positions = [
     { value: 'top-left', label: t('topLeft') },
     { value: 'top-center', label: t('topCenter') },
@@ -177,23 +57,48 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
     { value: 'bottom-center', label: t('bottomCenter') },
     { value: 'bottom-right', label: t('bottomRight') },
   ];
-  const timeZoneOptions = [
-    { value: 'system', label: t('system'), keywords: ['system'] },
-    ...supportedTimeZones.map((timeZone) => {
-      const city = timeZone.split('/').at(-1)?.replaceAll('_', ' ') ?? timeZone;
-      return {
-        value: timeZone,
-        label: timeZone,
-        keywords: [timeZone.replaceAll('_', ' '), city],
-      };
-    }),
-  ];
-  const validSearchUrlTemplate = isValidSearchUrlTemplate(p.searchUrlTemplate);
+  const timeZoneOptions = useMemo(
+    () => [
+      {
+        value: 'system',
+        label: t('system'),
+        keywords: ['system'],
+        description: t('systemTimeZoneHint'),
+      },
+      ...supportedTimeZones.map((timeZone) => {
+        const city = timeZone.split('/').at(-1)?.replaceAll('_', ' ') ?? timeZone;
+        return {
+          value: timeZone,
+          label: timeZone,
+          keywords: [timeZone.replaceAll('_', ' '), city],
+        };
+      }),
+    ],
+    [t],
+  );
   const number = (value: number, decimals = 0) =>
     new Intl.NumberFormat(i18n.language, {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     }).format(value);
+  if (p.detail)
+    return (
+      <SettingsEditor
+        key={detailEntryId(p.detail)}
+        settings={p}
+        detail={p.detail}
+        onBack={p.onBack}
+      />
+    );
+  const entry = (detail: SettingsDetail, label: string, value?: string, hint?: string) => (
+    <PreferenceLink
+      label={label}
+      value={value}
+      hint={hint}
+      entry={detailEntryId(detail)}
+      onClick={() => p.onOpenDetail(detail)}
+    />
+  );
   return (
     <ElasticScrollArea id="settings-container" className={styles.container}>
       {p.category === 'general' && (
@@ -205,7 +110,7 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
                 value={language}
                 onValueChange={(value) => handleLanguageChange(languagePreference(value))}
                 options={[
-                  { value: 'system', label: t('system') },
+                  { value: 'system', label: t('system'), description: t('systemLanguageHint') },
                   { value: 'zh-CN', label: '简体中文' },
                   { value: 'en', label: 'English' },
                   { value: 'zh-TW', label: '繁體中文' },
@@ -213,17 +118,33 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
                 ]}
               />
             </PrefRow>
-            <PrefRow label={t('hourFormat')}>
-              <Select
+            <PrefRow label={t('hourFormat')} hint={t('hourFormatHint')}>
+              <PreferenceSwitch
                 label={t('hourFormat')}
-                value={p.hourFormat ? '12-hr' : '24-hr'}
-                onValueChange={p.handleHourFormatChange}
-                options={[
-                  { value: '12-hr', label: t('hour12') },
-                  { value: '24-hr', label: t('hour24') },
-                ]}
+                checked={p.hourFormat}
+                onCheckedChange={(checked) => p.handleHourFormatChange(checked ? '12-hr' : '24-hr')}
               />
             </PrefRow>
+            <AnimatePresence initial={false}>
+              {p.hourFormat && (
+                <motion.div
+                  key="am-pm"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: reduced ? 0 : 0.2 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <PrefRow label={t('showAmPm')}>
+                    <PreferenceSwitch
+                      label={t('showAmPm')}
+                      checked={p.showAmPm}
+                      onCheckedChange={p.setShowAmPm}
+                    />
+                  </PrefRow>
+                </motion.div>
+              )}
+            </AnimatePresence>
             <PrefRow label={t('timeZone')}>
               <SearchableSelect
                 label={t('timeZone')}
@@ -237,20 +158,20 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
           </PrefGroup>
           <PrefGroup>
             <PrefRow label={t('autoLaunch')}>
-              <Select
+              <PreferenceSwitch
                 label={t('autoLaunch')}
-                value={String(p.autoLaunchEnabled)}
-                onValueChange={p.handleAutoLaunchChange}
-                options={boolOptions}
+                checked={p.autoLaunchEnabled}
+                disabled={autoLaunchPending}
+                busy={autoLaunchPending}
+                onCheckedChange={p.handleAutoLaunchChange}
               />
             </PrefRow>
             {window.electronAPI?.platform === 'darwin' && (
               <PrefRow label={t('showTray')} hint={t('showTrayHint')}>
-                <Select
+                <PreferenceSwitch
                   label={t('showTray')}
-                  value={String(showTrayEnabled)}
-                  onValueChange={handleShowTrayChange}
-                  options={boolOptions}
+                  checked={showTrayEnabled}
+                  onCheckedChange={handleShowTrayChange}
                 />
               </PrefRow>
             )}
@@ -290,9 +211,13 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
                 value={p.theme === 'default' ? 'none' : p.theme}
                 onValueChange={p.setTheme}
                 options={[
-                  { value: 'none', label: t('defaultTheme') },
-                  { value: 'sleek-black', label: t('sleekBlack') },
-                  { value: 'win95', label: 'Windows 95' },
+                  { value: 'none', label: t('defaultTheme'), description: t('defaultThemeHint') },
+                  {
+                    value: 'sleek-black',
+                    label: t('sleekBlack'),
+                    description: t('sleekBlackHint'),
+                  },
+                  { value: 'win95', label: 'Windows 95', description: t('win95ThemeHint') },
                 ]}
               />
             </PrefRow>
@@ -310,25 +235,17 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
               />
             </PrefRow>
             <PrefRow label={t('islandBorder')}>
-              <Select
+              <PreferenceSwitch
                 label={t('islandBorder')}
-                value={String(p.islandBorderEnabled)}
-                onValueChange={p.handleIslandBorderChange}
-                options={[
-                  { value: 'true', label: t('show') },
-                  { value: 'false', label: t('hide') },
-                ]}
+                checked={p.islandBorderEnabled}
+                onCheckedChange={p.handleIslandBorderChange}
               />
             </PrefRow>
             <PrefRow label={t('hideInactive')}>
-              <Select
+              <PreferenceSwitch
                 label={t('hideInactive')}
-                value={String(p.hideNotActiveIslandEnabled)}
-                onValueChange={p.handlehideNotActiveIslandChange}
-                options={[
-                  { value: 'true', label: t('yes') },
-                  { value: 'false', label: t('no') },
-                ]}
+                checked={p.hideNotActiveIslandEnabled}
+                onCheckedChange={p.handlehideNotActiveIslandChange}
               />
             </PrefRow>
           </PrefGroup>
@@ -365,9 +282,9 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
                 {p.isFree && (
                   <motion.div
                     className={styles.manualPosition}
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
+                    initial={{ height: 0 }}
+                    animate={{ height: 'auto' }}
+                    exit={{ height: 0 }}
                     transition={{ duration: 0.15 }}
                   >
                     <PrefRow label={t('positionX')} stacked>
@@ -400,79 +317,65 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
               </AnimatePresence>
             </div>
           </PrefCard>
-          <PrefCard caption={t('colorsAssets')}>
-            <div className={styles.prefStack}>
-              <PrefRow label={t('islandColor')}>
-                <input
-                  className={`${styles.input} ${styles.colorInput}`}
-                  aria-label={t('islandColor')}
-                  placeholder="#000000"
-                  value={p.bgColor}
-                  onChange={p.handleBgColorChange}
-                />
-              </PrefRow>
-              <PrefRow label={t('textColor')}>
-                <input
-                  className={`${styles.input} ${styles.colorInput}`}
-                  aria-label={t('textColor')}
-                  placeholder="#FAFAFA"
-                  value={p.textColor}
-                  onChange={p.handleTextColorChange}
-                />
-              </PrefRow>
-              <PrefRow label={t('backgroundImage')} hint={t('backgroundImageHint')} stacked>
-                <input
-                  className={styles.input}
-                  aria-label={t('backgroundImage')}
-                  placeholder={t('backgroundImageHint')}
-                  value={p.bgImage}
-                  onChange={p.handleBgImageChange}
-                  aria-invalid={p.backgroundImageError}
-                  aria-describedby={p.backgroundImageError ? 'background-image-error' : undefined}
-                />
-                {p.backgroundImageError && (
-                  <p id="background-image-error" className={styles.fieldError} role="alert">
-                    {t('backgroundImageFailed')}
-                  </p>
-                )}
-              </PrefRow>
-            </div>
-          </PrefCard>
+          <PrefGroup caption={t('colorsAssets')}>
+            <PrefRow label={t('islandColor')}>
+              <NativeColorField
+                label={t('islandColor')}
+                value={p.bgColor}
+                onValueChange={p.handleBgColorChange}
+              />
+            </PrefRow>
+            <PrefRow label={t('textColor')}>
+              <NativeColorField
+                label={t('textColor')}
+                value={p.textColor}
+                onValueChange={p.handleTextColorChange}
+              />
+            </PrefRow>
+            <InlineNotices area="settings" codes={['colorPickerFailed']} />
+            {entry(
+              { page: 'backgroundImage' },
+              t('backgroundImage'),
+              p.bgImage === 'none' ? t('notConfigured') : p.bgImage,
+              t('backgroundImageHint'),
+            )}
+            {p.backgroundImageError && (
+              <p className={styles.fieldError} role="alert">
+                {t('backgroundImageFailed')}
+              </p>
+            )}
+          </PrefGroup>
         </>
       )}
       {p.category === 'behavior' && (
         <>
           <PrefGroup>
             <PrefRow label={t('batteryAlerts')}>
-              <Select
+              <PreferenceSwitch
                 label={t('batteryAlerts')}
-                value={String(p.batteryAlertsEnabled)}
-                onValueChange={p.handleBatteryAlertsChange}
-                options={boolOptions}
+                checked={p.batteryAlertsEnabled}
+                onCheckedChange={p.handleBatteryAlertsChange}
               />
             </PrefRow>
-            <PrefRow label={t('standby')}>
-              <Select
+            <PrefRow label={t('standby')} hint={t('standbyHint')}>
+              <PreferenceSwitch
                 label={t('standby')}
-                value={String(p.standbyBorderEnabled)}
-                onValueChange={p.handleStandbyChange}
-                options={boolOptions}
+                checked={p.standbyBorderEnabled}
+                onCheckedChange={p.handleStandbyChange}
               />
             </PrefRow>
-            <PrefRow label={t('largeStandby')}>
-              <Select
+            <PrefRow label={t('largeStandby')} hint={t('largeStandbyHint')}>
+              <PreferenceSwitch
                 label={t('largeStandby')}
-                value={String(p.largeStandbyEnabled)}
-                onValueChange={p.handleLargeStandbyChange}
-                options={boolOptions}
+                checked={p.largeStandbyEnabled}
+                onCheckedChange={p.handleLargeStandbyChange}
               />
             </PrefRow>
             <PrefRow label={t('idleInfo')}>
-              <Select
+              <PreferenceSwitch
                 label={t('idleInfo')}
-                value={String(p.showInfoWhenIdleEnabled)}
-                onValueChange={p.handleShowInfoWhenIdleChange}
-                options={boolOptions}
+                checked={p.showInfoWhenIdleEnabled}
+                onCheckedChange={p.handleShowInfoWhenIdleChange}
               />
             </PrefRow>
             <PrefRow label={t('mouseLeaveDelay')} hint={t('mouseLeaveDelayHint')} stacked>
@@ -575,54 +478,22 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
               })}
             </div>
           </PrefCard>
-          <PrefCard caption={t('browserSearchSettings')}>
-            <div className={styles.prefStack}>
-              <PrefRow label={t('searchEngineUrl')} hint={t('searchEngineUrlHint')} stacked>
-                <input
-                  className={`${styles.input} ${!validSearchUrlTemplate ? styles.invalidInput : ''}`}
-                  aria-label={t('searchEngineUrl')}
-                  aria-invalid={!validSearchUrlTemplate}
-                  value={p.searchUrlTemplate}
-                  onChange={(event) => p.setSearchUrlTemplate(event.target.value)}
-                />
-                <AnimatePresence initial={false}>
-                  {!validSearchUrlTemplate && (
-                    <motion.p
-                      className={styles.fieldError}
-                      role="alert"
-                      initial={{ opacity: 0, filter: 'blur(10px)' }}
-                      animate={{ opacity: 1, filter: 'blur(0px)' }}
-                      exit={{ opacity: 0, filter: 'blur(10px)' }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {t('invalidSearchUrlTemplate')}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              </PrefRow>
-            </div>
-          </PrefCard>
+          <PrefGroup caption={t('browserSearchSettings')}>
+            {entry({ page: 'searchTemplate' }, t('searchEngineUrl'), p.searchUrlTemplate)}
+          </PrefGroup>
           <PrefGroup caption={t('weather')}>
-            <PrefRow label={t('location')}>
-              <input
-                className={styles.input}
-                aria-label={t('location')}
-                placeholder={t('locationHint')}
-                value={p.weatherLocation}
-                onChange={(event) => {
-                  p.setWeatherLocation(event.target.value);
-                }}
-              />
-            </PrefRow>
-            <PrefRow label={t('unit')}>
-              <Select
+            {entry(
+              { page: 'weatherLocation' },
+              t('location'),
+              p.weatherLocation === 'auto:ip'
+                ? t('automaticLocation')
+                : p.weatherLocation || t('notConfigured'),
+            )}
+            <PrefRow label={t('unit')} hint={t('unitHint')}>
+              <PreferenceSwitch
                 label={t('unit')}
-                value={p.weatherUnit}
-                onValueChange={p.handleWeatherUnitChange}
-                options={[
-                  { value: 'f', label: t('fahrenheit') },
-                  { value: 'c', label: t('celsius') },
-                ]}
+                checked={p.weatherUnit === 'c'}
+                onCheckedChange={(checked) => p.handleWeatherUnitChange(checked ? 'c' : 'f')}
               />
             </PrefRow>
           </PrefGroup>
@@ -630,200 +501,62 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
       )}
       {p.category === 'shortcuts' && (
         <>
-          <PrefCard caption={t('quickApps')}>
-            <div className={styles.prefStack}>
-              <PrefRow label={t('quickApps')}>
-                <Select
-                  label={t('quickApps')}
-                  value={p.quickAppMode}
-                  onValueChange={p.setQuickAppMode}
-                  options={[
-                    { value: 'installed', label: t('installedApps') },
-                    { value: 'command', label: t('customCommand') },
-                    { value: 'url', label: t('urlShortcut') },
-                  ]}
-                />
-              </PrefRow>
-              <div className={styles.appSearch}>
-                <div className={styles.row}>
-                  <input
-                    className={styles.input}
-                    aria-label={t('quickAppNameHint')}
-                    value={p.newQuickApp}
-                    placeholder={t('quickAppNameHint')}
-                    onChange={(event) => p.handleQuickAppInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') p.addQuickApp();
-                      if (event.key === 'Escape') p.setShowSuggestions(false);
-                    }}
-                  />
-                  <button
-                    className={styles.primaryButton}
-                    aria-label={t('addApp')}
-                    onClick={p.addQuickApp}
-                  >
-                    <Plus size={18} />
-                  </button>
-                </div>
-                {p.quickAppMode === 'installed' &&
-                  p.showSuggestions &&
-                  p.appSuggestions.length > 0 && (
-                    <div className={styles.suggestions} data-island-interactive>
-                      {p.appSuggestions.map((app) => (
-                        <button
-                          key={`${app.name}-${JSON.stringify(app.target)}`}
-                          className={styles.suggestion}
-                          onPointerDown={(event) => {
-                            event.preventDefault();
-                            p.selectQuickApp(app);
-                          }}
-                        >
-                          <span>{app.name}</span>
-                          <span className={styles.launchHint}>{t('installedApps')}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-              </div>
-              {p.quickAppMode === 'command' && (
-                <div className={styles.quickAppFields}>
-                  <input
-                    className={styles.input}
-                    aria-label={t('executablePath')}
-                    placeholder={t('executablePath')}
-                    value={p.executable}
-                    onChange={(event) => p.setExecutable(event.target.value)}
-                  />
-                  <textarea
-                    className={`${styles.input} ${styles.argumentInput}`}
-                    aria-label={t('arguments')}
-                    placeholder={t('argumentsHint')}
-                    value={p.argumentLines}
-                    onChange={(event) => p.setArgumentLines(event.target.value)}
-                  />
-                  <input
-                    className={styles.input}
-                    aria-label={t('workingDirectory')}
-                    placeholder={t('workingDirectory')}
-                    value={p.workingDirectory}
-                    onChange={(event) => p.setWorkingDirectory(event.target.value)}
-                  />
-                </div>
-              )}
-              {p.quickAppMode === 'url' && (
-                <input
-                  className={styles.input}
-                  aria-label={t('applicationUrl')}
-                  placeholder="https://example.com"
-                  value={p.appUrl}
-                  onChange={(event) => p.setAppUrl(event.target.value)}
-                />
-              )}
-              <InlineNotices area="quick-apps" />
-              <div className={styles.appList}>
-                <AnimatePresence propagate>
-                  {p.quickApps.map((app, index) => (
-                    <motion.div
-                      key={app.id}
-                      className={styles.appRow}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, x: -20, height: 0, padding: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <input
-                        className={styles.appName}
-                        aria-label={t('appName')}
-                        value={app.name}
-                        onChange={(event) => p.handleQaChange(index, event.target.value)}
-                      />
-                      <button
-                        className={styles.dangerButton}
-                        aria-label={t('removeApp', { name: app.name })}
-                        onClick={() => p.removeQuickApp(index)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </div>
-          </PrefCard>
-          <PrefCard caption={t('manageWorkflows')}>
-            <div className={styles.prefStack}>
-              <div id="add-workflow-form" className={styles.workflowForm}>
-                <label className={styles.label} htmlFor="workflow-name">
-                  {t('workflowName')}
-                </label>
-                <input
-                  id="workflow-name"
-                  className={styles.input}
-                  placeholder={t('workflowNameHint')}
-                  value={p.workflowName}
-                  onChange={(event) => p.setWorkflowName(event.target.value)}
-                />
-                <label className={styles.workflowLabel} htmlFor="workflow-apps">
-                  {t('workflowApps')}
-                </label>
-                <textarea
-                  id="workflow-apps"
-                  className={`${styles.input} ${styles.workflowInput}`}
-                  placeholder={t('workflowAppsHint')}
-                  value={p.workflowUrls}
-                  onChange={(event) => p.setWorkflowUrls(event.target.value)}
-                />
-                <button className={styles.primaryButton} onClick={p.addWorkflow}>
-                  {t('saveWorkflow')}
+          <PrefGroup caption={t('quickApps')}>
+            {p.quickApps.map((app, index) => (
+              <div className={styles.compactItem} key={app.id}>
+                {entry({ page: 'quickAppName', appId: app.id }, app.name)}
+                <button
+                  type="button"
+                  className={styles.dangerButton}
+                  aria-label={t('removeApp', { name: app.name })}
+                  onClick={() => p.removeQuickApp(index)}
+                >
+                  <Trash2 size={16} />
                 </button>
               </div>
-              <div id="workflows-list" className={styles.workflowList}>
-                <AnimatePresence propagate>
-                  {p.workflows.map((workflow, index) => (
-                    <motion.div
-                      key={`wf-${workflow.name}-${index}`}
-                      className={styles.workflowRow}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, x: -20, height: 0, padding: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className={styles.workflowSummary}>
-                        <strong>{workflow.name}</strong>
-                        <span className={styles.itemCount}>
-                          {t('items', { count: workflow.urls.length })}
-                        </span>
-                      </div>
-                      <button
-                        className={styles.dangerButton}
-                        onClick={() => p.removeWorkflow(index)}
-                      >
-                        <Trash2 size={14} />
-                        <span>{t('remove')}</span>
-                      </button>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+            ))}
+            {entry(
+              { page: 'addQuickApp' },
+              t('addApp'),
+              undefined,
+              p.quickApps.length ? undefined : t('quickAppEditorHint'),
+            )}
+          </PrefGroup>
+          <InlineNotices area="quick-apps" />
+          <PrefGroup caption={t('manageWorkflows')}>
+            {p.workflows.map((workflow, index) => (
+              <div className={styles.workflowRow} key={index}>
+                <div className={styles.workflowSummary}>
+                  <strong>{workflow.name}</strong>
+                  <span className={styles.itemCount}>
+                    {t('items', { count: workflow.urls.length })}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className={styles.dangerButton}
+                  aria-label={t('removeWorkflow', { name: workflow.name })}
+                  onClick={() => p.removeWorkflow(index)}
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
-            </div>
-          </PrefCard>
+            ))}
+            {entry(
+              { page: 'addWorkflow' },
+              t('addWorkflow'),
+              undefined,
+              p.workflows.length ? undefined : t('workflowEditorHint'),
+            )}
+          </PrefGroup>
         </>
       )}
       {p.category === 'integrations' && (
         <>
-          <PrefCard caption={t('aiBaseUrl')}>
-            <div className={styles.prefStack}>
-              <input
-                className={styles.input}
-                aria-label={t('aiBaseUrl')}
-                value={p.aiBaseUrl}
-                placeholder="https://api.openai.com/v1"
-                onChange={(event) => p.handleApiBaseUrlChange(event.target.value)}
-              />
-            </div>
-          </PrefCard>
+          <PrefGroup>{entry({ page: 'aiBaseUrl' }, t('aiBaseUrl'), p.aiBaseUrl)}</PrefGroup>
           <PrefCard caption={t('aiModel')}>
             <div className={styles.prefStack}>
+              <p className={styles.hint}>{t('aiModelHint')}</p>
               <input
                 className={styles.input}
                 aria-label={t('aiModel')}
@@ -833,51 +566,14 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
               />
             </div>
           </PrefCard>
-          <PrefCard caption={t('apiKey')}>
-            <div className={styles.prefStack}>
-              <div className={styles.keyRow}>
-                <input
-                  className={[styles.input, styles.keyInput].join(' ')}
-                  aria-label={t('apiKey')}
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder={t('apiKeyHint')}
-                  value={apiKeyDraft}
-                  onChange={(event) => setApiKeyDraft(event.target.value)}
-                />
-                <div className={styles.keyActions}>
-                  <button
-                    className={styles.primaryButton}
-                    disabled={!apiKeyDraft.trim()}
-                    onClick={() => {
-                      void p.saveApiKey(apiKeyDraft).then((saved) => {
-                        if (saved) setApiKeyDraft('');
-                      });
-                    }}
-                  >
-                    {p.hasApiKey ? t('changeApiKey') : t('saveApiKey')}
-                  </button>
-                  {p.hasApiKey && (
-                    <button
-                      className={styles.dangerButton}
-                      title={t('removeApiKey')}
-                      aria-label={t('removeApiKey')}
-                      onClick={() => {
-                        void p.saveApiKey('').then((saved) => {
-                          if (saved) setApiKeyDraft('');
-                        });
-                      }}
-                    >
-                      <Trash2 size={14} aria-hidden="true" />
-                      <span>{t('remove')}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-              {p.hasApiKey && <p className={styles.keyHint}>{t('apiKeyConfigured')}</p>}
-              <InlineNotices area="settings" codes={['secretStorageUnavailable']} />
-            </div>
-          </PrefCard>
+          <PrefGroup>
+            {entry(
+              { page: 'apiKey' },
+              t('apiKey'),
+              t(p.hasApiKey ? 'keyConfigured' : 'notConfigured'),
+            )}
+          </PrefGroup>
+          <InlineNotices area="settings" codes={['secretStorageUnavailable']} />
         </>
       )}
       {p.category === 'about' && (
@@ -949,6 +645,7 @@ export function SettingsTab(p: Props & { category: SettingsCategoryId }) {
           </PrefCard>
         </>
       )}
+      <InlineNotices area="settings" codes={['stateSaveFailed']} />
     </ElasticScrollArea>
   );
 }

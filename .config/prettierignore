@@ -4,3 +4,4 @@
 ../coverage/
 ../reports/
 ../pnpm-lock.yaml
+../src/renderer/components/liquidGlass/vendor/

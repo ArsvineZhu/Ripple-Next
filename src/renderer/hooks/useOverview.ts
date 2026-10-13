@@ -10,6 +10,7 @@ export function useOverview(
   timeZone: string,
   location: string,
   weatherUnit: 'f' | 'c',
+  showAmPm = false,
 ) {
   const { i18n } = useTranslation();
   const [time, setTime] = useState<string | null>(null);
@@ -18,7 +19,7 @@ export function useOverview(
     let timer: ReturnType<typeof setTimeout>;
     const update = () => {
       clearTimeout(timer);
-      setTime(formatTime(i18n.language, hourFormat, new Date(), timeZone));
+      setTime(formatTime(i18n.language, hourFormat, new Date(), timeZone, showAmPm));
       // The clock displays minutes. Align updates with the next minute rather
       // than waking the renderer sixty times for the same visible value.
       timer = setTimeout(update, 60_000 - (Date.now() % 60_000));
@@ -34,7 +35,7 @@ export function useOverview(
       window.removeEventListener('focus', update);
       document.removeEventListener('visibilitychange', resume);
     };
-  }, [hourFormat, i18n.language, timeZone]);
+  }, [hourFormat, i18n.language, timeZone, showAmPm]);
   useEffect(() => {
     if (!location.trim()) {
       setWeather(null);

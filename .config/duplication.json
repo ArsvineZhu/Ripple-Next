@@ -5,7 +5,7 @@
   "minLines": 10,
   "threshold": 3,
   "mode": "mild",
-  "ignore": ["**/assets/**", "**/*.d.ts"],
+  "ignore": ["**/assets/**", "**/*.d.ts", "**/components/liquidGlass/vendor/**"],
   "reporters": ["console"],
   "gitignore": true
 }

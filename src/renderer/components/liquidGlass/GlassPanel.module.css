@@ -1,0 +1,78 @@
+.material.material {
+  --glass-panel-tint: rgba(255, 255, 255, 0.64);
+  --lg-shadow: 0 10px 32px rgb(0 0 0 / 12%);
+  --lg-inner-shadow: inset 0 0 0 0.5px rgb(0 0 0 / 6%);
+  background: rgba(250, 250, 250, 0.36);
+}
+
+@media (prefers-color-scheme: dark) {
+  .material.material {
+    --glass-panel-tint: rgba(52, 52, 52, 0.78);
+    --lg-shadow: 0 10px 40px rgb(0 0 0 / 45%);
+    --lg-inner-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 5%);
+    background: rgba(52, 52, 52, 0.5);
+  }
+}
+
+.menu {
+  /* Transform preserves backdrop sampling; opacity/filter on this ancestor would not. */
+  transform-origin: var(--glass-menu-origin, right top);
+  text-align: left;
+}
+
+.menu[data-state='open'] {
+  animation: expand 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.menu[data-state='closed'] {
+  animation: collapse 140ms ease-in;
+  pointer-events: none;
+}
+
+.menu[data-state='open'] > .text {
+  animation: text-in 180ms ease-out;
+}
+
+.menu[data-state='closed'] > .text {
+  animation: text-out 100ms ease-in forwards;
+}
+
+@keyframes expand {
+  from {
+    transform: translateY(-4px) scale(0.88);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes collapse {
+  from {
+    transform: translateY(0) scale(1);
+  }
+  to {
+    transform: translateY(-3px) scale(0.94);
+  }
+}
+
+@keyframes text-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes text-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu[data-state],
+  .menu[data-state] > .text {
+    animation: none;
+  }
+}
