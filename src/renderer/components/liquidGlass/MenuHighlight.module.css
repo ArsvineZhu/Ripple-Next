@@ -1,0 +1,28 @@
+.position {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+.position[data-visible='false'] {
+  visibility: hidden;
+}
+.position[data-glass-enabled='false'] {
+  background: var(--control-hover);
+  border-radius: 12px;
+}
+.actor {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform: translate(var(--motion-x, 0px), var(--motion-y, 0px))
+    scale(var(--motion-sx, 1), var(--motion-sy, 1));
+  transform-origin: center;
+  transition: transform var(--motion-duration, 0.2s) ease-out;
+}
+.material.material.material {
+  --glass-panel-tint: color-mix(in srgb, var(--island-text-color) 12%, transparent);
+  --lg-shadow: none;
+  --lg-inner-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--island-text-color) 4%, transparent);
+  background: color-mix(in srgb, var(--island-text-color) 7%, transparent);
+}

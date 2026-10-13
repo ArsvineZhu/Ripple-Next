@@ -7,20 +7,38 @@ import { useGlassMotion } from '../src/renderer/components/liquidGlass/useGlassM
 vi.mock('../src/renderer/hooks/useReducedMotionPreference', () => ({
   useReducedMotionPreference: () => false,
 }));
-function Decoration({ controlRef }: { controlRef: RefObject<HTMLButtonElement | null> }) {
-  const ref = useGlassMotion({ controlRef, actorRef: controlRef });
+function Decoration({
+  controlRef,
+  slider,
+  handle,
+}: {
+  controlRef: RefObject<HTMLButtonElement | null>;
+  slider: boolean;
+  handle: boolean;
+}) {
+  const ref = useGlassMotion({ controlRef, actorRef: controlRef, slider, handle });
   return createElement('div', { ref, 'data-material': true });
 }
-function Control() {
+// oxlint-disable react/refs -- createElement forwards the ref; it never reads its current value.
+function Control({ slider, handle }: { slider: boolean; handle: boolean }) {
   const ref = useRef<HTMLButtonElement>(null);
   return createElement(
     'div',
     { 'data-glass-host': true },
     // oxlint-disable-next-line react/refs -- createElement forwards the ref; no current value is read during render.
-    createElement('button', { ref }, createElement(Decoration, { controlRef: ref })),
+    createElement(
+      'button',
+      { ref },
+      createElement(Decoration, { controlRef: ref, slider, handle }),
+    ),
   );
 }
-it('waits for the parent control ref and paints the complete control instead of its decoration', async () => {
+// oxlint-enable react/refs
+it.each([
+  { slider: false, handle: false },
+  { slider: false, handle: true },
+  { slider: true, handle: true },
+])('owns and restores button/handle geometry (%j)', async ({ slider, handle }) => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const frames = new Map<number, FrameRequestCallback>();
   let serial = 0;
@@ -41,7 +59,7 @@ it('waits for the parent control ref and paints the complete control instead of 
   const host = document.createElement('div');
   document.body.append(host);
   const root = createRoot(host);
-  await act(async () => root.render(createElement(Control)));
+  await act(async () => root.render(createElement(Control, { slider, handle })));
   const button = host.querySelector('button')!,
     material = host.querySelector<HTMLElement>('[data-material]')!;
   Object.defineProperties(button, {
@@ -65,7 +83,8 @@ it('waits for the parent control ref and paints the complete control instead of 
     }),
   );
   flush();
-  expect(parseFloat(button.style.getPropertyValue('--motion-x'))).toBeGreaterThan(0);
+  if (slider) expect(button.style.getPropertyValue('--motion-x')).toBe('0px');
+  else expect(parseFloat(button.style.getPropertyValue('--motion-x'))).toBeGreaterThan(0);
   expect(material.style.getPropertyValue('--motion-x')).toBe('');
   button.dispatchEvent(
     new PointerEvent('pointerdown', {
@@ -78,12 +97,17 @@ it('waits for the parent control ref and paints the complete control instead of 
     }),
   );
   flush();
-  expect(button.style.getPropertyValue('--motion-sx')).toBe('0.96');
+  expect(button.style.getPropertyValue('--motion-sx')).toBe(handle ? '1' : '0.96');
+  expect(button.style.getPropertyValue('--handle-scale')).toBe(handle ? '1.6' : '1');
+  expect(button.hasAttribute('data-glass-active')).toBe(handle);
+  expect(material.hasAttribute('data-glass-dragging')).toBe(slider);
   expect(material.classList.contains('lg--pressed')).toBe(true);
   window.dispatchEvent(new Event('blur'));
   flush();
   expect(button.style.getPropertyValue('--motion-sx')).toBe('1');
   expect(material.classList.contains('lg--pressed')).toBe(false);
+  expect(material.hasAttribute('data-glass-dragging')).toBe(false);
+  expect(button.hasAttribute('data-glass-active')).toBe(false);
   await act(async () => root.unmount());
   expect(frames.size).toBe(0);
   host.remove();

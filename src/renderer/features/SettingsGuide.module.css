@@ -1,0 +1,186 @@
+.intro {
+  padding: 6px 2px;
+}
+.intro h1 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  letter-spacing: -0.02em;
+  font-weight: 650;
+}
+.intro p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--settings-muted);
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+.card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--settings-muted);
+}
+.demoStage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 185px;
+  border-radius: 16px;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 23px,
+      color-mix(in srgb, var(--settings-fg) 4%, transparent) 23px 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 23px,
+      color-mix(in srgb, var(--settings-fg) 4%, transparent) 23px 24px
+    );
+}
+.demoIsland {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(255 255 255 / 18%);
+  color: #fff;
+  background: #0d0d0d;
+  box-shadow: 0 12px 28px rgb(0 0 0 / 18%);
+  cursor: pointer;
+  corner-shape: superellipse(1.62);
+}
+.demoIsland strong {
+  font-size: 23px;
+  font-weight: 550;
+}
+.demoIsland small {
+  font-size: 11px;
+  color: #bbb;
+}
+.demoTabs {
+  font-size: 12px;
+}
+.pointer {
+  position: absolute;
+  top: 65%;
+  left: 67%;
+  pointer-events: none;
+  color: var(--settings-fg);
+}
+.demoActions,
+.pageActions,
+.links {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.demoActions button,
+.pageActions button,
+.links button {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  border: 1px solid var(--settings-border);
+  border-radius: 16px;
+  padding: 5px 12px;
+  color: var(--settings-fg);
+  background: var(--control-bg);
+  cursor: pointer;
+}
+.demoActions button[aria-pressed='true'] {
+  background: var(--settings-fg);
+  color: var(--settings-bg);
+}
+.pageActions span {
+  font-size: 12px;
+  color: var(--settings-muted);
+}
+.keyRow {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.9fr) minmax(0, 1.7fr);
+  gap: 20px;
+  padding: 8px 0;
+}
+.keyRow strong {
+  font-size: 14px;
+  font-weight: 550;
+}
+.keyRow p {
+  margin-top: 4px;
+  font-size: 13px;
+}
+.keyCaps {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 5px;
+}
+.keyCaps kbd {
+  padding: 5px 8px;
+  min-width: 27px;
+  text-align: center;
+  background: var(--control-bg);
+  border: 1px solid var(--settings-border);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  font: 12px var(--font-system, sans-serif);
+}
+.gesture {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border-top: 1px solid var(--settings-divider);
+  padding-top: 16px;
+}
+.gesture svg {
+  flex-shrink: 0;
+}
+.settingDiagram {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+.connections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 8px;
+  background: var(--control-bg);
+  border-radius: 12px;
+  font-size: 13px;
+}
+.connections span {
+  padding: 6px 8px;
+  background: var(--settings-card);
+  border-radius: 8px;
+  border: 1px solid var(--settings-border);
+}
+.links {
+  justify-content: flex-start;
+}
+.card button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+@media (max-width: 700px) {
+  .keyRow {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}

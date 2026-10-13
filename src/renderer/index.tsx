@@ -20,7 +20,7 @@ const isSettingsView =
 createRoot(container, rendererRootErrorHandlers).render(
   <NotificationProvider>
     <AppStateProvider initialState={bootstrap.state}>
-      <SettingsProvider hasApiKey={bootstrap.hasApiKey}>
+      <SettingsProvider hasWeatherApiKey={bootstrap.hasWeatherApiKey}>
         <OverlayProvider>{isSettingsView ? <SettingsApp /> : <Island />}</OverlayProvider>
       </SettingsProvider>
     </AppStateProvider>

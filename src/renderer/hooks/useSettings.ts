@@ -6,13 +6,22 @@ import type { LanguagePreference } from '../../shared/i18n';
 import { changeLanguagePreference } from '../i18n';
 import { useAppState } from '../components/AppStateProvider';
 import { useNotifications } from '../components/NotificationProvider';
+import { GlassPreferencesSchema } from '../../shared/glassPreferences';
+import type { GlassPreferences } from '../../shared/glassPreferences';
 
-export function useSettings(initialHasApiKey: boolean) {
+export function useSettings(initialHasWeatherApiKey = false) {
   const { state, updateState } = useAppState();
   const { notify } = useNotifications();
   const settings = state.settings;
   const [displays, setDisplays] = useState<DisplayInfo[]>([]);
-  const [hasApiKey, setHasApiKey] = useState(initialHasApiKey);
+  const [hasWeatherApiKey, setHasWeatherApiKey] = useState(initialHasWeatherApiKey);
+  const weatherLocationParts: [string, string, string] =
+    settings.weatherLocationParts.some(Boolean) || settings.weatherLocation === 'auto:ip'
+      ? settings.weatherLocationParts
+      : (() => {
+          const parts = settings.weatherLocation.split(/[,，]/).map((value) => value.trim());
+          return [parts[0] ?? '', parts[1] ?? '', parts.slice(2).join(', ')];
+        })();
   const [autoLaunchPending, setAutoLaunchPending] = useState(false);
   const autoLaunchRequest = useRef(false);
   const updateSettings = useCallback(
@@ -92,25 +101,44 @@ export function useSettings(initialHasApiKey: boolean) {
   };
   const setPositionMode = (positionMode: string) =>
     updateSettings({ positionMode: positionMode as PositionMode });
-  const handleApiBaseUrlChange = (aiBaseUrl: string) => updateSettings({ aiBaseUrl });
-  const handleAiModelChange = (aiModel: string) => updateSettings({ aiModel });
-  const saveApiKey = async (key: string): Promise<boolean> => {
-    try {
-      await window.electronAPI?.saveApiKey(key.trim());
-      setHasApiKey(Boolean(key.trim()));
-      return true;
-    } catch (error) {
-      notify({
-        severity: 'error',
-        code: 'secretStorageUnavailable',
-        area: 'settings',
-        detail: error instanceof Error ? error.message : String(error),
-      });
-      return false;
-    }
-  };
 
   return {
+    glassPreferences: GlassPreferencesSchema.parse(settings),
+    setGlassPreferences: (patch: Partial<GlassPreferences>) => updateSettings(patch),
+    weatherLocationParts,
+    setWeatherLocationParts: (parts: [string, string, string]) =>
+      updateSettings({
+        weatherLocationParts: parts,
+        weatherLocation: parts
+          .map((value) => value.trim())
+          .filter(Boolean)
+          .join(', '),
+      }),
+    setAutomaticLocation: (automatic: boolean) =>
+      updateSettings({
+        weatherLocation: automatic
+          ? 'auto:ip'
+          : weatherLocationParts
+              .map((value) => value.trim())
+              .filter(Boolean)
+              .join(', '),
+        weatherLocationParts,
+      }),
+    useBuiltInWeatherApi: settings.useBuiltInWeatherApi,
+    setUseBuiltInWeatherApi: (useBuiltInWeatherApi: boolean) =>
+      updateSettings({ useBuiltInWeatherApi }),
+    hasWeatherApiKey,
+    weatherRefreshToken: `${settings.useBuiltInWeatherApi}:${settings.secretRevision}`,
+    saveWeatherApiKey: async (key: string) => {
+      try {
+        await window.electronAPI.saveWeatherApiKey(key.trim());
+        setHasWeatherApiKey(Boolean(key.trim()));
+        return true;
+      } catch {
+        notify({ severity: 'error', code: 'secretStorageUnavailable', area: 'settings' });
+        return false;
+      }
+    },
     language: settings.language,
     searchUrlTemplate: settings.searchUrlTemplate,
     setSearchUrlTemplate: (searchUrlTemplate: string) => updateSettings({ searchUrlTemplate }),
@@ -149,12 +177,6 @@ export function useSettings(initialHasApiKey: boolean) {
     islandX: settings.islandX,
     islandY: settings.islandY,
     leaveDelayMs: settings.leaveDelayMs,
-    hasApiKey,
-    aiBaseUrl: settings.aiBaseUrl,
-    aiModel: settings.aiModel,
-    saveApiKey,
-    handleApiBaseUrlChange,
-    handleAiModelChange,
     handleLeaveDelayChange: (input: string | number) =>
       updateSettings({
         leaveDelayMs: Math.max(0, Math.min(2000, Number(input))),

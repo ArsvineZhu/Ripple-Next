@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { NoticeCode } from '../../shared/contracts';
-import { useAppState } from '../components/AppStateProvider';
 import {
   recordAssistantRequest,
   recordRendererAnswerCharacters,
@@ -34,7 +33,6 @@ function cancelAssistantRequest(trace: AssistantRequestTrace): void {
 }
 
 export function useAssistant() {
-  const { state } = useAppState();
   const [assistantError, setAssistantError] = useState<{
     kind: NoticeCode;
     detail?: string;
@@ -154,8 +152,6 @@ export function useAssistant() {
     setAIAnswer,
     userText,
     setUserText,
-    aiBaseUrl: state.settings.aiBaseUrl,
-    aiModel: state.settings.aiModel,
     askAI,
     resetAssistant,
   };

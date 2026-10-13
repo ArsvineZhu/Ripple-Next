@@ -1,4 +1,7 @@
 import type { Locale } from './i18n';
+import type { WeatherSnapshot } from './weather';
+import type { AIMutation } from './aiConfiguration';
+import type { LicenseMetadata, LicenseRecord } from './licenses';
 import type { AppState, AppStatePatch } from './appState';
 import { z } from 'zod';
 export interface MediaTrack {
@@ -182,9 +185,16 @@ export type AssistantEvent =
   | { requestId: string; kind: 'error'; code: NoticeCode; detail?: string };
 interface AppBootstrap {
   state: AppState;
-  hasApiKey: boolean;
+  hasWeatherApiKey: boolean;
 }
 export interface InvokeMap {
+  'list-third-party-licenses': { args: []; result: LicenseMetadata[] };
+  'read-third-party-license': { args: [id: string]; result: LicenseRecord };
+  'ai-configuration-status': { args: []; result: Record<number, boolean> };
+  'mutate-ai-configuration': { args: [mutation: AIMutation]; result: AppState };
+  'save-ai-credential': { args: [id: number, key: string]; result: Record<number, boolean> };
+  'get-weather': { args: [location: string, unit: 'f' | 'c']; result: WeatherSnapshot };
+  'save-weather-api-key': { args: [key: string]; result: void };
   'get-app-bootstrap': { args: []; result: AppBootstrap };
   'open-diagnostics-folder': { args: []; result: void };
   'show-color-picker': { args: [initialColor: string]; result: string | null };
@@ -193,7 +203,6 @@ export interface InvokeMap {
   'update-app-state': { args: [patch: AppStatePatch]; result: AppState };
   'set-island-preview': { args: [active: boolean]; result: void };
   'get-island-preview': { args: []; result: boolean };
-  'save-api-key': { args: [key: string]; result: void };
   'launch-quick-app': { args: [id: string]; result: void };
   'discover-apps': { args: [query: string]; result: AppEntry[] };
   'renderer-ready': { args: []; result: void };
@@ -232,6 +241,13 @@ export interface InvokeMap {
   'quit-app': { args: []; result: void };
 }
 export interface ElectronAPI {
+  listThirdPartyLicenses(): Promise<LicenseMetadata[]>;
+  readThirdPartyLicense(id: string): Promise<LicenseRecord>;
+  aiConfigurationStatus(): Promise<Record<number, boolean>>;
+  mutateAIConfiguration(mutation: AIMutation): Promise<AppState>;
+  saveAICredential(id: number, key: string): Promise<Record<number, boolean>>;
+  getWeather(location: string, unit: 'f' | 'c'): Promise<WeatherSnapshot>;
+  saveWeatherApiKey(key: string): Promise<void>;
   showColorPicker(initialColor: string): Promise<string | null>;
   getAppBootstrap(): Promise<AppBootstrap>;
   openDiagnosticsFolder(): Promise<void>;
@@ -241,7 +257,6 @@ export interface ElectronAPI {
   setIslandPreview(active: boolean): Promise<void>;
   getIslandPreview(): Promise<boolean>;
   onIslandPreviewChanged(callback: (active: boolean) => void): () => void;
-  saveApiKey(key: string): Promise<void>;
   launchQuickApp(id: string): Promise<void>;
   discoverApps(query: string): Promise<AppEntry[]>;
   rendererReady(): Promise<void>;

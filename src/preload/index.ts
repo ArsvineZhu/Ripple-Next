@@ -10,6 +10,13 @@ function invoke<K extends keyof InvokeMap>(
   return ipcRenderer.invoke(channel, ...args);
 }
 const api: ElectronAPI = {
+  listThirdPartyLicenses: () => invoke('list-third-party-licenses'),
+  readThirdPartyLicense: (id) => invoke('read-third-party-license', id),
+  aiConfigurationStatus: () => invoke('ai-configuration-status'),
+  mutateAIConfiguration: (mutation) => invoke('mutate-ai-configuration', mutation),
+  saveAICredential: (id, key) => invoke('save-ai-credential', id, key),
+  getWeather: (location, unit) => invoke('get-weather', location, unit),
+  saveWeatherApiKey: (key) => invoke('save-weather-api-key', key),
   showColorPicker: (initialColor) => invoke('show-color-picker', initialColor),
   openDiagnosticsFolder: () => invoke('open-diagnostics-folder'),
   readClipboardText: () => invoke('read-clipboard-text'),
@@ -27,7 +34,6 @@ const api: ElectronAPI = {
     ipcRenderer.on('island-preview-changed', listener);
     return () => ipcRenderer.removeListener('island-preview-changed', listener);
   },
-  saveApiKey: (key) => invoke('save-api-key', key),
   launchQuickApp: (id) => invoke('launch-quick-app', id),
   discoverApps: (query) => invoke('discover-apps', query),
   rendererReady: () => invoke('renderer-ready'),

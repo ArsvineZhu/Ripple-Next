@@ -28,7 +28,7 @@ A workflow entry such as `localhost:3000/` or `127.0.0.1:3000/admin?view=usage#t
 
 ## Build a workflow and pin quick apps
 
-In Settings → Shortcuts, choose **Add workflow**, give it a name and enter its application/website targets, then save. Separate targets with commas or semicolons; Chinese comma, enumeration comma and semicolon are also accepted. Select the workflow on the Workflows page to launch its targets in order. A failed target shows an error on that workflow, and later targets are still attempted. Retrying clears the old message.
+In Settings → Shortcuts, choose **Add workflow**, give it a name and enter one application or website per row. Use **+** to add a row and **×** to remove it. A name and at least one target create the workflow automatically; subsequent edits save as you type. Commas remain part of a target. Select a saved entry to edit it. Long names stay inside the list, with two lines in the Island and the full name on hover. Select the workflow on the Workflows page to launch its targets in order. A failed target shows an error on that workflow, and later targets are still attempted. Retrying clears the old message.
 
 For example, an **API gateway** workflow can contain `localhost:3000/`. A **Reading** workflow can contain two documentation URLs. A workflow is a launch list; it does not execute conditional steps or schedule jobs.
 
@@ -56,7 +56,14 @@ Covers appear in both the expanded page and QuickView. Missing, unsupported or u
 
 ## Ask your own AI service
 
-In Settings → Integrations, open **Base URL** and **API key** to edit and save them. The provider's exact **model** name stays inline with an explanation. Use the endpoint and credentials supplied by your provider or local gateway. Ripple does not include a paid AI subscription.
+In Settings → Integrations, configure the connection in this order:
+
+1. **Base URL configuration**: add an OpenAI-compatible Chat Completions, OpenAI Responses or Anthropic endpoint. Enter the Base URL including its API path, for example `/v1`. Each endpoint has a stable number.
+2. **API key configuration**: choose that Base URL, add a credential, enter its key and choose **Save**. Existing keys show dots and a **Change** button. Typing a replacement leaves the saved key intact until you choose Change.
+3. **Model configuration**: choose a Base URL and one of its saved keys, then enter the provider's exact model identifier and an optional display name. Select the **Current model** used by the Island.
+4. **Model customization**: select a numbered model. Its endpoint and identifier stay fixed on this page. Use the built-in system prompt or your own prompt, add named injections, enable/disable them and reorder them. Enabled snippets append to the system prompt in that order and support the same template variables, including `{{product}}`, `{{version}}`, `{{timezone}}` and `{{current_time}}`.
+
+Temperature, reasoning and output settings start with the provider's defaults. Available parameters depend on the selected model. Anthropic also provides adaptive or budgeted thinking; its thinking budget must leave room within the output limit. The **Local context limit** is measured in characters and covers the system prompt, enabled injections and current question; exceeding it stops the request locally. **Context awareness** is reserved and disabled. Ordinary configuration changes save automatically. Removing a Base URL removes its associated keys and models; removing a key retains model customization so another key can be assigned. Use the endpoint and credentials supplied by your provider or local gateway. Ripple does not include a paid AI subscription.
 
 Submit a question on AI Assistant. Output streams into the Island with Markdown formatting and copy buttons for code blocks. **Ask another** cancels/resets the current exchange. This is a single-question assistant; it does not save a conversation history. Errors appear on the assistant page.
 
@@ -64,7 +71,7 @@ Questions are sent to the configured service. The API key is encrypted using OS-
 
 ## Overview, clipboard and tasks
 
-**Overview** displays the clock, localized date, current weather and battery state. Settings provides 12/24-hour time, system or IANA time zone, weather location and Celsius/Fahrenheit. With 12-hour time enabled, **Show A.M. / P.M.** controls the suffix; it starts off. In the location editor, choose automatic IP-based location or enter city, region and country separately. Automatic location uses [WeatherAPI's IP lookup](https://www.weatherapi.com/docs/request-parameters/); a VPN or proxy can change the estimated place. Leaving the manual location blank disables weather. Weather needs network access to WeatherAPI; battery details depend on the OS and hardware. The minute-only clock updates at minute boundaries.
+**Overview** displays the clock, localized date, current weather and battery state. Settings provides 12/24-hour time, system or IANA time zone, weather location and Celsius/Fahrenheit. With 12-hour time enabled, **Show A.M. / P.M.** starts off. When enabled, the expanded clock places the localized day period in the smaller date line; Chinese uses 上午/下午 after the date. In the location editor, choose automatic IP-based location to see the detected city and region, or enter city, region and country separately. These edits save automatically. Automatic location uses [WeatherAPI's IP lookup](https://www.weatherapi.com/docs/request-parameters/); a VPN or proxy can change the estimated place. Leaving the manual location blank disables weather. **Use built-in API** uses Ripple's bundled WeatherAPI credential; turning it off reveals an editor for your own encrypted key, which requires Save/Change. Weather needs network access to WeatherAPI; battery details depend on the OS and hardware. The minute-only clock updates at minute boundaries.
 
 **Clipboard** collects text during the current run and lets you copy an item back to the system clipboard. It checks every two seconds and when Ripple gains focus. Empty and image-only clipboard values are skipped. Very brief changes between checks may not be captured. History stays in memory and disappears on restart; it continues collecting while the Island is collapsed.
 
@@ -72,7 +79,7 @@ Questions are sent to the configured service. The API key is encrypted using OS-
 
 ## Make the Island yours
 
-Settings groups appearance, interaction and feature configuration by category. Rows with **>** open secondary editors. Their glass capsule back button stays at the top left and responds to the mouse; returning restores the main page's scroll and focus. Save commits the editor's changes; Back does not submit them. Conditional rows and page entry/return animate; reduced motion switches immediately.
+Settings opens on **User guide**, with an interactive Island example, keys and settings diagrams. Rows with **>** open secondary editors. Their glass capsule back button stays at the top left and responds to the mouse; returning restores the previous page's scroll and focus. Ordinary edits save automatically; credentials require Save/Change. Conditional rows and page entry/return animate; reduced motion switches immediately. **About → Third-party licenses** lists shipped components and their license notices.
 
 The main controls are:
 
@@ -93,3 +100,7 @@ Preferences, workflows, quick apps and tasks are stored in `ripple-next.sqlite` 
 Open **Settings → Diagnostics → Open diagnostics folder** when investigating a failure. Local crash dumps may contain process memory, so inspect them before sharing. See [platform compatibility and troubleshooting](docs/platform-compatibility.md) for missing Linux commands, permissions, browser launches and media support.
 
 Use the [Ripple Next release list](https://github.com/ArsvineZhu/Ripple-Next/releases) and select a `RippleNext-…` package for your OS. The [4.0.0 release notes](docs/releases/4.0.0.en.md) describe this stable version and its history.
+
+## Experimental Liquid Glass
+
+Open **Appearance & Position → Liquid Glass (Exp)** to adjust the material and pointer response. Settings starts enabled. Sliders and switches have white resting capsules and expand into clear lenses while held; switches keep flat green/gray tracks. Track clicks animate, direct dragging follows immediately, and nearby stops attract on release. Menu blur affects menus/back buttons; active handles stay clear. Disabling glass restores ordinary controls and removes glass pointer motion while keeping general transitions. **Island Liquid Glass** is in internal testing and unavailable.

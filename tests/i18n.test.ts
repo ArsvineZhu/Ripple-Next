@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createInstance } from 'i18next';
 import { languagePreference, messages, resolveLocale } from '../src/shared/i18n';
-import { formatDateShort, formatTime } from '../src/renderer/lib/date';
+import { formatDateShort, formatTime, formatOverviewDate } from '../src/renderer/lib/date';
 import { defaultAppState } from '../src/shared/appState';
 describe('language selection', () => {
   it('matches Chinese script before region and maps supported system languages', () => {
@@ -68,12 +68,22 @@ describe('bundled messages and formatting', () => {
     expect(formatTime('en', true, new Date('2026-10-04T00:05:00Z'), 'UTC', true)).toBe(
       '12:05 A.M.',
     );
-    expect(formatTime('ja', true, instant, 'Asia/Tokyo', true)).toBe('10:05 P.M.');
+    expect(formatTime('ja', true, instant, 'Asia/Tokyo', true)).toBe('午後10:05');
     expect(formatTime('en', false, instant, 'UTC', true)).toBe('13:05');
     const acrossDay = new Date('2026-10-04T23:30:00.000Z');
     expect(formatDateShort('en', acrossDay, 'UTC')).not.toBe(
       formatDateShort('en', acrossDay, 'Asia/Tokyo'),
     );
+  });
+  it('puts a localized period in the smaller expanded date line in locale order', () => {
+    const instant = new Date('2026-10-13T06:05:00Z');
+    expect(formatOverviewDate('zh-CN', instant, 'Asia/Tokyo', true)).toBe(
+      '2026 年 10 月 13 日 下午 · 周二',
+    );
+    expect(formatOverviewDate('en', instant, 'Asia/Tokyo', true)).toBe('PM · Tue, Oct 13, 2026');
+    expect(formatOverviewDate('zh-TW', instant, 'UTC', true)).toContain('日 上午');
+    expect(formatOverviewDate('ja', instant, 'Asia/Tokyo', true)).toContain('日 午後');
+    expect(formatOverviewDate('zh-CN', instant, 'Asia/Tokyo')).not.toContain('下午');
   });
   it('spaces Chinese and Japanese date numbers, units and weekdays', () => {
     const date = new Date('2026-10-09T12:00:00Z');

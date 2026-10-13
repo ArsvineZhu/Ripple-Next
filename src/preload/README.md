@@ -6,7 +6,7 @@ Media reads return a session snapshot. `selectMediaSession` chooses Automatic or
 
 Preload exposes the isolated `electronAPI` through explicit `contextBridge` methods. It maps typed calls and events to named IPC channels from [shared contracts](../shared/README.md); renderer code never receives raw `ipcRenderer` access.
 
-The bridge covers app-state bootstrap and patches, secure API-key save/removal, quick-app discovery and launch, AI stream events and cancellation, notices, locale, media, autostart, display and window input shape. API-key material is sent to main for storage and is absent from the bootstrap response.
+The bridge covers state snapshots and patches, typed AI graph commands, named credential writes, credential-presence flags, main-owned weather snapshots, license listing/reading, AI streams and native controls. Only Settings can mutate AI configuration or write credentials; plaintext keys never return through bootstrap or status. Preload validates request and event shapes and exposes no raw invoke API.
 
 Keep this bundle sandbox-compatible and keep each bridge method aligned with its shared request, response and event contract.
 

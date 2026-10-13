@@ -1,59 +1,71 @@
-import { describe, expect, it, vi } from 'vitest';
-import { fetchCurrentWeather } from '../src/renderer/lib/weather';
+import { expect, it, vi, afterEach } from 'vitest';
+import { fetchWeatherSnapshot } from '../src/main/services/weatherAPI';
+import { createWeatherService } from '../src/main/services/weather';
+import { defaultAppState } from '../src/shared/appState';
 
-describe('current weather', () => {
-  it('skips the request when no location is configured', async () => {
-    const fetcher = vi.fn(async (_url: URL) => {
-      throw new Error('Fetch should not run without a location');
-    });
-
-    await expect(fetchCurrentWeather('  ', 'c', fetcher)).resolves.toBeNull();
-    expect(fetcher).not.toHaveBeenCalled();
+const payload = {
+  current: { temp_c: 18.6, temp_f: 65.5, condition: { text: 'Partly cloudy' } },
+  location: { name: 'Toronto', region: 'Ontario', country: 'Canada', lat: 43.65, lon: -79.38 },
+};
+afterEach(() => vi.unstubAllGlobals());
+it('skips blank locations and missing custom credentials', async () => {
+  const fetcher = vi.fn();
+  expect((await fetchWeatherSnapshot(' ', 'c', fetcher, 'fixture-key')).reading).toBeNull();
+  expect((await fetchWeatherSnapshot('auto:ip', 'c', fetcher, '')).error).toBe('missing-key');
+  expect(fetcher).not.toHaveBeenCalled();
+});
+it('sends the selected key and returns usable weather plus the detected location', async () => {
+  const fetcher = vi.fn(async (url: URL) => {
+    expect(url.searchParams.get('q')).toBe('auto:ip');
+    expect(url.searchParams.get('key')).toBe('fixture-custom-key');
+    return { ok: true, json: async () => payload };
   });
-
-  it('ignores provider error payloads instead of returning a non-finite temperature', async () => {
-    const fetcher = vi.fn(async (url: URL) => {
-      expect(url.searchParams.get('q')).toBe('London');
-      return {
-        ok: false,
-        json: async () => ({ error: { code: 1003 } }),
-      };
-    });
-
-    await expect(fetchCurrentWeather('London', 'c', fetcher)).resolves.toBeNull();
+  expect(await fetchWeatherSnapshot('auto:ip', 'c', fetcher, 'fixture-custom-key')).toEqual({
+    reading: { temp: 19, status: 'Partly cloudy' },
+    location: {
+      city: 'Toronto',
+      region: 'Ontario',
+      country: 'Canada',
+      latitude: 43.65,
+      longitude: -79.38,
+    },
+    error: null,
   });
-
-  it('returns a rounded temperature and condition for a valid response', async () => {
-    const fetcher = vi.fn(async (url: URL) => {
-      expect(url.searchParams.get('q')).toBe('London');
-      return {
-        ok: true,
-        json: async () => ({
-          current: {
-            temp_c: 18.6,
-            temp_f: 65.5,
-            condition: { text: 'Partly cloudy' },
-          },
-        }),
-      };
-    });
-
-    await expect(fetchCurrentWeather('London', 'c', fetcher)).resolves.toEqual({
-      temp: 19,
-      status: 'Partly cloudy',
-    });
+});
+it('returns a bounded failure without leaking a key-bearing fetch error', async () => {
+  const fetcher = vi.fn(async () => {
+    throw new Error('failed fixture-secret');
   });
-  it('uses the provider IP lookup when automatic location is selected', async () => {
-    const fetcher = vi.fn(async (url: URL) => {
-      expect(url.searchParams.get('q')).toBe('auto:ip');
-      return {
-        ok: true,
-        json: async () => ({ current: { temp_c: 18, temp_f: 64, condition: { text: 'Sunny' } } }),
-      };
-    });
-    await expect(fetchCurrentWeather('auto:ip', 'c', fetcher)).resolves.toEqual({
-      temp: 18,
-      status: 'Sunny',
-    });
-  });
+  const result = await fetchWeatherSnapshot('London', 'c', fetcher, 'fixture-secret');
+  expect(result.error).toBe('lookup-failed');
+  expect(JSON.stringify(result)).not.toContain('fixture-secret');
+});
+it('does not silently use the built-in credential when custom mode lacks a key', async () => {
+  const state = structuredClone(defaultAppState);
+  state.settings.useBuiltInWeatherApi = false;
+  const fetcher = vi.fn();
+  vi.stubGlobal('fetch', fetcher);
+  const service = createWeatherService(
+    { load: async () => state },
+    { getSecret: async () => null },
+  );
+  expect((await service.get('auto:ip', 'c')).error).toBe('missing-key');
+  expect(fetcher).not.toHaveBeenCalled();
+});
+it('shares concurrent lookups, caches results and invalidates when credentials change', async () => {
+  const state = structuredClone(defaultAppState);
+  state.settings.useBuiltInWeatherApi = false;
+  let key = 'fixture-first';
+  const fetcher = vi.fn(
+    async () =>
+      new Response(JSON.stringify(payload), { headers: { 'Content-Type': 'application/json' } }),
+  );
+  vi.stubGlobal('fetch', fetcher);
+  const service = createWeatherService({ load: async () => state }, { getSecret: async () => key });
+  await Promise.all([service.get('auto:ip', 'c'), service.get('auto:ip', 'c')]);
+  await service.get('auto:ip', 'c');
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  key = 'fixture-second';
+  await service.get('auto:ip', 'c');
+  expect(fetcher).toHaveBeenCalledTimes(2);
 });

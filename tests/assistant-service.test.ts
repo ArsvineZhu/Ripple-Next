@@ -1,14 +1,33 @@
 import { describe, expect, it, vi } from 'vitest';
 import { defaultAppState } from '../src/shared/appState';
 import { createAssistantService } from '../src/main/services/assistant';
+import { defaultCustomization } from '../src/shared/aiConfiguration';
+
+function configuredState() {
+  const state = structuredClone(defaultAppState);
+  state.settings.ai.credentials = [{ id: 1, endpointId: 1, label: 'Fixture' }];
+  state.settings.ai.models = [
+    {
+      id: 1,
+      endpointId: 1,
+      credentialId: 1,
+      name: 'test-model',
+      label: 'Fixture',
+      customization: defaultCustomization(),
+    },
+  ];
+  state.settings.ai.activeModelId = 1;
+  state.settings.ai.nextId.credential = state.settings.ai.nextId.model = 2;
+  return state;
+}
 
 describe('assistant service', () => {
   it('reports a missing key without starting a network request', async () => {
     const stream = vi.fn();
     const send = vi.fn();
     const service = createAssistantService(
-      { load: async () => defaultAppState },
-      { getApiKey: async () => null },
+      { load: async () => configuredState() },
+      { getSecret: async () => null },
       { getAppVersion: () => '4.0.0-beta.1', stream },
     );
 
@@ -23,10 +42,7 @@ describe('assistant service', () => {
   });
 
   it('relays deltas and a completion event for a successful request', async () => {
-    const state = {
-      ...defaultAppState,
-      settings: { ...defaultAppState.settings, aiModel: 'test-model' },
-    };
+    const state = configuredState();
     const stream = vi.fn(async (_request, dependencies) => {
       dependencies.onDelta('answer');
       return 'answer';
@@ -34,7 +50,12 @@ describe('assistant service', () => {
     const send = vi.fn();
     const service = createAssistantService(
       { load: async () => state },
-      { getApiKey: async () => 'test-key' },
+      {
+        getSecret: async (name) => {
+          expect(name).toBe('ai-api-key:1');
+          return 'test-key';
+        },
+      },
       { getAppVersion: () => '4.0.0-beta.1', stream },
     );
 

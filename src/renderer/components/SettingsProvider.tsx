@@ -5,12 +5,12 @@ import { useSettings } from '../hooks/useSettings';
 const SettingsContext = createContext<ReturnType<typeof useSettings> | null>(null);
 export function SettingsProvider({
   children,
-  hasApiKey,
+  hasWeatherApiKey = false,
 }: {
   children: ReactNode;
-  hasApiKey: boolean;
+  hasWeatherApiKey?: boolean;
 }) {
-  const settings = useSettings(hasApiKey);
+  const settings = useSettings(hasWeatherApiKey);
   return <SettingsContext.Provider value={settings}>{children}</SettingsContext.Provider>;
 }
 export function useSettingsContext() {

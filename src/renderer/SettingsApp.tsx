@@ -10,13 +10,17 @@ import styles from './styles/SettingsApp.module.css';
 import { useReducedMotionPreference } from './hooks/useReducedMotionPreference';
 import { GlassBackButton } from './components/GlassBackButton';
 import { detailLabels, detailEntryId, type SettingsDetail } from './lib/settingsDetails';
+import { GlassPreferencesContext } from './components/liquidGlass/GlassPreferences';
+import { defaultGlassPreferences } from '../shared/glassPreferences';
 
 export default function SettingsApp() {
   const { t } = useTranslation();
   const controller = useSettingsWindowController();
+  const glass = controller.glassPreferences ?? defaultGlassPreferences;
   const { setContainer, setOpenId } = useOverlay();
-  const [category, setCategory] = useState<SettingsCategoryId>('general');
+  const [category, setCategory] = useState<SettingsCategoryId>('guide');
   const [detail, setDetail] = useState<SettingsDetail | null>(null);
+  const history = useRef<{ detail: SettingsDetail | null; scroll: number; entry: string }[]>([]);
   const restore = useRef<{ scroll: number; entry: string | null }>({ scroll: 0, entry: null });
   const reducedMotion = useReducedMotionPreference();
   const transitionRef = useRef<ViewTransition | null>(null);
@@ -51,6 +55,7 @@ export default function SettingsApp() {
     if (next === requestedCategory.current && !requestedDetail.current) return;
     requestedCategory.current = next;
     requestedDetail.current = null;
+    history.current = [];
     restore.current.entry = null;
     animateChange(() => {
       setOpenId(null);
@@ -71,26 +76,38 @@ export default function SettingsApp() {
   }, [active.labelKey, detail, t]);
 
   const openDetail = (next: SettingsDetail) => {
-    requestedDetail.current = next;
-    restore.current = {
-      scroll: document.querySelector('#settings-container')?.scrollTop ?? 0,
+    if (requestedDetail.current && detailEntryId(requestedDetail.current) === detailEntryId(next))
+      return;
+    const previous = {
+      detail,
+      scroll:
+        document.querySelector(detail ? '#settings-detail-container' : '#settings-container')
+          ?.scrollTop ?? 0,
       entry: detailEntryId(next),
     };
+    requestedDetail.current = next;
+    restore.current = { scroll: 0, entry: null };
     animateChange(() => {
+      history.current.push(previous);
       setOpenId(null);
       setDetail(next);
     }, 'forward');
   };
   const closeDetail = () => {
-    requestedDetail.current = null;
+    const previous = history.current.at(-1);
+    requestedDetail.current = previous?.detail ?? null;
+    restore.current = { scroll: previous?.scroll ?? 0, entry: previous?.entry ?? null };
     animateChange(() => {
+      history.current.pop();
       setOpenId(null);
-      setDetail(null);
+      setDetail(previous?.detail ?? null);
     }, 'back');
   };
   useLayoutEffect(() => {
-    if (detail || !restore.current.entry) return;
-    const scroll = document.querySelector('#settings-container');
+    if (!restore.current.entry) return;
+    const scroll = document.querySelector(
+      detail ? '#settings-detail-container' : '#settings-container',
+    );
     if (scroll) scroll.scrollTop = restore.current.scroll;
     document
       .querySelector<HTMLElement>(`[data-settings-entry="${CSS.escape(restore.current.entry)}"]`)
@@ -99,58 +116,68 @@ export default function SettingsApp() {
   }, [detail]);
 
   return (
-    <div className={styles.app} data-settings data-glass-host>
-      <aside className={styles.sidebar} aria-label={t('tabSettings')}>
-        <LayoutGroup id="settings-navigation">
-          <nav className={styles.nav}>
-            {SETTINGS_CATEGORIES.map((item) => {
-              const selected = item.id === category;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`${styles.navItem} ${selected ? styles.navItemActive : ''}`}
-                  aria-current={selected ? 'page' : undefined}
-                  onClick={() => selectCategory(item.id)}
-                >
-                  {selected && (
-                    <motion.span
-                      className={styles.navIndicator}
-                      layoutId="active-category"
-                      initial={false}
-                      transition={
-                        reducedMotion
-                          ? { duration: 0 }
-                          : { type: 'spring', stiffness: 440, damping: 38 }
-                      }
-                      aria-hidden="true"
-                    />
-                  )}
-                  <span className={styles.navLabel}>{t(item.labelKey)}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </LayoutGroup>
-      </aside>
-      <div className={styles.pane}>
-        {detail && (
-          <header className={styles.detailHeader}>
-            <GlassBackButton label={t('backToSettings')} onClick={closeDetail} />
-            <h1>{t(detailLabels[detail.page])}</h1>
-          </header>
-        )}
-        <main className={styles.main}>
-          <SettingsTab
-            {...controller}
-            category={category}
-            detail={detail}
-            onOpenDetail={openDetail}
-            onBack={closeDetail}
-          />
-        </main>
+    <GlassPreferencesContext.Provider value={glass}>
+      <div
+        className={styles.app}
+        data-settings
+        data-glass-host
+        data-glass-enabled={glass.settingsGlassEnabled}
+      >
+        <aside className={styles.sidebar} aria-label={t('tabSettings')}>
+          <LayoutGroup id="settings-navigation">
+            <nav className={styles.nav}>
+              {SETTINGS_CATEGORIES.map((item) => {
+                const selected = item.id === category;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`${styles.navItem} ${selected ? styles.navItemActive : ''}`}
+                    aria-current={selected ? 'page' : undefined}
+                    data-settings-category={item.id}
+                    onClick={() => selectCategory(item.id)}
+                  >
+                    {selected && (
+                      <motion.span
+                        className={styles.navIndicator}
+                        layoutId="active-category"
+                        initial={false}
+                        transition={
+                          reducedMotion
+                            ? { duration: 0 }
+                            : { type: 'spring', stiffness: 440, damping: 38 }
+                        }
+                        aria-hidden="true"
+                      />
+                    )}
+                    <item.icon size={18} className={styles.navIcon} aria-hidden="true" />
+                    <span className={styles.navLabel}>{t(item.labelKey)}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </LayoutGroup>
+        </aside>
+        <div className={styles.pane}>
+          {detail && (
+            <header className={styles.detailHeader}>
+              <GlassBackButton label={t('backToSettings')} onClick={closeDetail} />
+              <h1>{t(detailLabels[detail.page])}</h1>
+            </header>
+          )}
+          <main className={styles.main}>
+            <SettingsTab
+              {...controller}
+              category={category}
+              detail={detail}
+              onOpenDetail={openDetail}
+              onBack={closeDetail}
+              onNavigateCategory={selectCategory}
+            />
+          </main>
+        </div>
+        <div ref={setContainer} className={styles.overlay} />
       </div>
-      <div ref={setContainer} className={styles.overlay} />
-    </div>
+    </GlassPreferencesContext.Provider>
   );
 }

@@ -88,7 +88,13 @@ export function createAppStateStore(userDataPath: string) {
     return state;
   };
 
-  const persistState = database.transaction((state: AppState) => writeState(state));
+  const persistState = database.transaction(
+    (state: AppState, removedSecrets: readonly string[]) => {
+      writeState(state);
+      const remove = database.prepare(queries.deleteSecret);
+      for (const name of removedSecrets) remove.run(name);
+    },
+  );
   let loadError: unknown = null;
 
   return {
@@ -104,7 +110,10 @@ export function createAppStateStore(userDataPath: string) {
         return structuredClone(defaultAppState);
       }
     },
-    update: async (patch: AppStatePatch): Promise<AppState> => {
+    update: async (
+      patch: AppStatePatch,
+      removedSecrets: readonly string[] = [],
+    ): Promise<AppState> => {
       if (!isAppStatePatch(patch)) throw new TypeError('Invalid Ripple Next app state update');
       const previous = readState();
       const next: AppState = {
@@ -113,7 +122,7 @@ export function createAppStateStore(userDataPath: string) {
         settings: { ...previous.settings, ...patch.settings },
       };
       if (!isAppState(next)) throw new TypeError('Invalid Ripple Next app state');
-      persistState.immediate(next);
+      persistState.immediate(next, removedSecrets);
       loadError = null;
       return structuredClone(next);
     },

@@ -25,14 +25,16 @@ describe('encrypted API key storage', () => {
     };
     try {
       const store = createSecretStore(database, crypto);
-      await store.setApiKey('sk-sensitive-value');
+      await store.setSecret('ai-api-key:1', 'sk-sensitive-value');
 
-      const ciphertext = database.getSecretCiphertext('api-key');
+      const ciphertext = database.getSecretCiphertext('ai-api-key:1');
       expect(ciphertext).not.toBeNull();
       expect(ciphertext?.toString()).not.toContain('sk-sensitive-value');
       expect(existsSync(path.join(userDataPath, 'credentials.bin'))).toBe(false);
-      expect(await createSecretStore(database, crypto).getApiKey()).toBe('sk-sensitive-value');
-      expect(await store.hasApiKey()).toBe(true);
+      expect(await createSecretStore(database, crypto).getSecret('ai-api-key:1')).toBe(
+        'sk-sensitive-value',
+      );
+      expect(await store.hasSecret('ai-api-key:1')).toBe(true);
     } finally {
       database.close();
       await rm(userDataPath, { recursive: true, force: true });
@@ -49,10 +51,10 @@ describe('encrypted API key storage', () => {
       decryptStringAsync: vi.fn(),
     };
     try {
-      await expect(createSecretStore(database, crypto).setApiKey('sk-secret')).rejects.toThrow(
-        'OS-backed secure storage is unavailable',
-      );
-      expect(database.hasSecret('api-key')).toBe(false);
+      await expect(
+        createSecretStore(database, crypto).setSecret('ai-api-key:1', 'sk-secret'),
+      ).rejects.toThrow('OS-backed secure storage is unavailable');
+      expect(database.hasSecret('ai-api-key:1')).toBe(false);
       expect(existsSync(path.join(userDataPath, 'credentials.bin'))).toBe(false);
     } finally {
       database.close();
@@ -69,10 +71,10 @@ describe('encrypted API key storage', () => {
         encryptStringAsync: async (value: string) => Buffer.from(value),
         decryptStringAsync: vi.fn(),
       };
-      await expect(createSecretStore(database, crypto).setApiKey('sk-secret')).rejects.toThrow(
-        'OS-backed secure storage is unavailable',
-      );
-      expect(database.hasSecret('api-key')).toBe(false);
+      await expect(
+        createSecretStore(database, crypto).setSecret('ai-api-key:1', 'sk-secret'),
+      ).rejects.toThrow('OS-backed secure storage is unavailable');
+      expect(database.hasSecret('ai-api-key:1')).toBe(false);
     } finally {
       database.close();
       await rm(userDataPath, { recursive: true, force: true });

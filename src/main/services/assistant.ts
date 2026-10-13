@@ -3,13 +3,14 @@ import type { AssistantEvent, NoticeCode } from '../../shared/contracts';
 import { resolvePromptTimeContext } from '../prompts/injections';
 import { streamCompatibleChat } from './compatibleChat';
 import type { CompatibleChatRequest } from './compatibleChat';
+import { aiSecretName } from '../../shared/aiConfiguration';
 
 interface StateReader {
   load(): Promise<AppState>;
 }
 
 interface SecretReader {
-  getApiKey(): Promise<string | null>;
+  getSecret(name: string): Promise<string | null>;
 }
 
 type StreamFunction = (
@@ -44,20 +45,30 @@ export function createAssistantService(
       controllers.set(requestId, controller);
       let apiKey: string | null = null;
       try {
-        const [state, storedApiKey] = await Promise.all([
-          stateStore.load(),
-          secretStore.getApiKey(),
-        ]);
-        apiKey = storedApiKey;
+        const state = await stateStore.load();
+        const model = state.settings.ai.models.find(
+          (item) => item.id === state.settings.ai.activeModelId,
+        );
+        const endpoint = state.settings.ai.endpoints.find((item) => item.id === model?.endpointId);
+        if (!model?.name || !endpoint) {
+          send({ requestId, kind: 'error', code: 'invalidAISettings' });
+          return null;
+        }
+        apiKey =
+          model.credentialId === null
+            ? null
+            : await secretStore.getSecret(aiSecretName(model.credentialId));
         if (!apiKey) {
           send({ requestId, kind: 'error', code: 'missingApiKey' });
           return null;
         }
         const answer = await stream(
           {
-            baseUrl: state.settings.aiBaseUrl,
+            baseUrl: endpoint.baseUrl,
+            protocol: endpoint.protocol,
             apiKey,
-            model: state.settings.aiModel,
+            model: model.name,
+            customization: model.customization,
             version: getAppVersion(),
             ...resolvePromptTimeContext(state.settings.timeZone),
             prompt,

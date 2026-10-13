@@ -7,7 +7,10 @@ import { useOverview } from '../src/renderer/hooks/useOverview';
 const format = vi.hoisted(() =>
   vi.fn((_language, _hourFormat, date: Date) => String(date.getUTCMinutes())),
 );
-vi.mock('../src/renderer/lib/date', () => ({ formatTime: format }));
+vi.mock('../src/renderer/lib/date', () => ({
+  formatTime: format,
+  formatOverviewDate: () => 'date',
+}));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ i18n: { language: 'en' } }) }));
 vi.mock('../src/renderer/lib/diagnostics', () => ({ recordRendererError: vi.fn() }));
 

@@ -3,159 +3,46 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { ElasticScrollArea } from '../components/ElasticScrollArea';
 import { InlineNotices } from '../components/InlineNotices';
-import { PreferenceSwitch } from '../components/PreferenceSwitch';
+import { WeatherLocationEditor } from './WeatherSettings';
+import { WorkflowEditor } from './WorkflowEditor';
+import { AISettingsPage } from './AISettings';
+import { ThirdPartyLicenses } from './ThirdPartyLicenses';
 import { Select } from '../components/Select';
 import type { useSettingsWindowController } from '../hooks/useSettingsWindowController';
 import type { SettingsDetail } from '../lib/settingsDetails';
 import { isValidSearchUrlTemplate } from '../lib/search';
-import { splitWorkflowTargets } from '../lib/workflowTargets';
 import { PrefCard, PrefRow } from './SettingsPreferences';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
 import styles from './SettingsTab.module.css';
+import { DangerAction } from '../components/DangerAction';
+import { SettingsLiquidGlass } from './SettingsLiquidGlass';
 
 export type SettingsFormProps = ReturnType<typeof useSettingsWindowController>;
 interface Props {
   settings: SettingsFormProps;
   detail: SettingsDetail;
   onBack(): void;
+  onOpenDetail?(detail: SettingsDetail): void;
 }
 
-function WeatherLocationEditor({ settings: p, onBack }: Omit<Props, 'detail'>) {
-  const { t } = useTranslation();
-  const locationId = useId();
-  const reduced = useReducedMotionPreference();
-  const [automatic, setAutomatic] = useState(p.weatherLocation === 'auto:ip');
-  const [parts, setParts] = useState(() => {
-    const fields =
-      p.weatherLocation === 'auto:ip'
-        ? []
-        : p.weatherLocation.split(/[,，]/).map((value) => value.trim());
-    return [fields[0] ?? '', fields[1] ?? '', fields.slice(2).join(', ')];
-  });
-  return (
-    <PrefCard>
-      <form
-        className={styles.prefStack}
-        onSubmit={(event) => {
-          event.preventDefault();
-          p.setWeatherLocation(
-            automatic
-              ? 'auto:ip'
-              : parts
-                  .map((value) => value.trim())
-                  .filter(Boolean)
-                  .join(', '),
-          );
-          onBack();
-        }}
-      >
-        <PrefRow label={t('automaticLocation')} hint={t('automaticLocationHint')}>
-          <PreferenceSwitch
-            label={t('automaticLocation')}
-            checked={automatic}
-            onCheckedChange={setAutomatic}
-          />
-        </PrefRow>
-        <AnimatePresence initial={false}>
-          {!automatic && (
-            <motion.div
-              key="manual-location"
-              className={styles.animatedFields}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: reduced ? 0 : 0.2 }}
-            >
-              <p className={styles.hint}>{t('manualLocationHint')}</p>
-              {(['locationCity', 'locationRegion', 'locationCountry'] as const).map(
-                (key, index) => (
-                  <div key={key} className={styles.fieldLabel}>
-                    <label htmlFor={`${locationId}-${index}`}>{t(key)}</label>
-                    <div className={styles.editRow}>
-                      <input
-                        id={`${locationId}-${index}`}
-                        className={styles.input}
-                        value={parts[index]}
-                        required={index === 0 && parts.some((value) => value.trim())}
-                        onChange={(event) =>
-                          setParts((old) =>
-                            old.map((value, i) => (i === index ? event.target.value : value)),
-                          )
-                        }
-                      />
-                      {index === 2 && (
-                        <button type="submit" className={styles.primaryButton}>
-                          {t('saveSettings')}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ),
-              )}
-            </motion.div>
-          )}
-          {automatic && (
-            <motion.div
-              key="automatic-location-save"
-              className={styles.saveActions}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: reduced ? 0 : 0.2 }}
-            >
-              <button type="submit" className={styles.primaryButton}>
-                {t('saveSettings')}
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </form>
-    </PrefCard>
-  );
-}
-
-function SimpleFieldEditor({ settings: p, detail, onBack }: Props) {
+function SimpleFieldEditor({ settings: p, detail }: Props) {
   const { t } = useTranslation();
   const inputId = useId();
   const initial =
     detail.page === 'searchTemplate'
       ? p.searchUrlTemplate
-      : detail.page === 'aiBaseUrl'
-        ? p.aiBaseUrl
-        : detail.page === 'backgroundImage'
-          ? p.bgImage === 'none'
-            ? ''
-            : p.bgImage
-          : '';
+      : detail.page === 'backgroundImage'
+        ? p.bgImage === 'none'
+          ? ''
+          : p.bgImage
+        : '';
   const [draft, setDraft] = useState(initial);
-  const label = t(
-    detail.page === 'searchTemplate'
-      ? 'searchEngineUrl'
-      : detail.page === 'aiBaseUrl'
-        ? 'aiBaseUrl'
-        : 'backgroundImage',
-  );
-  const hint = t(
-    detail.page === 'searchTemplate'
-      ? 'searchEngineUrlHint'
-      : detail.page === 'aiBaseUrl'
-        ? 'aiBaseUrlHint'
-        : 'backgroundImageHint',
-  );
+  const label = t(detail.page === 'searchTemplate' ? 'searchEngineUrl' : 'backgroundImage');
+  const hint = t(detail.page === 'searchTemplate' ? 'searchEngineUrlHint' : 'backgroundImageHint');
   const valid = detail.page !== 'searchTemplate' || isValidSearchUrlTemplate(draft);
   return (
     <PrefCard>
-      <form
-        className={styles.prefStack}
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (!valid) return;
-          if (detail.page === 'searchTemplate') p.setSearchUrlTemplate(draft.trim());
-          else if (detail.page === 'aiBaseUrl') p.handleApiBaseUrlChange(draft.trim());
-          else p.handleBgImageChange(draft.trim() || 'none');
-          onBack();
-        }}
-      >
+      <div className={styles.prefStack}>
         <label className={styles.fieldLabel} htmlFor={inputId}>
           {label}
           <span className={styles.hint}>{hint}</span>
@@ -167,34 +54,37 @@ function SimpleFieldEditor({ settings: p, detail, onBack }: Props) {
             value={draft}
             aria-label={label}
             aria-invalid={!valid}
-            onChange={(event) => setDraft(event.target.value)}
+            onChange={(event) => {
+              const value = event.target.value;
+              setDraft(value);
+              if (detail.page === 'searchTemplate') {
+                if (isValidSearchUrlTemplate(value)) p.setSearchUrlTemplate(value.trim());
+              } else p.handleBgImageChange(value.trim() || 'none');
+            }}
             autoFocus
           />
-          <button type="submit" className={styles.primaryButton} disabled={!valid}>
-            {t('saveSettings')}
-          </button>
         </div>
         {!valid && (
           <p className={styles.fieldError} role="alert">
             {t('invalidSearchUrlTemplate')}
           </p>
         )}
-      </form>
+      </div>
     </PrefCard>
   );
 }
 
-function ApiKeyEditor({ settings: p, onBack }: Omit<Props, 'detail'>) {
+function ApiKeyEditor({ settings: p }: Pick<Props, 'settings'>) {
   const { t } = useTranslation();
   const inputId = useId();
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
+  const configured = p.hasWeatherApiKey;
   const save = async (value: string) => {
     setBusy(true);
     try {
-      if (await p.saveApiKey(value)) {
+      if (await p.saveWeatherApiKey(value)) {
         setDraft('');
-        onBack();
       }
     } finally {
       setBusy(false);
@@ -210,8 +100,8 @@ function ApiKeyEditor({ settings: p, onBack }: Omit<Props, 'detail'>) {
         }}
       >
         <label className={styles.fieldLabel} htmlFor={inputId}>
-          {t('apiKey')}
-          <span className={styles.hint}>{t('apiKeyHint')}</span>
+          {t('weatherApiKey')}
+          <span className={styles.hint}>{t('weatherApiKeyHint')}</span>
         </label>
         <div className={styles.editRow}>
           <input
@@ -220,23 +110,19 @@ function ApiKeyEditor({ settings: p, onBack }: Omit<Props, 'detail'>) {
             type="password"
             autoComplete="new-password"
             value={draft}
+            placeholder={configured ? '••••••••' : undefined}
             onChange={(event) => setDraft(event.target.value)}
             disabled={busy}
             autoFocus
           />
           <button type="submit" className={styles.primaryButton} disabled={busy || !draft.trim()}>
-            {p.hasApiKey ? t('changeApiKey') : t('saveApiKey')}
+            {configured ? t('changeApiKey') : t('saveApiKey')}
           </button>
         </div>
-        {p.hasApiKey && (
-          <button
-            type="button"
-            className={styles.dangerButton}
-            disabled={busy}
-            onClick={() => void save('')}
-          >
+        {configured && (
+          <DangerAction label={t('removeApiKey')} disabled={busy} onConfirm={() => save('')}>
             {t('removeApiKey')}
-          </button>
+          </DangerAction>
         )}
         <InlineNotices area="settings" codes={['secretStorageUnavailable']} />
       </form>
@@ -390,53 +276,7 @@ function QuickAppEditor({ settings: p, onBack }: Omit<Props, 'detail'>) {
   );
 }
 
-function WorkflowEditor({ settings: p, onBack }: Omit<Props, 'detail'>) {
-  const { t } = useTranslation();
-  const inputId = useId();
-  return (
-    <PrefCard>
-      <form
-        className={styles.prefStack}
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (!p.workflowName.trim() || !splitWorkflowTargets(p.workflowUrls).length) return;
-          p.addWorkflow();
-          onBack();
-        }}
-      >
-        <label className={styles.fieldLabel}>
-          {t('workflowName')}
-          <input
-            className={styles.input}
-            required
-            placeholder={t('workflowNameHint')}
-            value={p.workflowName}
-            onChange={(event) => p.setWorkflowName(event.target.value)}
-            autoFocus
-          />
-        </label>
-        <label className={styles.fieldLabel} htmlFor={inputId}>
-          {t('workflowApps')}
-        </label>
-        <div className={styles.editRow}>
-          <textarea
-            id={inputId}
-            className={`${styles.input} ${styles.workflowInput}`}
-            required
-            placeholder={t('workflowAppsHint')}
-            value={p.workflowUrls}
-            onChange={(event) => p.setWorkflowUrls(event.target.value)}
-          />
-          <button type="submit" className={styles.primaryButton}>
-            {t('saveWorkflow')}
-          </button>
-        </div>
-      </form>
-    </PrefCard>
-  );
-}
-
-function QuickAppNameEditor({ settings: p, detail, onBack }: Props) {
+function QuickAppNameEditor({ settings: p, detail }: Props) {
   const { t } = useTranslation();
   const inputId = useId();
   const index =
@@ -444,15 +284,7 @@ function QuickAppNameEditor({ settings: p, detail, onBack }: Props) {
   const [draft, setDraft] = useState(p.quickApps[index]?.name ?? '');
   return (
     <PrefCard>
-      <form
-        className={styles.prefStack}
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (index < 0 || !draft.trim()) return;
-          p.handleQaChange(index, draft.trim());
-          onBack();
-        }}
-      >
+      <div className={styles.prefStack}>
         <label className={styles.fieldLabel} htmlFor={inputId}>
           {t('appName')}
         </label>
@@ -462,14 +294,15 @@ function QuickAppNameEditor({ settings: p, detail, onBack }: Props) {
             className={styles.input}
             required
             value={draft}
-            onChange={(event) => setDraft(event.target.value)}
+            onChange={(event) => {
+              const value = event.target.value;
+              setDraft(value);
+              if (index >= 0 && value.trim()) p.handleQaChange(index, value.trim());
+            }}
             autoFocus
           />
-          <button type="submit" className={styles.primaryButton} disabled={index < 0}>
-            {t('saveSettings')}
-          </button>
         </div>
-      </form>
+      </div>
     </PrefCard>
   );
 }
@@ -478,20 +311,49 @@ export function SettingsEditor(props: Props) {
   const page = props.detail.page;
   return (
     <ElasticScrollArea id="settings-detail-container" className={styles.container}>
-      {page === 'weatherLocation' ? (
-        <WeatherLocationEditor settings={props.settings} onBack={props.onBack} />
-      ) : page === 'apiKey' ? (
-        <ApiKeyEditor settings={props.settings} onBack={props.onBack} />
+      {page === 'liquidGlass' ? (
+        <SettingsLiquidGlass settings={props.settings} />
+      ) : page === 'thirdPartyLicenses' ? (
+        <ThirdPartyLicenses />
+      ) : [
+          'aiEndpoints',
+          'aiEndpoint',
+          'aiCredentials',
+          'aiCredential',
+          'aiModels',
+          'aiModel',
+          'aiCustomizations',
+          'aiCustomization',
+        ].includes(page) ? (
+        <AISettingsPage
+          controller={props.settings.aiConfiguration}
+          detail={props.detail}
+          navigate={props.onOpenDetail!}
+        />
+      ) : page === 'weatherLocation' ? (
+        <WeatherLocationEditor settings={props.settings} />
+      ) : page === 'weatherApiKey' ? (
+        <ApiKeyEditor settings={props.settings} />
       ) : page === 'addQuickApp' ? (
         <QuickAppEditor settings={props.settings} onBack={props.onBack} />
       ) : page === 'addWorkflow' ? (
-        <WorkflowEditor settings={props.settings} onBack={props.onBack} />
+        <WorkflowEditor />
+      ) : page === 'workflow' ? (
+        <WorkflowEditor index={props.detail.page === 'workflow' ? props.detail.index : undefined} />
       ) : page === 'quickAppName' ? (
         <QuickAppNameEditor {...props} />
       ) : (
         <SimpleFieldEditor {...props} />
       )}
-      <InlineNotices area="settings" codes={['stateSaveFailed']} />
+      <InlineNotices
+        area="settings"
+        codes={[
+          'stateSaveFailed',
+          'stateLoadFailed',
+          'invalidAISettings',
+          'secretStorageUnavailable',
+        ]}
+      />
     </ElasticScrollArea>
   );
 }

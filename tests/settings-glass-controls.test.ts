@@ -151,6 +151,15 @@ it('keeps the real range, continuous values, keyboard fine adjustment and pointe
   );
   expect(changed).toHaveBeenLastCalledWith(50);
   changed.mockClear();
+  input.value = '47.8';
+  await act(async () =>
+    input.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 4, bubbles: true })),
+  );
+  await act(async () =>
+    input.dispatchEvent(new PointerEvent('pointerup', { pointerId: 4, bubbles: true })),
+  );
+  expect(changed).toHaveBeenLastCalledWith(50);
+  changed.mockClear();
   input.value = '47';
   await act(async () =>
     input.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 4, bubbles: true })),

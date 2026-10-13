@@ -16,6 +16,10 @@
 .button.button {
   corner-shape: round;
 }
+.button[data-glass-enabled='false'] {
+  background: var(--control-bg);
+  border: 1px solid var(--control-border);
+}
 .button:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 3px;

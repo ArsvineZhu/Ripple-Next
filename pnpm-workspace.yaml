@@ -6,3 +6,9 @@ allowBuilds:
   'esbuild@0.28.2': true
   'fs-xattr@0.3.1': true
   'macos-alias@0.2.12': true
+
+minimumReleaseAgeExclude:
+  - '@ai-sdk/anthropic@4.0.79'
+  - '@ai-sdk/openai@4.0.92'
+  - '@ai-sdk/provider-utils@5.0.59'
+  - '@ai-sdk/provider@4.0.27'

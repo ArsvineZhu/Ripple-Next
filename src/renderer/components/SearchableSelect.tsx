@@ -8,6 +8,8 @@ import { useOverlay } from './OverlayProvider';
 import styles from './SearchableSelect.module.css';
 import { GlassPanel } from './liquidGlass/GlassPanel';
 import panel from './liquidGlass/GlassPanel.module.css';
+import { MenuHighlight } from './liquidGlass/MenuHighlight';
+import { useGlassPreferences } from './liquidGlass/GlassPreferences';
 
 interface SearchableOption {
   value: string;
@@ -36,8 +38,10 @@ export function SearchableSelect({
   disabled,
 }: Props) {
   const id = useId();
+  const glass = useGlassPreferences();
   const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const [space, setSpace] = useState<number | null>(null);
   const { container, openId, setOpenId, suppressShellClick } = useOverlay();
   const open = openId === id;
@@ -84,6 +88,7 @@ export function SearchableSelect({
           aria-label={label}
           disabled={disabled}
           data-island-interactive
+          data-glass-enabled={glass.settingsGlassEnabled}
         >
           <span data-select-value>
             {options.find((option) => option.value === value)?.label ?? label}
@@ -96,6 +101,8 @@ export function SearchableSelect({
       {container && (open || present) && (
         <Popover.Portal container={container}>
           <Popover.Content
+            data-glass-enabled={glass.settingsGlassEnabled}
+            ref={menuRef}
             style={space ? ({ '--glass-menu-space': `${space}px` } as CSSProperties) : undefined}
             className={`${styles.content} ${panel.menu}`}
             side="bottom"
@@ -119,6 +126,7 @@ export function SearchableSelect({
             onKeyDown={(event) => event.stopPropagation()}
           >
             <GlassPanel />
+            <MenuHighlight menuRef={menuRef} />
             <Command label={label} loop className={`${styles.command} ${panel.text}`}>
               <div className={styles.searchBox}>
                 <Search size={14} aria-hidden="true" />

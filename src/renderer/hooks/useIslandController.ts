@@ -36,14 +36,8 @@ export function useIslandController() {
     hideNotActiveIslandEnabled,
     showInfoWhenIdleEnabled,
     leaveDelayMs,
-    hasApiKey,
-    aiBaseUrl,
-    aiModel,
-    saveApiKey,
     searchUrlTemplate,
     setSearchUrlTemplate,
-    handleApiBaseUrlChange,
-    handleAiModelChange,
     handleLeaveDelayChange,
     hourFormat,
     showAmPm,
@@ -130,16 +124,7 @@ export function useIslandController() {
     askAI,
   } = useAssistant();
   const { tasks, taskText, setTaskText, addTask, removeTask } = useTasks();
-  const {
-    workflows,
-    workflowName,
-    setWorkflowName,
-    workflowUrls,
-    setWorkflowUrls,
-    openWorkflow,
-    addWorkflow,
-    removeWorkflow,
-  } = useWorkflows();
+  const { workflows, openWorkflow, removeWorkflow } = useWorkflows();
   const {
     quickApps,
     newQuickApp,
@@ -165,12 +150,13 @@ export function useIslandController() {
   const { browserSearch, setBrowserSearch, searchBrowser, searchError, setSearchError } =
     useBrowserSearch();
   const { clipboard, copyToClipboard } = useClipboard();
-  const { time, weather } = useOverview(
+  const { time, overviewTime, overviewDate, weather } = useOverview(
     hourFormat,
     timeZone,
     weatherLocation,
     weatherUnit,
     showAmPm,
+    `${appState.settings.useBuiltInWeatherApi}:${appState.settings.secretRevision}`,
   );
   const { percent, charging } = useBattery();
   const { alert, chargingAlert } = useBatteryAlerts({
@@ -366,6 +352,8 @@ export function useIslandController() {
     textWidth,
     nowPlayingWidth,
     time,
+    overviewTime,
+    overviewDate,
     weather,
     direction,
     currentTabId,
@@ -454,19 +442,8 @@ export function useIslandController() {
     appSuggestions,
     handleQaChange,
     removeQuickApp,
-    aiBaseUrl,
-    aiModel,
-    hasApiKey,
-    saveApiKey,
-    handleApiBaseUrlChange,
-    handleAiModelChange,
     leaveDelayMs,
     handleLeaveDelayChange,
-    workflowName,
-    setWorkflowName,
-    workflowUrls,
-    setWorkflowUrls,
-    addWorkflow,
     removeWorkflow,
   };
 }

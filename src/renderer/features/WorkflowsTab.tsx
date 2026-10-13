@@ -57,10 +57,11 @@ export function WorkflowsTab({ workflows, openWorkflow, bgColor, textColor, quic
                     void launch('workflow-' + i, () => openWorkflow(workflow));
                   }}
                   disabled={pending['workflow-' + i]}
+                  title={workflow.name}
                   aria-describedby={failures['workflow-' + i] ? 'workflow-error-' + i : undefined}
                   style={{ color: bgColor, backgroundColor: textColor }}
                 >
-                  {workflow.name}{' '}
+                  <span className={styles.workflowName}>{workflow.name}</span>
                   <span className={styles.itemCount}>
                     ({t('items', { count: workflow.urls.length })})
                   </span>

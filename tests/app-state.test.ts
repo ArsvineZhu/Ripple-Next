@@ -69,7 +69,15 @@ describe('Ripple Next app state database', () => {
 
     await Promise.all([
       store.update({ tasks: ['Review the build'] }),
-      store.update({ settings: { weatherLocation: 'Tokyo', showTray: false } }),
+      store.update({
+        settings: {
+          weatherLocation: 'Tokyo',
+          showTray: false,
+          settingsGlassEnabled: false,
+          glassBlur: 0,
+          glassRefraction: 1.2,
+        },
+      }),
       store.update({
         workflows: [{ name: 'Work', urls: ['https://example.com'] }],
       }),
@@ -78,9 +86,19 @@ describe('Ripple Next app state database', () => {
     const restored = trackStore(createAppStateStore(userDataPath));
     expect(await restored.load()).toMatchObject({
       tasks: ['Review the build'],
-      settings: { weatherLocation: 'Tokyo', showTray: false },
+      settings: {
+        weatherLocation: 'Tokyo',
+        showTray: false,
+        settingsGlassEnabled: false,
+        glassBlur: 0,
+        glassRefraction: 1.2,
+      },
       workflows: [{ name: 'Work', urls: ['https://example.com'] }],
     });
+    await expect(
+      restored.update({ settings: { islandGlassEnabled: true as never } }),
+    ).rejects.toThrow('Invalid');
+    await expect(restored.update({ settings: { glassIor: 0.5 } })).rejects.toThrow('Invalid');
   });
 
   it('reads showTray from the persisted setting row', async () => {
@@ -131,7 +149,9 @@ describe('Ripple Next app state database', () => {
       tasks: ['keep task'],
       workflows: [{ name: 'keep workflow', urls: ['https://example.com'] }],
     });
-    expect(restored.getSecretCiphertext('api-key')).toEqual(Buffer.from('encrypted fixture'));
+    expect(restored.getSecretCiphertext('ai-api-key:1')).toEqual(Buffer.from('encrypted fixture'));
+    expect(restored.getSecretCiphertext('api-key')).toBeNull();
+    expect((await restored.load()).settings.ai.credentials[0].endpointId).toBe(1);
 
     const repairedDatabase = new Database(path.join(userDataPath, 'ripple-next.sqlite'));
     expect(
@@ -142,7 +162,7 @@ describe('Ripple Next app state database', () => {
           .get('hiddenTabs') as string,
       ),
     ).toEqual(['workflows', 'assistant']);
-    expect(repairedDatabase.pragma('user_version', { simple: true })).toBe(3);
+    expect(repairedDatabase.pragma('user_version', { simple: true })).toBe(5);
     repairedDatabase.close();
 
     await expect(restored.update({ settings: { defaultTabId: 7 as never } })).rejects.toThrow(
@@ -182,5 +202,70 @@ describe('Ripple Next app state database', () => {
     const restored = trackStore(createAppStateStore(userDataPath));
     expect((await restored.load()).settings.weatherLocation).toBe('');
     database.close();
+  });
+
+  it('migrates the legacy AI binding and opaque key once, including missing-key models', async () => {
+    const directory = await createTemporaryDirectory();
+    const original = trackStore(createAppStateStore(directory));
+    await original.update({ tasks: ['preserved'] });
+    original.setSecretCiphertext('api-key', Buffer.from([0, 128, 255, 13]));
+    original.close();
+    const database = new Database(path.join(directory, 'ripple-next.sqlite'));
+    const write = database.prepare('INSERT OR REPLACE INTO app_settings(key, value) VALUES (?, ?)');
+    write.run('aiBaseUrl', JSON.stringify('https://legacy.test/v1'));
+    write.run('aiModel', JSON.stringify('legacy-model'));
+    database.pragma('user_version = 3');
+    database.close();
+    const migrated = trackStore(createAppStateStore(directory));
+    const state = await migrated.load();
+    expect(state.tasks).toEqual(['preserved']);
+    expect(state.settings.ai).toMatchObject({
+      activeModelId: 1,
+      endpoints: [{ id: 1, baseUrl: 'https://legacy.test/v1' }],
+      credentials: [{ id: 1, endpointId: 1 }],
+      models: [{ id: 1, credentialId: 1, name: 'legacy-model' }],
+    });
+    expect(migrated.getSecretCiphertext('ai-api-key:1')).toEqual(Buffer.from([0, 128, 255, 13]));
+    expect(migrated.hasSecret('api-key')).toBe(false);
+    migrated.close();
+    const reopened = trackStore(createAppStateStore(directory));
+    expect((await reopened.load()).settings.ai).toEqual(state.settings.ai);
+    reopened.close();
+    const missing = new Database(path.join(directory, 'ripple-next.sqlite'));
+    missing.prepare('DELETE FROM app_settings WHERE key = ?').run('ai');
+    missing.prepare('DELETE FROM secrets').run();
+    missing
+      .prepare('INSERT INTO app_settings(key, value) VALUES (?, ?)')
+      .run('aiModel', JSON.stringify('without-key'));
+    missing.pragma('user_version = 3');
+    missing.close();
+    expect(
+      (await trackStore(createAppStateStore(directory)).load()).settings.ai.models[0],
+    ).toMatchObject({ name: 'without-key', credentialId: null });
+  });
+
+  it('rolls back AI metadata and secret deletion together on a database failure', async () => {
+    const directory = await createTemporaryDirectory();
+    const store = trackStore(createAppStateStore(directory));
+    store.setSecretCiphertext('ai-api-key:1', Buffer.from('ciphertext'));
+    const database = new Database(store.filePath);
+    database.exec(
+      "CREATE TRIGGER reject_secret_delete BEFORE DELETE ON secrets BEGIN SELECT RAISE(ABORT, 'injected secret failure'); END",
+    );
+    await expect(
+      store.update({ settings: { ai: { ...defaultAppState.settings.ai, endpoints: [] } } }, [
+        'ai-api-key:1',
+      ]),
+    ).rejects.toThrow('injected secret failure');
+    expect((await store.load()).settings.ai.endpoints).toEqual(
+      defaultAppState.settings.ai.endpoints,
+    );
+    expect(store.hasSecret('ai-api-key:1')).toBe(true);
+    database.exec('DROP TRIGGER reject_secret_delete');
+    database.close();
+    await store.update({ settings: { ai: { ...defaultAppState.settings.ai, endpoints: [] } } }, [
+      'ai-api-key:1',
+    ]);
+    expect(store.hasSecret('ai-api-key:1')).toBe(false);
   });
 });

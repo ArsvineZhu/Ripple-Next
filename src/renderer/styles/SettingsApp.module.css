@@ -10,8 +10,8 @@
   --settings-divider: rgba(0, 0, 0, 0.1);
   --settings-accent: var(--settings-fg);
   --settings-accent-soft: color-mix(in srgb, var(--settings-fg) 14%, transparent);
-  --settings-danger: var(--settings-fg);
-  --settings-danger-soft: color-mix(in srgb, var(--settings-fg) 12%, transparent);
+  --settings-danger: #ff3b30;
+  --settings-danger-soft: rgb(255 59 48 / 12%);
   --notice-warning-color: var(--settings-fg);
   --notice-error-color: var(--settings-fg);
 
@@ -117,6 +117,9 @@
 }
 
 .navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   position: relative;
   isolation: isolate;
   width: 100%;
@@ -130,6 +133,11 @@
   border-radius: var(--settings-radius-md);
   cursor: pointer;
   transition: color 160ms ease;
+}
+
+.navIcon {
+  position: relative;
+  flex-shrink: 0;
 }
 
 .navItem:hover {

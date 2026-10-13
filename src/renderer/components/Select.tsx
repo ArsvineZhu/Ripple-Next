@@ -1,6 +1,8 @@
 import * as Primitive from '@radix-ui/react-dropdown-menu';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import { useEffect, useId } from 'react';
+import { useEffect, useId, useRef } from 'react';
+import { MenuHighlight } from './liquidGlass/MenuHighlight';
+import { useGlassPreferences } from './liquidGlass/GlassPreferences';
 import { GlassPanel } from './liquidGlass/GlassPanel';
 import panel from './liquidGlass/GlassPanel.module.css';
 import { useOverlay } from './OverlayProvider';
@@ -20,6 +22,8 @@ interface Props {
 }
 export function Select({ value, options, onValueChange, label, disabled }: Props) {
   const id = useId();
+  const glass = useGlassPreferences();
+  const menuRef = useRef<HTMLDivElement>(null);
   const { container, openId, setOpenId, suppressShellClick } = useOverlay();
   const open = openId === id;
   useEffect(
@@ -35,6 +39,7 @@ export function Select({ value, options, onValueChange, label, disabled }: Props
         aria-label={label}
         disabled={disabled}
         data-island-interactive
+        data-glass-enabled={glass.settingsGlassEnabled}
       >
         <span data-select-value>
           {options.find((option) => option.value === value)?.label ?? label}
@@ -46,6 +51,8 @@ export function Select({ value, options, onValueChange, label, disabled }: Props
       {container && (
         <Primitive.Portal container={container}>
           <Primitive.Content
+            data-glass-enabled={glass.settingsGlassEnabled}
+            ref={menuRef}
             className={`${styles.content} ${panel.menu}`}
             sideOffset={6}
             align="end"
@@ -62,6 +69,7 @@ export function Select({ value, options, onValueChange, label, disabled }: Props
             onKeyDown={(event) => event.stopPropagation()}
           >
             <GlassPanel />
+            <MenuHighlight menuRef={menuRef} />
             <div className={`${styles.viewport} ${panel.text}`}>
               <Primitive.RadioGroup value={value} onValueChange={onValueChange}>
                 {options.map((option, index) => (

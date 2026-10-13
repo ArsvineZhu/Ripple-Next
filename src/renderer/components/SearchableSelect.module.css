@@ -141,9 +141,14 @@
   cursor: pointer;
   user-select: none;
 }
-
-.item[data-selected='true'] {
-  background: var(--control-hover);
+.trigger[data-glass-enabled='false'] {
+  background: var(--control-bg);
+  border-color: var(--control-border);
+}
+.content[data-glass-enabled='false'] {
+  background: var(--menu-bg);
+  border: 1px solid var(--control-border);
+  border-radius: 12px;
 }
 
 .item[data-disabled='true'] {

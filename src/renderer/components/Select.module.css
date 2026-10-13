@@ -51,6 +51,15 @@
   opacity: 0.45;
   cursor: default;
 }
+.trigger[data-glass-enabled='false'] {
+  background: var(--control-bg);
+  border-color: var(--control-border);
+}
+.content[data-glass-enabled='false'] {
+  background: var(--menu-bg);
+  border: 1px solid var(--control-border);
+  border-radius: 12px;
+}
 
 .content {
   --glass-menu-origin: var(--radix-dropdown-menu-content-transform-origin);
@@ -89,10 +98,6 @@
   outline: none;
   user-select: none;
   overflow-wrap: anywhere;
-}
-
-.item[data-highlighted] {
-  background: var(--control-hover);
 }
 
 .item[data-disabled] {

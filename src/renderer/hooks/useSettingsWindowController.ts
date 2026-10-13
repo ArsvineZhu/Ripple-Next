@@ -4,12 +4,14 @@ import { useSettingsContext } from '../components/SettingsProvider';
 import { useBackgroundImage } from './useBackgroundImage';
 import { useQuickApps } from './useQuickApps';
 import { useWorkflows } from './useWorkflows';
+import { useAIConfiguration } from './useAIConfiguration';
 import { TABS, islandPages } from '../lib/tabs';
 
 /** Settings-window props for SettingsTab without island media, hover, or paging. */
 export function useSettingsWindowController() {
   const { state, updateState } = useAppState();
   const settings = useSettingsContext();
+  const aiConfiguration = useAIConfiguration();
   useEffect(() => {
     void window.electronAPI
       ?.getDisplays()
@@ -17,15 +19,7 @@ export function useSettingsWindowController() {
       .catch(() => {});
   }, [settings.setDisplays]);
   const backgroundImage = useBackgroundImage(settings.bgImage);
-  const {
-    workflows,
-    workflowName,
-    setWorkflowName,
-    workflowUrls,
-    setWorkflowUrls,
-    addWorkflow,
-    removeWorkflow,
-  } = useWorkflows();
+  const { workflows, removeWorkflow } = useWorkflows();
   const {
     quickApps,
     newQuickApp,
@@ -71,14 +65,10 @@ export function useSettingsWindowController() {
   };
 
   return {
+    aiConfiguration,
     ...settings,
     ...backgroundImage,
     workflows,
-    workflowName,
-    setWorkflowName,
-    workflowUrls,
-    setWorkflowUrls,
-    addWorkflow,
     removeWorkflow,
     quickApps,
     newQuickApp,

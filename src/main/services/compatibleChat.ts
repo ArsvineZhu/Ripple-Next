@@ -1,4 +1,8 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { defaultCustomization } from '../../shared/aiConfiguration';
+import type { AIProtocol, ModelCustomization } from '../../shared/aiConfiguration';
 import { streamText } from 'ai';
 import { author, bugs, license, productName, repository } from '../../../package.json';
 import defaultAssistantPrompt from '../prompts/default-assistant.md?raw';
@@ -22,6 +26,8 @@ export interface CompatibleChatRequest
   model: string;
   prompt: string;
   signal?: AbortSignal;
+  protocol?: AIProtocol;
+  customization?: ModelCustomization;
 }
 
 interface StreamDependencies {
@@ -45,24 +51,69 @@ export async function streamCompatibleChat(
   if (!request.model.trim()) throw new TypeError('Model is required');
   if (!request.apiKey.trim()) throw new TypeError('API key is required');
 
-  const provider = createOpenAICompatible({
-    name: 'ripple-next',
+  const settings = {
     baseURL: request.baseUrl.replace(/\/+$/, ''),
     apiKey: request.apiKey,
     ...(fetchImpl ? { fetch: fetchImpl } : {}),
-  });
+  };
+  const protocol = request.protocol ?? 'completion';
+  const model =
+    protocol === 'responses'
+      ? createOpenAI(settings).responses(request.model.trim())
+      : protocol === 'anthropic'
+        ? createAnthropic(settings)(request.model.trim())
+        : createOpenAICompatible({ ...settings, name: 'rippleNext' })(request.model.trim());
+  const customization = request.customization ?? defaultCustomization();
   const timeContext =
     request.timezone && request.current_time
       ? { timezone: request.timezone, current_time: request.current_time }
       : resolvePromptTimeContext(request.timezone ?? 'system');
   let streamError: unknown;
+  const context = { ...promptMetadata, version: request.version, ...timeContext };
+  const system = [
+    renderPromptTemplate(customization.systemPrompt ?? defaultAssistantPrompt, context).trim(),
+    ...customization.injections
+      .filter((item) => item.enabled)
+      .map((item) => renderPromptTemplate(item.text, context).trim()),
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+  if (
+    customization.contextLimitCharacters &&
+    system.length + request.prompt.length > customization.contextLimitCharacters
+  )
+    throw new TypeError('Configured context limit exceeded');
+  const effort = customization.reasoningEffort;
+  const providerOptions: NonNullable<Parameters<typeof streamText>[0]['providerOptions']> =
+    protocol === 'responses'
+      ? { openai: { store: false, ...(effort === 'default' ? {} : { reasoningEffort: effort }) } }
+      : protocol === 'completion'
+        ? { rippleNext: effort === 'default' ? {} : { reasoningEffort: effort } }
+        : {
+            anthropic: {
+              ...(effort === 'default' ? {} : { effort }),
+              ...(customization.thinkingMode === 'default'
+                ? {}
+                : {
+                    thinking:
+                      customization.thinkingMode === 'budget'
+                        ? { type: 'enabled', budgetTokens: customization.thinkingBudget ?? 1024 }
+                        : { type: customization.thinkingMode },
+                  }),
+            },
+          };
+  const budgetThinking = protocol === 'anthropic' && customization.thinkingMode === 'budget';
   const result = streamText({
-    model: provider(request.model.trim()),
-    system: renderPromptTemplate(defaultAssistantPrompt, {
-      ...promptMetadata,
-      version: request.version,
-      ...timeContext,
-    }).trim(),
+    model,
+    system,
+    providerOptions,
+    ...(customization.temperature === null ||
+    (protocol === 'anthropic' && ['adaptive', 'budget'].includes(customization.thinkingMode))
+      ? {}
+      : { temperature: customization.temperature }),
+    maxOutputTokens:
+      customization.maxOutputTokens ??
+      (budgetThinking ? (customization.thinkingBudget ?? 1024) + 4096 : undefined),
     prompt: request.prompt,
     abortSignal: request.signal,
     maxRetries: 0,

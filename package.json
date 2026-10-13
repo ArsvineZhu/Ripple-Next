@@ -41,6 +41,8 @@
   "license": "MIT",
   "packageManager": "pnpm@12.9.1",
   "devDependencies": {
+    "@ai-sdk/anthropic": "4.0.79",
+    "@ai-sdk/openai": "4.0.92",
     "@ai-sdk/openai-compatible": "3.0.62",
     "@electron-forge/cli": "8.0.1",
     "@electron-forge/core": "8.0.1",

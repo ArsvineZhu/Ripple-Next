@@ -1,7 +1,8 @@
-import { useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import styles from './PreferenceSlider.module.css';
-import { GlassSurface } from './liquidGlass/GlassSurface';
+import { GlassHandle } from './liquidGlass/GlassHandle';
+import { useGlassPreferences } from './liquidGlass/GlassPreferences';
 
 interface Props {
   label: string;
@@ -30,6 +31,10 @@ export function PreferenceSlider({
   onValueChange,
 }: Props) {
   const dragging = useRef(false);
+  const directDrag = useRef(false);
+  const startX = useRef(0);
+  const shell = useRef<HTMLDivElement>(null);
+  const glass = useGlassPreferences();
   const inputRef = useRef<HTMLInputElement>(null);
   const range = max - min;
   const stops = useMemo(
@@ -41,9 +46,18 @@ export function PreferenceSlider({
     [min, range, stages],
   );
   const progress = Math.max(0, Math.min(100, ((value - min) / range) * 100));
+  const clear = useCallback(() => {
+    dragging.current = directDrag.current = false;
+    shell.current?.removeAttribute('data-slider-dragging');
+  }, []);
+  useEffect(() => {
+    window.addEventListener('blur', clear);
+    return () => window.removeEventListener('blur', clear);
+  }, [clear]);
 
   return (
     <div
+      ref={shell}
       className={styles.slider}
       data-disabled={disabled || undefined}
       style={{ '--slider-fraction': progress / 100 } as CSSProperties}
@@ -95,35 +109,47 @@ export function PreferenceSlider({
           }}
           onPointerDown={(event) => {
             dragging.current = true;
+            startX.current = event.clientX;
+            const rect = event.currentTarget.getBoundingClientRect();
+            const centre = rect.left + 20 + ((rect.width - 40) * progress) / 100;
+            directDrag.current = Math.abs(event.clientX - centre) <= 20;
+            shell.current?.toggleAttribute('data-slider-dragging', directDrag.current);
             event.currentTarget.setPointerCapture(event.pointerId);
+          }}
+          onPointerMove={(event) => {
+            if (
+              dragging.current &&
+              !directDrag.current &&
+              Math.abs(event.clientX - startX.current) > 3
+            ) {
+              directDrag.current = true;
+              shell.current?.setAttribute('data-slider-dragging', '');
+            }
           }}
           onPointerUp={(event) => {
             if (!dragging.current) return;
-            dragging.current = false;
+            clear();
             const current = Number(event.currentTarget.value);
             const travel = Math.max(1, event.currentTarget.getBoundingClientRect().width - 40);
-            const threshold = Math.min((range * 6) / travel, range * 0.02);
+            const threshold = Math.min((range * glass.glassSnapPixels) / travel, range * 0.04);
             const nearest = stops.reduce((best, stop) =>
               Math.abs(stop - current) < Math.abs(best - current) ? stop : best,
             );
             if (nearest !== current && Math.abs(nearest - current) <= threshold)
               onValueChange(nearest);
           }}
-          onPointerCancel={() => {
-            dragging.current = false;
-          }}
-          onLostPointerCapture={() => {
-            dragging.current = false;
-          }}
+          onPointerCancel={clear}
+          onLostPointerCapture={clear}
         />
-        <GlassSurface
-          controlRef={inputRef}
-          disabled={disabled}
-          slider
-          radius={14}
-          cornerK={1.15}
-          className={styles.thumb}
-        />
+        <span className={styles.thumbPosition} aria-hidden="true">
+          <GlassHandle
+            controlRef={inputRef}
+            disabled={disabled}
+            slider
+            radius={13}
+            cornerK={1.15}
+          />
+        </span>
       </div>
       <span className={styles.endpoint} aria-hidden="true">
         {endLabel}

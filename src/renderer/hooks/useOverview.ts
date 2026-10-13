@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { formatTime } from '../lib/date';
+import { formatTime, formatOverviewDate } from '../lib/date';
 import { useState, useEffect } from 'react';
 import { fetchCurrentWeather } from '../lib/weather';
 import type { WeatherReading } from '../lib/weather';
@@ -11,15 +11,27 @@ export function useOverview(
   location: string,
   weatherUnit: 'f' | 'c',
   showAmPm = false,
+  weatherRefreshToken = '',
 ) {
   const { i18n } = useTranslation();
-  const [time, setTime] = useState<string | null>(null);
+  const [clock, setClock] = useState({
+    time: null as string | null,
+    overviewTime: null as string | null,
+    overviewDate: '',
+  });
   const [weather, setWeather] = useState<WeatherReading | null>(null);
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     const update = () => {
       clearTimeout(timer);
-      setTime(formatTime(i18n.language, hourFormat, new Date(), timeZone, showAmPm));
+      const now = new Date();
+      const time = formatTime(i18n.language, hourFormat, now, timeZone, showAmPm);
+      setClock({
+        time,
+        overviewTime:
+          hourFormat && showAmPm ? formatTime(i18n.language, hourFormat, now, timeZone) : time,
+        overviewDate: formatOverviewDate(i18n.language, now, timeZone, hourFormat && showAmPm),
+      });
       // The clock displays minutes. Align updates with the next minute rather
       // than waking the renderer sixty times for the same visible value.
       timer = setTimeout(update, 60_000 - (Date.now() % 60_000));
@@ -52,12 +64,13 @@ export function useOverview(
       }
     };
     setWeather(null);
-    void getWeather();
+    const initial = setTimeout(() => void getWeather(), 300);
     const interval = setInterval(getWeather, 600000); // Update every 10 mins
     return () => {
       active = false;
+      clearTimeout(initial);
       clearInterval(interval);
     };
-  }, [location, weatherUnit]);
-  return { time, weather };
+  }, [location, weatherUnit, weatherRefreshToken]);
+  return { ...clock, weather };
 }

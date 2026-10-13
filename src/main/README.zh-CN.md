@@ -26,3 +26,5 @@ Linux 窗口需等 renderer 就绪并确认首个 X11 `ShapeInput` 区域后显�
 平台命令通过 `services/processes.ts` 执行，具有超时和真实的异步失败结果；Windows 使用编码的 PowerShell 脚本与共享 WinRT 异步转换。IPC 诊断记录操作结果、耗时和安全错误字段，启动反馈由 renderer 的操作项显示。剪贴板文本读写通过校验后的原生桥接执行。检查结果见 [Windows 适配与诊断](../../docs/platform-compatibility.zh-CN.md)。
 
 `platform/linux/devices.ts` 先使用 `pactl` 检测采集；命令缺失时切换 `pw-dump`，后端保持到应用重启。PipeWire 以运行中的 `Stream/Input/Audio` 节点判断采集活动，连接／命令错误交给诊断。
+
+`services/aiConfiguration.ts` 串行修改配置图并分配稳定序号，凭据密文保存在命名安全存储项中，删除配置与关联密钥在同一 SQLite 事务提交。Migration 4／5 导入原单接口、模型和不透明密文，再移除旧标量设置。`compatibleChat.ts` 选择 Chat Completions、Responses 或 Anthropic 适配器，解析所选模型的系统提示词和已启用有序注入；本地上下文上限在发送前按字符检查。`services/weather.ts` 管理内置／自定义密钥、请求去重和有界 60 秒缓存。`services/licenses.ts` 加载随包许可元数据，仅读取已知许可条目。

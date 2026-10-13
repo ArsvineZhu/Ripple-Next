@@ -38,7 +38,7 @@ Start with a compact glance, hover for quick information, and click to open a fu
 | **Workflows & Quick Apps** | Open a group of apps and webpages in order, or launch one favorite directly. Quick apps support installed apps, URLs and commands with separate arguments. |
 | **Overview**               | Check the time, date, weather and battery together. Choose 12/24-hour time, a time zone, a weather location and Celsius/Fahrenheit.                        |
 | **Now Playing**            | See the song and artwork, pause or resume, skip tracks, and bring the player forward. Scroll vertically to choose among multiple players.                  |
-| **AI Assistant**           | Use your own OpenAI-compatible endpoint and model. Read streamed Markdown answers and copy code blocks.                                                    |
+| **AI Assistant**           | Use your own Chat Completions, Responses or Anthropic endpoints and numbered model configurations. Read streamed Markdown answers and copy code blocks.    |
 | **Clipboard**              | Reuse recently copied text with a copy button beside each entry. History stays in the current session.                                                     |
 | **Tasks**                  | Add a quick to-do and check it off when finished. Your remaining tasks survive a restart.                                                                  |
 | **Settings window**        | Opens when you launch Ripple. Adjust appearance, placement, visible pages, startup behavior and language in a dedicated window.                            |
@@ -74,7 +74,7 @@ Keep individual favorites on the Quick Apps strip. Choose an installed applicati
 
 ## An assistant with your choice of provider
 
-Configure a Base URL, model name and API key in Settings, then ask directly from the Island. Answers arrive as a stream, render as Markdown, and provide copy buttons for code. The answer view grows with the content and scrolls when it reaches the available screen height.
+Configure numbered Base URLs for OpenAI-compatible Chat Completions, OpenAI Responses or Anthropic, save a key for each endpoint, and bind models to them. Each model can have its own system prompt, ordered injections, temperature and reasoning settings. Answers stream into the Island as Markdown, with copy buttons for code and scrolling when they reach the available screen height.
 
 Use **Ask another** to clear the current exchange and start a new question. Ripple Next provides the interface; you bring the endpoint and model. Questions use the service you configure.
 
@@ -105,7 +105,7 @@ Clipboard history and tasks take care of two different kinds of loose ends: text
 
 - **Place it where it belongs.** Select a display, use a snap position, or adjust its free position with immediate slider feedback. Appearance settings keeps a live Island preview visible. Sliders have endpoint labels and gentle snap markers, with free adjustment between them.
 - **Choose the appearance.** Default, Sleek Black and Windows 95 themes; custom colors, an image URL or a local background file; an optional border and adjustable expanded corners (0–60px).
-- **Adjust settings directly.** Liquid Glass slider thumbs and animated option menus, simple on/off switches, and your system's color picker. Longer fields open compact editors with a glass back button; conditional settings and page changes animate. Linux color selection uses zenity or kdialog.
+- **Adjust settings directly.** Start with the illustrated interactive guide. Icons identify settings, ordinary edits save as you work and encrypted keys require Save/Change. Sliders and switches rest as white capsules and reveal enlarged clear glass handles while held; menu highlights move continuously. Appearance & Position has Liquid Glass (Exp) parameters and a switch to restore ordinary controls. Island glass remains unavailable. Red destructive actions ask for confirmation. About presents product information before third-party licenses.
 - **Keep the pages you use.** Reorder or hide seven Island feature pages and choose the default. Launch Ripple or use the tray menu to open Settings.
 - **Control when it stays visible.** Compact, hover and expanded modes; inactive hiding, Quick Standby, Large Standby and a configurable 0–2000 ms pointer-leave delay.
 - **Fit your desktop routine.** Startup control and, on macOS, a menu bar icon toggle; Windows and Linux always keep the tray. Platform specifics are in the guides.

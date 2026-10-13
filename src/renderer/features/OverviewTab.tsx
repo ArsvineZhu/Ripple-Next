@@ -2,14 +2,20 @@ import { useTranslation } from 'react-i18next';
 import styles from './OverviewTab.module.css';
 import typography from '../styles/typography.module.css';
 import { WeatherIcon } from '../components/WeatherIcon';
-import { formatDateShort } from '../lib/date';
 import type { IslandController } from '../hooks/useIslandController';
 import type { CSSProperties } from 'react';
 type Props = Pick<
   IslandController,
-  'charging' | 'percent' | 'weather' | 'textColor' | 'time' | 'timeZone'
+  'charging' | 'percent' | 'weather' | 'textColor' | 'overviewTime' | 'overviewDate'
 >;
-export function OverviewTab({ charging, percent, weather, textColor, time, timeZone }: Props) {
+export function OverviewTab({
+  charging,
+  percent,
+  weather,
+  textColor,
+  overviewTime,
+  overviewDate,
+}: Props) {
   const { i18n } = useTranslation();
   const batteryPercent =
     typeof percent === 'number' && Number.isFinite(percent)
@@ -50,10 +56,8 @@ export function OverviewTab({ charging, percent, weather, textColor, time, timeZ
         </div>
       </div>
       <div className={styles.date} id="date">
-        <h1 className={[typography['text'], styles.time].join(' ')}>{time}</h1>
-        <h2 className={[typography['text'], styles.dateText].join(' ')}>
-          {formatDateShort(i18n.language, undefined, timeZone)}
-        </h2>
+        <h1 className={[typography['text'], styles.time].join(' ')}>{overviewTime}</h1>
+        <h2 className={[typography['text'], styles.dateText].join(' ')}>{overviewDate}</h2>
       </div>
     </>
   );

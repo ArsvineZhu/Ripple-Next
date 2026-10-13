@@ -32,7 +32,10 @@ vi.mock('../src/renderer/features/SettingsTab', () => ({
       createElement('input', { 'data-category': category, defaultValue: '' }),
       createElement(
         'button',
-        { 'data-settings-entry': 'aiBaseUrl', onClick: () => onOpenDetail({ page: 'aiBaseUrl' }) },
+        {
+          'data-settings-entry': 'aiEndpoints',
+          onClick: () => onOpenDetail({ page: 'aiEndpoints' }),
+        },
         detail ? 'detail' : 'edit',
       ),
     ),
@@ -71,10 +74,11 @@ afterEach(async () => {
 });
 
 async function choose(index: number) {
+  const category = ['guide', 'appearance', 'behavior'][index];
   await act(async () =>
     host
-      .querySelectorAll('nav button')
-      [index].dispatchEvent(new MouseEvent('click', { bubbles: true })),
+      .querySelector(`[data-settings-category="${category}"]`)!
+      .dispatchEvent(new MouseEvent('click', { bubbles: true })),
   );
 }
 

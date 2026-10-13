@@ -28,6 +28,10 @@ const config: ForgeConfig = {
     extraResource: [
       path.join(projectRoot, 'src/assets/icons/icon.png'),
       path.join(projectRoot, 'src/assets/third-party/liquid-glass-notices.txt'),
+      path.join(projectRoot, 'src/assets/third-party/licenses.json'),
+      ...(fs.existsSync(path.join(projectRoot, 'node_modules/electron/dist/LICENSES.chromium.html'))
+        ? [path.join(projectRoot, 'out/license-assets/LICENSES.chromium.html')]
+        : []),
     ],
     ...(process.platform === 'darwin'
       ? {
@@ -42,6 +46,9 @@ const config: ForgeConfig = {
   },
   hooks: {
     generateAssets: async () => {
+      execFileSync(process.execPath, [path.join(projectRoot, 'scripts/collect-licenses.mjs')], {
+        cwd: projectRoot,
+      });
       await fs.promises.rm(path.join(projectRoot, '.vite'), { recursive: true, force: true });
     },
     postPackage: async (forgeConfig, options) => {

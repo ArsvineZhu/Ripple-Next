@@ -7,6 +7,8 @@ interface MotionOptions {
   actorRef?: RefObject<HTMLElement | null>;
   enabled?: boolean;
   slider?: boolean;
+  handle?: boolean;
+  elasticity?: number;
 }
 
 /** Native controls own input; motion observes their host and paints CSS variables. */
@@ -15,6 +17,8 @@ export function useGlassMotion({
   actorRef,
   enabled = true,
   slider = false,
+  handle = false,
+  elasticity = 0.15,
 }: MotionOptions) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotionPreference();
@@ -48,13 +52,17 @@ export function useGlassMotion({
       const response = rdevResponse(
         !reduced && fine.matches ? pointer : null,
         anchor,
-        0.15,
+        elasticity,
         200,
-        pressed,
+        pressed && !handle,
       );
       // The range owns its value axis. Keep its centre at the native thumb centre.
       if (slider) {
         response.x = 0;
+        response.y = Math.max(-2, Math.min(2, response.y));
+      }
+      if (handle) {
+        response.x = slider ? 0 : Math.max(-2, Math.min(2, response.x));
         response.y = Math.max(-2, Math.min(2, response.y));
       }
       if (reduced) {
@@ -65,16 +73,20 @@ export function useGlassMotion({
       actor.style.setProperty('--motion-y', `${response.y}px`);
       actor.style.setProperty('--motion-sx', String(response.scaleX));
       actor.style.setProperty('--motion-sy', String(response.scaleY));
+      actor.style.setProperty('--handle-scale', String(handle && pressed && !reduced ? 1.6 : 1));
       material.classList.toggle('lg--pressed', pressed);
+      material.toggleAttribute('data-glass-dragging', slider && pressed);
+      actor.toggleAttribute('data-glass-active', handle && pressed);
       if (glowPoint) {
+        const width = handle ? Math.max(1, material.offsetWidth) : anchor.width;
+        const height = handle ? Math.max(1, material.offsetHeight) : anchor.height;
         const x =
-          (glowPoint.x - anchor.left - anchor.width / 2 - response.x) / response.scaleX +
-          anchor.width / 2;
+          (glowPoint.x - anchor.left - anchor.width / 2 - response.x) / response.scaleX + width / 2;
         const y =
           (glowPoint.y - anchor.top - anchor.height / 2 - response.y) / response.scaleY +
-          anchor.height / 2;
-        material.style.setProperty('--lg-px', `${(x / anchor.width) * 100}%`);
-        material.style.setProperty('--lg-py', `${(y / anchor.height) * 100}%`);
+          height / 2;
+        material.style.setProperty('--lg-px', `${(x / width) * 100}%`);
+        material.style.setProperty('--lg-py', `${(y / height) * 100}%`);
       }
     };
     const schedule = () => {
@@ -132,6 +144,12 @@ export function useGlassMotion({
     window.addEventListener('keyup', keyup, true);
     control.addEventListener('focusout', reset);
     control.addEventListener('lostpointercapture', up);
+    const position = actor.parentElement;
+    const positioned = (event: TransitionEvent) => {
+      if (event.target === position && ['left', 'transform'].includes(event.propertyName))
+        schedule();
+    };
+    position?.addEventListener('transitionend', positioned);
     document.addEventListener('visibilitychange', hidden);
     fine.addEventListener('change', reset);
     paint();
@@ -150,18 +168,22 @@ export function useGlassMotion({
       window.removeEventListener('keyup', keyup, true);
       control.removeEventListener('focusout', reset);
       control.removeEventListener('lostpointercapture', up);
+      position?.removeEventListener('transitionend', positioned);
       document.removeEventListener('visibilitychange', hidden);
       fine.removeEventListener('change', reset);
       material.classList.remove('lg--pressed');
+      material.removeAttribute('data-glass-dragging');
+      actor.removeAttribute('data-glass-active');
       for (const name of [
         '--motion-x',
         '--motion-y',
         '--motion-sx',
         '--motion-sy',
         '--motion-duration',
+        '--handle-scale',
       ])
         actor.style.removeProperty(name);
     };
-  }, [enabled, slider, reduced, actorRef, controlRef]);
+  }, [enabled, slider, handle, reduced, actorRef, controlRef, elasticity]);
   return ref;
 }

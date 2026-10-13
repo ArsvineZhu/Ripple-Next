@@ -39,7 +39,7 @@ Main 拥有应用生命周期、托盘、透明窗口、系统能力和 typed IP
 
 状态服务使用新用户数据目录中的 `ripple-next.sqlite` 保存设置、任务、工作流、快捷应用和已加密的 API key。编号 schema migration 位于 `src/main/database/migrations/`，命名查询位于 `src/main/database/queries/`，全部使用 `.sql` 文件；TypeScript 只绑定参数并控制事务。Renderer 在显示界面前读取状态快照，再通过 typed patch 更新；设置和功能数据不使用 `localStorage`。API key 使用 Electron `safeStorage` 加密，且不会返回 renderer。Linux 缺少 OS 密钥存储时拒绝保存密钥。Ripple Next 不读取或迁移旧 Ripple 数据目录。Linux 自启动优先使用绝对路径 `XDG_CONFIG_HOME/autostart`，否则使用 `~/.config/autostart`。
 
-AI SDK 的 `streamText` 与 OpenAI 兼容 provider 在 main 实现流式对话。默认 system prompt 保存在 `src/main/prompts/default-assistant.md`，并随 main bundle 打包。`xstate` 和 `@xstate/react` 管理可取消的交互延迟与重入门控。Linux 快捷应用从 XDG 桌面入口发现并通过 `gio launch` 启动；自定义命令通过 `spawn` 接收参数数组，不经过 shell。
+AI SDK 的 `streamText` 为 Chat Completions 使用现有 OpenAI 兼容适配器，并按所选带序号接口选择 OpenAI Responses 或 Anthropic 适配器。`aiConfiguration.ts` 管理配置图，密文使用 `ai-api-key:<id>` 命名记录；main 串行修改、保留模型自定义，并原子删除关联密钥。Migration 4／5 保留原配置和密文。普通配置自动保存，凭据替换需明确提交；上下文上限按字符计数，上下文感知仍关闭。内置系统提示词保留在 `src/main/prompts/default-assistant.md`；`xstate`、`@xstate/react` 管理可取消交互延迟，自定义应用命令通过 `spawn` 参数数组执行。
 
 浏览器搜索地址模板保存在设置中，必须包含 `{query}`；直接输入 HTTP(S) 地址仍会作为网址打开。时钟和日期使用当前语言，并可跟随系统时区或指定 IANA 时区。错误会路由到所属功能区行内展示；`InlineNotices` 沿用 Island 的 Motion 淡入与模糊过渡。长内容区使用系统原生纵向滚动，横向页签使用可接续的连续动画与有界回弹；AI 回答会随内容增长，并限制在当前屏幕可用高度内。设置页滑块由对应 CSS Module 统一管理主题轨道、滑块和焦点样式。
 
@@ -64,3 +64,9 @@ Forge 在启动和打包前清理 `.vite`；`.vite`、`out`、报告和 `node_mo
 `pnpm package` 生成可运行目录，`pnpm make` 同时执行配置的原生安装包／归档 maker。[发布指南](release.zh-CN.md)维护版本／标签流程和运行验收。修改主进程或 preload 后重启整个应用，renderer 热更新只替换界面代码。截图数据与会改变状态的运行验证使用独立配置。
 
 [四语产品 README](INDEX.zh-CN.md)介绍功能，本指南维护工具链命令。行为变化时同步双语技术指南与界面截图；演示数据规则见[拍摄说明（英语）](assets/screenshots/README.md)。
+
+## 设置资源
+
+`pnpm package` 执行 `scripts/collect-licenses.mjs`，将已安装依赖及锁定玻璃源码的许可收集到 `src/assets/third-party/licenses.json`，把 Chromium 许可 HTML 复制到生成目录 `out/license-assets`，Forge 将两者放入资源包。设置先读取元数据，选择条目时再读取文本；依赖变化后重新生成。生成输出与运行报告不入 Git。
+
+天气请求及凭据留在 main。有界缓存按位置、单位和凭据区分结果，并复用并发请求；更换密钥后使用新的缓存身份。Renderer 在进入、聚焦和每分钟刷新自动定位预览。操作见[使用指南](../instructions.zh-CN.md)，材质与测量见[设置玻璃](../src/renderer/components/liquidGlass/README.zh-CN.md)。

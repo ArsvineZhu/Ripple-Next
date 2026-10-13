@@ -83,13 +83,19 @@ import { clearWindowRoles, registerWindowRole } from '../src/main/windowRoles';
 import type { WebContents } from 'electron';
 
 const services = {
+  aiConfiguration: {
+    status: async () => ({}),
+    mutate: async () => ({ state: defaultAppState, credentialStatus: {} }),
+    saveCredential: async () => ({ state: defaultAppState, credentialStatus: {} }),
+  },
+  weather: { get: async () => ({ reading: null, location: null, error: null }) },
   stateStore: {
     load: async () => defaultAppState,
     update: async () => defaultAppState,
   },
   secretStore: {
-    setApiKey: async () => {},
-    hasApiKey: async () => false,
+    setSecret: async () => {},
+    hasSecret: async () => false,
   },
   assistant: {
     start: async () => null,
@@ -138,7 +144,7 @@ describe('IPC boundary', () => {
     ).resolves.toBeUndefined();
     await expect(
       mock.handlers.get('get-app-bootstrap')!({ sender: mock.settings }),
-    ).resolves.toEqual({ state: defaultAppState, hasApiKey: false });
+    ).resolves.toEqual({ state: defaultAppState, hasWeatherApiKey: false });
   });
   it('restricts the native color picker to Settings and validates RGB before invoking it', async () => {
     const choose = mock.handlers.get('show-color-picker')!;

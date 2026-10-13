@@ -60,6 +60,12 @@
 }
 
 .workflowButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: normal;
+  min-width: 0;
+  overflow-wrap: anywhere;
   transition:
     transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275),
     filter 0.5s ease,
@@ -80,7 +86,19 @@
   margin-bottom: 2px;
 }
 
+.workflowName {
+  display: -webkit-box;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
 .itemCount {
+  flex-shrink: 0;
   opacity: 0.6;
   font-weight: 400;
   margin-left: 5px;
@@ -107,6 +125,11 @@
 }
 
 .appButton {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   padding: 10px 15px;
   border: none;
   border-radius: 15px;

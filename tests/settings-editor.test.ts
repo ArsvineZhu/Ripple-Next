@@ -5,8 +5,16 @@ import { beforeEach, afterEach, expect, it, vi } from 'vitest';
 import { SettingsEditor, type SettingsFormProps } from '../src/renderer/features/SettingsEditor';
 import type { SettingsDetail } from '../src/renderer/lib/settingsDetails';
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en' } }),
+}));
 vi.mock('../src/renderer/components/InlineNotices', () => ({ InlineNotices: () => null }));
+vi.mock('../src/renderer/hooks/useWeatherPreview', () => ({
+  useWeatherPreview: () => ({
+    loading: false,
+    snapshot: { location: { city: 'Toronto', region: 'Ontario', country: 'Canada' } },
+  }),
+}));
 vi.mock('motion/react', () => ({
   AnimatePresence: ({ children }: { children: unknown }) => children,
   motion: {
@@ -47,39 +55,47 @@ async function fill(input: HTMLInputElement, value: string) {
     input.dispatchEvent(new Event('input', { bubbles: true }));
   });
 }
-async function submit() {
-  await act(async () =>
-    host
-      .querySelector('form')!
-      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })),
-  );
-}
-
-it('edits manual city, region and country as three fields and saves one compatible location', async () => {
-  const setLocation = vi.fn();
+it('autosaves three manual location fields without requiring a Save action', async () => {
+  const parts: [string, string, string] = ['Tokyo', 'Tokyo', 'Japan'];
+  const setLocation = vi.fn((next: [string, string, string]) => parts.splice(0, 3, ...next));
   const back = await mount(
     { page: 'weatherLocation' },
-    { weatherLocation: 'Tokyo, Tokyo, Japan', setWeatherLocation: setLocation },
+    {
+      weatherLocation: 'Tokyo, Tokyo, Japan',
+      weatherLocationParts: parts,
+      setWeatherLocationParts: setLocation,
+    },
   );
   const fields = [...host.querySelectorAll<HTMLInputElement>('input:not([type=checkbox])')];
   expect(fields.map((field) => field.value)).toEqual(['Tokyo', 'Tokyo', 'Japan']);
   await fill(fields[0], 'London');
   await fill(fields[1], 'England');
   await fill(fields[2], 'United Kingdom');
-  await submit();
-  expect(setLocation).toHaveBeenCalledWith('London, England, United Kingdom');
-  expect(back).toHaveBeenCalledOnce();
+  expect(setLocation).toHaveBeenLastCalledWith(['London', 'England', 'United Kingdom']);
+  expect(host.querySelector('button[type=submit]')).toBeNull();
+  expect(back).not.toHaveBeenCalled();
 });
 it('uses the existing provider IP query for auto mode and hides manual fields', async () => {
   const setLocation = vi.fn();
   await mount(
     { page: 'weatherLocation' },
-    { weatherLocation: 'Tokyo', setWeatherLocation: setLocation },
+    {
+      weatherLocation: 'Tokyo',
+      weatherLocationParts: ['Tokyo', '', ''],
+      setAutomaticLocation: setLocation,
+    },
   );
   await act(async () => host.querySelector<HTMLInputElement>('[role=switch]')!.click());
+  expect(setLocation).toHaveBeenCalledWith(true);
+  await mount(
+    { page: 'weatherLocation' },
+    { weatherLocation: 'auto:ip', setAutomaticLocation: setLocation },
+  );
   expect(host.querySelectorAll('input:not([type=checkbox])')).toHaveLength(0);
-  await submit();
-  expect(setLocation).toHaveBeenCalledWith('auto:ip');
+  expect(host.textContent).toContain('Toronto');
+  expect(host.textContent).toContain('Ontario, Canada');
+  expect(host.textContent).not.toContain(' · ');
+  expect(host.querySelector('button[type=submit]')).toBeNull();
 });
 it('keeps invalid search-template drafts out of saved state', async () => {
   const save = vi.fn();
@@ -89,12 +105,11 @@ it('keeps invalid search-template drafts out of saved state', async () => {
   );
   const input = host.querySelector('input')!;
   await fill(input, 'https://example.com/');
-  await submit();
   expect(save).not.toHaveBeenCalled();
   expect(back).not.toHaveBeenCalled();
   expect(input.getAttribute('aria-invalid')).toBe('true');
   await fill(input, 'https://example.com/search?q={query}');
-  await submit();
   expect(save).toHaveBeenCalledWith('https://example.com/search?q={query}');
-  expect(back).toHaveBeenCalledOnce();
+  expect(back).not.toHaveBeenCalled();
+  expect(host.querySelector('button[type=submit]')).toBeNull();
 });

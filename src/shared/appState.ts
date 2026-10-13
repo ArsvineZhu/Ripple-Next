@@ -3,6 +3,8 @@ import { QuickAppSchema, WorkflowSchema } from './contracts';
 import type { QuickApp, Workflow } from './contracts';
 import type { LanguagePreference } from './i18n';
 import { DEFAULT_PAGE_ID, DEFAULT_PAGE_IDS, PageIdSchema } from './pages';
+import { AIConfigurationSchema, defaultAIConfiguration } from './aiConfiguration';
+import { GlassPreferencesSchema, defaultGlassPreferences } from './glassPreferences';
 
 const HourFormatSchema = z.enum(['12-hr', '24-hr']);
 const WeatherUnitSchema = z.enum(['f', 'c']);
@@ -30,10 +32,10 @@ function isValidTimeZone(value: string) {
 
 const AppSettingsSchema = z
   .object({
+    ...GlassPreferencesSchema.shape,
     language: z.enum(['system', 'en', 'zh-CN', 'zh-TW', 'ja']),
     searchUrlTemplate: z.string().max(2048).default('https://www.google.com/search?q={query}'),
-    aiBaseUrl: z.string().max(2048),
-    aiModel: z.string(),
+    ai: AIConfigurationSchema.default(defaultAIConfiguration),
     autoLaunch: z.boolean(),
     showTray: z.boolean(),
     batteryAlerts: z.boolean(),
@@ -53,6 +55,11 @@ const AppSettingsSchema = z
     backgroundImage: z.string(),
     displayId: z.string().nullable(),
     weatherLocation: z.string(),
+    weatherLocationParts: z
+      .tuple([z.string().max(256), z.string().max(256), z.string().max(256)])
+      .default(['', '', '']),
+    useBuiltInWeatherApi: z.boolean().default(true),
+    secretRevision: z.number().int().nonnegative().default(0),
     positionMode: PositionModeSchema,
     islandX: z.number().finite().min(0).max(100),
     islandY: z.number().finite().min(0).max(2000),
@@ -96,10 +103,10 @@ export type AppStatePatch = z.infer<typeof AppStatePatchSchema>;
 export const defaultAppState: AppState = {
   schemaVersion: 1,
   settings: {
+    ...defaultGlassPreferences,
     language: 'system' satisfies LanguagePreference,
     searchUrlTemplate: 'https://www.google.com/search?q={query}',
-    aiBaseUrl: 'https://api.openai.com/v1',
-    aiModel: '',
+    ai: defaultAIConfiguration(),
     autoLaunch: false,
     showTray: true,
     batteryAlerts: true,
@@ -119,6 +126,9 @@ export const defaultAppState: AppState = {
     backgroundImage: 'none',
     displayId: null,
     weatherLocation: '',
+    weatherLocationParts: ['', '', ''],
+    useBuiltInWeatherApi: true,
+    secretRevision: 0,
     positionMode: 'free',
     islandX: 50,
     islandY: 20,

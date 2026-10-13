@@ -16,6 +16,8 @@ import { configureSettingsWindow, openSettingsWindow } from './settingsWindow';
 import { createAppStateStore } from './services/appStateStore';
 import { createSecretStore } from './services/secretStore';
 import { createAssistantService } from './services/assistant';
+import { createWeatherService } from './services/weather';
+import { createAIConfigurationService } from './services/aiConfiguration';
 import { createNoticeBus } from './services/noticeBus';
 import { initializeDiagnostics, type DiagnosticsService } from './services/diagnostics';
 import {
@@ -218,6 +220,8 @@ async function startApplication() {
       stateStore,
       secretStore,
       assistant,
+      weather: createWeatherService(stateStore, secretStore),
+      aiConfiguration: createAIConfigurationService(stateStore, secretStore),
       notices,
       diagnostics: diagnosticsService,
       applyShowTray,
