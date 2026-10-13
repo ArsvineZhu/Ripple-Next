@@ -76,6 +76,7 @@ describe('Ripple Next app state database', () => {
           settingsGlassEnabled: false,
           glassBlur: 0,
           glassRefraction: 1.2,
+          glassDragDeformation: true,
         },
       }),
       store.update({
@@ -92,6 +93,7 @@ describe('Ripple Next app state database', () => {
         settingsGlassEnabled: false,
         glassBlur: 0,
         glassRefraction: 1.2,
+        glassDragDeformation: true,
       },
       workflows: [{ name: 'Work', urls: ['https://example.com'] }],
     });

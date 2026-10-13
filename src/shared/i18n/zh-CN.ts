@@ -13,6 +13,8 @@ export const zhCN: Messages = {
   glassBlurLabel: '菜单模糊（CSS px）',
   glassSaturationLabel: '饱和度',
   glassSpecularLabel: '高光倍率',
+  glassDragDeformationLabel: '拖拽形变（实验）',
+  glassDragDeformationHint: '按住拖动时沿移动方向形变，默认关闭。',
   glassElasticityLabel: '鼠标弹性',
   glassSnapLabel: '节点吸附范围（CSS px）',
   restoreGlassDefaults: '恢复默认参数',

@@ -17,7 +17,7 @@ interface Props {
   onValueChange(value: number): void;
 }
 
-/** Native continuous input with optional magnetic stops on pointer release. */
+/** Native continuous input with magnetic stops during held dragging. */
 export function PreferenceSlider({
   label,
   startLabel,
@@ -46,6 +46,14 @@ export function PreferenceSlider({
     [min, range, stages],
   );
   const progress = Math.max(0, Math.min(100, ((value - min) / range) * 100));
+  const nearestStop = (current: number) =>
+    stops.reduce((best, stop) =>
+      Math.abs(stop - current) < Math.abs(best - current) ? stop : best,
+    );
+  const attractionRange = (input: HTMLInputElement) => {
+    const travel = Math.max(1, input.getBoundingClientRect().width - 32);
+    return Math.min((range * glass.glassSnapPixels) / travel, range * 0.04);
+  };
   const clear = useCallback(() => {
     dragging.current = directDrag.current = false;
     shell.current?.removeAttribute('data-slider-dragging');
@@ -90,7 +98,24 @@ export function PreferenceSlider({
           step="any"
           value={value}
           disabled={disabled}
-          onChange={(event) => onValueChange(Number(event.target.value))}
+          onChange={(event) => {
+            const current = Number(event.currentTarget.value);
+            if (!dragging.current) {
+              onValueChange(current);
+              return;
+            }
+            const nearest = nearestStop(current);
+            const threshold = attractionRange(event.currentTarget);
+            const distance = Math.abs(nearest - current);
+            if (distance >= threshold || threshold <= 0) {
+              onValueChange(current);
+              return;
+            }
+            // A small sticky centre joins a smooth attraction field with no position jump.
+            const fraction = Math.max(0, (distance / threshold - 0.2) / 0.8);
+            const blend = fraction ** 3 * (fraction * (fraction * 6 - 15) + 10);
+            onValueChange(nearest + (current - nearest) * blend);
+          }}
           onKeyDown={(event) => {
             let next: number;
             const increment = event.shiftKey ? step / 10 : step;
@@ -111,8 +136,8 @@ export function PreferenceSlider({
             dragging.current = true;
             startX.current = event.clientX;
             const rect = event.currentTarget.getBoundingClientRect();
-            const centre = rect.left + 20 + ((rect.width - 40) * progress) / 100;
-            directDrag.current = Math.abs(event.clientX - centre) <= 20;
+            const centre = rect.left + 16 + ((rect.width - 32) * progress) / 100;
+            directDrag.current = Math.abs(event.clientX - centre) <= 16;
             shell.current?.toggleAttribute('data-slider-dragging', directDrag.current);
             event.currentTarget.setPointerCapture(event.pointerId);
           }}
@@ -130,23 +155,23 @@ export function PreferenceSlider({
             if (!dragging.current) return;
             clear();
             const current = Number(event.currentTarget.value);
-            const travel = Math.max(1, event.currentTarget.getBoundingClientRect().width - 40);
-            const threshold = Math.min((range * glass.glassSnapPixels) / travel, range * 0.04);
-            const nearest = stops.reduce((best, stop) =>
-              Math.abs(stop - current) < Math.abs(best - current) ? stop : best,
-            );
+            const threshold = attractionRange(event.currentTarget);
+            const nearest = nearestStop(current);
             if (nearest !== current && Math.abs(nearest - current) <= threshold)
               onValueChange(nearest);
           }}
           onPointerCancel={clear}
-          onLostPointerCapture={clear}
+          onLostPointerCapture={(event) => {
+            // Chromium can transfer capture to its internal range thumb during a held drag.
+            if (!(event.buttons & 1)) clear();
+          }}
         />
         <span className={styles.thumbPosition} aria-hidden="true">
           <GlassHandle
             controlRef={inputRef}
             disabled={disabled}
             slider
-            radius={13}
+            radius={11}
             cornerK={1.15}
           />
         </span>

@@ -13,6 +13,8 @@ export const zhTW: Messages = {
   glassBlurLabel: '選單模糊（CSS px）',
   glassSaturationLabel: '飽和度',
   glassSpecularLabel: '高光倍率',
+  glassDragDeformationLabel: '拖曳形變（實驗）',
+  glassDragDeformationHint: '按住拖曳時沿移動方向形變，預設關閉。',
   glassElasticityLabel: '滑鼠彈性',
   glassSnapLabel: '節點吸附範圍（CSS px）',
   restoreGlassDefaults: '恢復預設參數',

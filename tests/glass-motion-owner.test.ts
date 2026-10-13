@@ -11,16 +11,26 @@ function Decoration({
   controlRef,
   slider,
   handle,
+  dragDeformation,
 }: {
   controlRef: RefObject<HTMLButtonElement | null>;
   slider: boolean;
   handle: boolean;
+  dragDeformation: boolean;
 }) {
-  const ref = useGlassMotion({ controlRef, actorRef: controlRef, slider, handle });
+  const ref = useGlassMotion({ controlRef, actorRef: controlRef, slider, handle, dragDeformation });
   return createElement('div', { ref, 'data-material': true });
 }
 // oxlint-disable react/refs -- createElement forwards the ref; it never reads its current value.
-function Control({ slider, handle }: { slider: boolean; handle: boolean }) {
+function Control({
+  slider,
+  handle,
+  dragDeformation,
+}: {
+  slider: boolean;
+  handle: boolean;
+  dragDeformation: boolean;
+}) {
   const ref = useRef<HTMLButtonElement>(null);
   return createElement(
     'div',
@@ -29,16 +39,17 @@ function Control({ slider, handle }: { slider: boolean; handle: boolean }) {
     createElement(
       'button',
       { ref },
-      createElement(Decoration, { controlRef: ref, slider, handle }),
+      createElement(Decoration, { controlRef: ref, slider, handle, dragDeformation }),
     ),
   );
 }
 // oxlint-enable react/refs
 it.each([
-  { slider: false, handle: false },
-  { slider: false, handle: true },
-  { slider: true, handle: true },
-])('owns and restores button/handle geometry (%j)', async ({ slider, handle }) => {
+  { slider: false, handle: false, dragDeformation: false },
+  { slider: false, handle: true, dragDeformation: false },
+  { slider: true, handle: true, dragDeformation: false },
+  { slider: true, handle: true, dragDeformation: true },
+])('owns and restores button/handle geometry (%j)', async ({ slider, handle, dragDeformation }) => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   const frames = new Map<number, FrameRequestCallback>();
   let serial = 0;
@@ -59,7 +70,7 @@ it.each([
   const host = document.createElement('div');
   document.body.append(host);
   const root = createRoot(host);
-  await act(async () => root.render(createElement(Control, { slider, handle })));
+  await act(async () => root.render(createElement(Control, { slider, handle, dragDeformation })));
   const button = host.querySelector('button')!,
     material = host.querySelector<HTMLElement>('[data-material]')!;
   Object.defineProperties(button, {
@@ -84,7 +95,12 @@ it.each([
   );
   flush();
   if (slider) expect(button.style.getPropertyValue('--motion-x')).toBe('0px');
-  else expect(parseFloat(button.style.getPropertyValue('--motion-x'))).toBeGreaterThan(0);
+  else if (!handle)
+    expect(parseFloat(button.style.getPropertyValue('--motion-x'))).toBeGreaterThan(0);
+  if (handle) {
+    expect(button.style.getPropertyValue('--motion-x')).toBe('0px');
+    expect(button.style.getPropertyValue('--motion-sx')).toBe('1');
+  }
   expect(material.style.getPropertyValue('--motion-x')).toBe('');
   button.dispatchEvent(
     new PointerEvent('pointerdown', {
@@ -100,6 +116,27 @@ it.each([
   expect(button.style.getPropertyValue('--motion-sx')).toBe(handle ? '1' : '0.96');
   expect(button.style.getPropertyValue('--handle-scale')).toBe(handle ? '1.6' : '1');
   expect(button.hasAttribute('data-glass-active')).toBe(handle);
+  button.dispatchEvent(new PointerEvent('lostpointercapture', { buttons: 1 }));
+  flush();
+  expect(button.hasAttribute('data-glass-active')).toBe(handle);
+  expect(material.classList.contains('lg--pressed')).toBe(true);
+  button.dispatchEvent(
+    new PointerEvent('pointermove', {
+      bubbles: true,
+      pointerType: 'mouse',
+      clientX: 170,
+      clientY: 38,
+      isPrimary: true,
+      buttons: 1,
+    }),
+  );
+  flush();
+  expect(button.style.getPropertyValue('--handle-scale')).toBe(handle ? '1.6' : '1');
+  expect(button.hasAttribute('data-glass-active')).toBe(handle);
+  if (dragDeformation) {
+    expect(Number(button.style.getPropertyValue('--motion-sx'))).toBeGreaterThan(1);
+    expect(Number(button.style.getPropertyValue('--motion-sy'))).toBeLessThan(1);
+  }
   expect(material.hasAttribute('data-glass-dragging')).toBe(slider);
   expect(material.classList.contains('lg--pressed')).toBe(true);
   window.dispatchEvent(new Event('blur'));

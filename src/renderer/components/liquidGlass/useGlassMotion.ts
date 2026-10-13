@@ -8,6 +8,8 @@ interface MotionOptions {
   enabled?: boolean;
   slider?: boolean;
   handle?: boolean;
+  handleExpansion?: number;
+  dragDeformation?: boolean;
   elasticity?: number;
 }
 
@@ -18,6 +20,8 @@ export function useGlassMotion({
   enabled = true,
   slider = false,
   handle = false,
+  handleExpansion = 1.6,
+  dragDeformation = false,
   elasticity = 0.15,
 }: MotionOptions) {
   const ref = useRef<HTMLDivElement>(null);
@@ -33,6 +37,8 @@ export function useGlassMotion({
     let pointer: Point | null = null;
     let glowPoint: Point | null = null;
     let pressed = false;
+    let origin: Point | null = null;
+    let dragged = false;
     let frame = 0;
     let anchor: Anchor = { left: 0, top: 0, width: 1, height: 1 };
     // Measure layout offsets, never the actor's already transformed bounds.
@@ -50,7 +56,7 @@ export function useGlassMotion({
       frame = 0;
       measure();
       const response = rdevResponse(
-        !reduced && fine.matches ? pointer : null,
+        !handle && !reduced && fine.matches ? pointer : null,
         anchor,
         elasticity,
         200,
@@ -62,8 +68,31 @@ export function useGlassMotion({
         response.y = Math.max(-2, Math.min(2, response.y));
       }
       if (handle) {
-        response.x = slider ? 0 : Math.max(-2, Math.min(2, response.x));
-        response.y = Math.max(-2, Math.min(2, response.y));
+        response.x = response.y = 0;
+        if (
+          dragDeformation &&
+          dragged &&
+          pressed &&
+          !reduced &&
+          fine.matches &&
+          pointer &&
+          origin
+        ) {
+          const dx = pointer.x - origin.x,
+            dy = pointer.y - origin.y;
+          const fraction = Math.min(1, 100 / Math.max(1, Math.hypot(dx, dy)));
+          const directional = rdevResponse(
+            {
+              x: anchor.left + anchor.width / 2 + dx * fraction,
+              y: anchor.top + anchor.height / 2 + dy * fraction,
+            },
+            anchor,
+            elasticity,
+            200,
+          );
+          response.scaleX = Math.max(0.92, Math.min(1.08, 1 + (directional.scaleX - 1) * 4));
+          response.scaleY = Math.max(0.92, Math.min(1.08, 1 + (directional.scaleY - 1) * 4));
+        }
       }
       if (reduced) {
         response.x = response.y = 0;
@@ -73,7 +102,10 @@ export function useGlassMotion({
       actor.style.setProperty('--motion-y', `${response.y}px`);
       actor.style.setProperty('--motion-sx', String(response.scaleX));
       actor.style.setProperty('--motion-sy', String(response.scaleY));
-      actor.style.setProperty('--handle-scale', String(handle && pressed && !reduced ? 1.6 : 1));
+      actor.style.setProperty(
+        '--handle-scale',
+        String(handle && pressed && !reduced ? handleExpansion : 1),
+      );
       material.classList.toggle('lg--pressed', pressed);
       material.toggleAttribute('data-glass-dragging', slider && pressed);
       actor.toggleAttribute('data-glass-active', handle && pressed);
@@ -95,21 +127,34 @@ export function useGlassMotion({
     const reset = () => {
       pointer = glowPoint = null;
       pressed = false;
+      origin = null;
+      dragged = false;
       schedule();
     };
     const move = (event: PointerEvent) => {
+      if (handle && !pressed) return;
       glowPoint = { x: event.clientX, y: event.clientY };
+      if (handle && origin && Math.hypot(glowPoint.x - origin.x, glowPoint.y - origin.y) >= 3)
+        dragged = true;
       pointer = event.pointerType === 'mouse' ? glowPoint : null;
       schedule();
     };
     const down = (event: PointerEvent) => {
       if (event.button !== 0 || !event.isPrimary || !control.contains(event.target as Node)) return;
       pressed = true;
+      origin = { x: event.clientX, y: event.clientY };
+      dragged = false;
       move(event);
     };
     const up = () => {
       pressed = false;
+      dragged = false;
+      origin = null;
       schedule();
+    };
+    const captureLost = (event: PointerEvent) => {
+      // Native range thumbs can take over capture without releasing the mouse.
+      if (!(event.buttons & 1)) up();
     };
     const keydown = (event: KeyboardEvent) => {
       if (slider && control.contains(event.target as Node)) {
@@ -143,7 +188,7 @@ export function useGlassMotion({
     window.addEventListener('keydown', keydown, true);
     window.addEventListener('keyup', keyup, true);
     control.addEventListener('focusout', reset);
-    control.addEventListener('lostpointercapture', up);
+    control.addEventListener('lostpointercapture', captureLost);
     const position = actor.parentElement;
     const positioned = (event: TransitionEvent) => {
       if (event.target === position && ['left', 'transform'].includes(event.propertyName))
@@ -167,7 +212,7 @@ export function useGlassMotion({
       window.removeEventListener('keydown', keydown, true);
       window.removeEventListener('keyup', keyup, true);
       control.removeEventListener('focusout', reset);
-      control.removeEventListener('lostpointercapture', up);
+      control.removeEventListener('lostpointercapture', captureLost);
       position?.removeEventListener('transitionend', positioned);
       document.removeEventListener('visibilitychange', hidden);
       fine.removeEventListener('change', reset);
@@ -184,6 +229,16 @@ export function useGlassMotion({
       ])
         actor.style.removeProperty(name);
     };
-  }, [enabled, slider, handle, reduced, actorRef, controlRef, elasticity]);
+  }, [
+    enabled,
+    slider,
+    handle,
+    handleExpansion,
+    dragDeformation,
+    reduced,
+    actorRef,
+    controlRef,
+    elasticity,
+  ]);
   return ref;
 }

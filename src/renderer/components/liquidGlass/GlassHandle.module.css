@@ -23,15 +23,15 @@
 }
 .lens.lens.lens {
   /* The full sampling footprint stays ready; scaling a small sampled box stretches its backdrop. */
-  inset: -30%;
-  width: 160%;
-  height: 160%;
+  inset: calc((1 - var(--handle-expansion, 1.6)) * 50%);
+  width: calc(var(--handle-expansion, 1.6) * 100%);
+  height: calc(var(--handle-expansion, 1.6) * 100%);
   --glass-panel-tint: rgb(8 8 10 / 16%);
   --lg-shadow: 0 4px 12px rgb(0 0 0 / 22%);
   --lg-inner-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 10%);
   background: transparent;
   visibility: hidden;
-  transform: scale(calc(var(--handle-scale, 1) / 1.6));
+  transform: scale(calc(var(--handle-scale, 1) / var(--handle-expansion, 1.6)));
   transition:
     visibility 0s linear 160ms,
     transform var(--motion-duration, 200ms) ease-out,
@@ -43,6 +43,9 @@
 .handle[data-glass-active] .lens {
   visibility: visible;
   transition-delay: 0s !important;
+}
+.lens:global(.lg--pressed) > :global(.lg__glow) {
+  opacity: 0.18;
 }
 @media (prefers-reduced-motion: reduce) {
   .solid,

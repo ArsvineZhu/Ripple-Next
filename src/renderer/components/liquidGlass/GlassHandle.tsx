@@ -1,4 +1,4 @@
-import { useRef, type RefObject } from 'react';
+import { useRef, type CSSProperties, type RefObject } from 'react';
 import { GlassSurface } from './GlassSurface';
 import motion from './GlassSurface.module.css';
 import styles from './GlassHandle.module.css';
@@ -10,12 +10,14 @@ export function GlassHandle({
   slider = false,
   radius,
   cornerK = 1,
+  expansion = 1.6,
 }: {
   controlRef: RefObject<HTMLElement | null>;
   disabled?: boolean;
   slider?: boolean;
   radius: number;
   cornerK?: number;
+  expansion?: number;
 }) {
   const actor = useRef<HTMLSpanElement>(null);
   return (
@@ -24,7 +26,7 @@ export function GlassHandle({
       className={`${styles.handle} ${motion.actor}`}
       data-glass-handle
       aria-hidden="true"
-      style={{ borderRadius: radius }}
+      style={{ borderRadius: radius, '--handle-expansion': expansion } as CSSProperties}
     >
       <GlassSurface
         controlRef={controlRef}
@@ -33,7 +35,8 @@ export function GlassHandle({
         slider={slider}
         handle
         button
-        radius={radius * 1.6}
+        radius={radius * expansion}
+        handleExpansion={expansion}
         cornerK={cornerK}
         className={styles.lens}
       />

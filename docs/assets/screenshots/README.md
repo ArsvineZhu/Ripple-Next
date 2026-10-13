@@ -4,6 +4,8 @@ The original PNGs were captured on 2026-10-09 from the packaged Ripple Next Linu
 
 Media sessions came from two demonstration MPRIS players and an original geometric album cover. Weather, battery, clipboard and the assistant response used controlled sample data. The assistant picture demonstrates rendering and code copying; its text was supplied locally. The four Overview images use the application's own locale selection. Images are cropped around the Island and retain its real layout and transparent surround.
 
+The current control images show the compact 52 × 26 switch and 40-pixel slider well. Held handles expand 1.6 times with zero blur and a thin rim; the track remains visible through the lens. Resting controls have no pointer approach movement.
+
 | View                              | Asset                                              |
 | --------------------------------- | -------------------------------------------------- |
 | Music and source indicators       | [media.png](media.png)                             |

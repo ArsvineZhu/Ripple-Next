@@ -53,6 +53,15 @@ export function SettingsLiquidGlass({ settings: p }: { settings: SettingsFormPro
             className={styles.animatedFields}
           >
             <PrefGroup caption={t('glassParameters')}>
+              <PrefRow label={t('glassDragDeformationLabel')} hint={t('glassDragDeformationHint')}>
+                <PreferenceSwitch
+                  label={t('glassDragDeformationLabel')}
+                  checked={glass.glassDragDeformation}
+                  onCheckedChange={(glassDragDeformation) =>
+                    p.setGlassPreferences({ glassDragDeformation })
+                  }
+                />
+              </PrefRow>
               {fields.map(([key, label, min, max, step]) => (
                 <PrefNumberField
                   key={key}

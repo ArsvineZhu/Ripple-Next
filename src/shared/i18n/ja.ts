@@ -13,6 +13,8 @@ export const ja: Messages = {
   glassBlurLabel: 'メニューのぼかし（CSS px）',
   glassSaturationLabel: '彩度',
   glassSpecularLabel: 'ハイライト倍率',
+  glassDragDeformationLabel: 'ドラッグ変形（実験）',
+  glassDragDeformationHint: '押したままドラッグすると進行方向に変形します。',
   glassElasticityLabel: 'ポインターの弾性',
   glassSnapLabel: '目盛りへの吸着範囲（CSS px）',
   restoreGlassDefaults: '既定のパラメーターに戻す',

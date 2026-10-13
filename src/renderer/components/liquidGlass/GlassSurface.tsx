@@ -12,6 +12,7 @@ interface Props {
   disabled?: boolean;
   slider?: boolean;
   handle?: boolean;
+  handleExpansion?: number;
   className?: string;
   radius?: number;
   cornerK?: number;
@@ -25,6 +26,7 @@ export function GlassSurface({
   disabled,
   slider,
   handle = false,
+  handleExpansion,
   className,
   radius = 12,
   cornerK = 1,
@@ -37,6 +39,8 @@ export function GlassSurface({
     enabled: !disabled && glass.settingsGlassEnabled,
     slider,
     handle,
+    handleExpansion,
+    dragDeformation: glass.glassDragDeformation,
     elasticity: glass.glassElasticity,
   });
   if (!glass.settingsGlassEnabled) return null;
@@ -52,7 +56,11 @@ export function GlassSurface({
       blur={handle ? 0 : glass.glassBlur}
       saturation={handle ? glass.glassSaturation * 0.8 : glass.glassSaturation}
       specular={(button ? 0.16 : 1) * glass.glassSpecular}
-      {...(button ? { tint: 'dark', bezel: 6 } : {})}
+      {...(handle
+        ? { tint: 'dark', bezel: 4, thickness: 2.5 }
+        : button
+          ? { tint: 'dark', bezel: 6 }
+          : {})}
       aria-hidden="true"
       className={`${styles.surface} ${actorRef ? styles.external : styles.actor} ${button ? panel.material : ''} ${className ?? ''}`}
       style={

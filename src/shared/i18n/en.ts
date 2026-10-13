@@ -12,6 +12,8 @@ export const en = {
   glassBlurLabel: 'Menu blur (CSS px)',
   glassSaturationLabel: 'Saturation',
   glassSpecularLabel: 'Highlight multiplier',
+  glassDragDeformationLabel: 'Drag deformation (experimental)',
+  glassDragDeformationHint: 'Stretch the handle along a held drag. Off by default.',
   glassElasticityLabel: 'Pointer elasticity',
   glassSnapLabel: 'Stop attraction (CSS px)',
   restoreGlassDefaults: 'Restore default parameters',
