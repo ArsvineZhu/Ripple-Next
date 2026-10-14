@@ -1,6 +1,6 @@
 import dbus from 'dbus-native';
 import { z } from 'zod';
-import type { MediaCommand, MediaSession } from '../../../shared/contracts';
+import type { MediaCommand, MediaSession } from '../../../shared/media';
 import { mediaArtworkUrl } from '../../services/imageFiles';
 const playerPath = '/org/mpris/MediaPlayer2';
 const playerInterface = 'org.mpris.MediaPlayer2.Player';
@@ -92,7 +92,7 @@ export async function getMediaSessions() {
               ? metadata['xesam:artist'].filter((item) => typeof item === 'string').join(', ')
               : text('xesam:artist'),
             album: text('xesam:album'),
-            artwork_url: await mediaArtworkUrl(text('mpris:artUrl')),
+            artworkUrl: await mediaArtworkUrl(text('mpris:artUrl')),
             state: props.PlaybackStatus.toLowerCase() as MediaSession['state'],
             capabilities: {
               previous: capability(props.CanGoPrevious),

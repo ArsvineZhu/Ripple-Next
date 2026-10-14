@@ -2,43 +2,19 @@ import type {
   MediaCommand,
   MediaError,
   MediaOperationResult,
-  MediaSession,
   MediaSnapshot,
-} from '../../shared/contracts';
+} from '../../shared/media';
 import {
   emptyMediaSnapshot,
   mediaCommandSupported,
   selectAutomaticSession,
 } from '../../shared/media';
-import * as windows from '../platform/windows/media';
-import * as macos from '../platform/macos/media';
-import * as linux from '../platform/linux/media';
+import { nativeMedia } from '../platform/media';
+import type { MediaBackend } from '../platform/media';
 import { serializeDiagnosticError } from '../../shared/diagnostics';
 
-export interface MediaBackend {
-  getMediaSessions(): Promise<{
-    sessions: MediaSession[];
-    failedIds: string[];
-    errors?: unknown[];
-  }>;
-  controlSystemMedia(command: MediaCommand, session: MediaSession): Promise<void>;
-  openMediaSession(session: MediaSession): Promise<void>;
-  close?(): void;
-}
 export function createMediaService(
-  backend: MediaBackend = process.platform === 'win32'
-    ? {
-        getMediaSessions: windows.getMediaSessions,
-        controlSystemMedia: windows.controlSystemMedia,
-        openMediaSession: windows.openMediaSession,
-      }
-    : process.platform === 'darwin'
-      ? {
-          getMediaSessions: macos.getMediaSessions,
-          controlSystemMedia: macos.controlSystemMedia,
-          openMediaSession: macos.openMediaSession,
-        }
-      : linux,
+  backend: MediaBackend = nativeMedia,
   reportError: (error: unknown) => void = () => {},
 ) {
   let snapshot: MediaSnapshot = { ...emptyMediaSnapshot };
@@ -90,10 +66,6 @@ export function createMediaService(
             : selected
               ? 'ready'
               : 'idle',
-        lastSuccessfulReadAt:
-          selected?.stale || (failedIds.length && !sessions.length)
-            ? snapshot.lastSuccessfulReadAt
-            : Date.now(),
         error:
           selected?.stale || (failedIds.length && !selected)
             ? 'mediaReadFailed'
@@ -121,8 +93,8 @@ export function createMediaService(
       });
     return pending;
   }
-  async function selectSession(id: string | null): Promise<MediaOperationResult> {
-    await read();
+  function selectSession(id: string | null): MediaOperationResult {
+    if (closed) return { snapshot, error: 'mediaReadFailed' };
     if (id !== null && !snapshot.sessions.some((session) => session.id === id))
       return { snapshot, error: 'mediaSessionGone' };
     const selected =
@@ -139,7 +111,6 @@ export function createMediaService(
   }
   async function control(command: MediaCommand, id: string): Promise<MediaOperationResult> {
     if (closed) return { snapshot, error: 'mediaReadFailed' };
-    await read();
     const session = snapshot.sessions.find((item) => item.id === id);
     let error: MediaError | null = !session
       ? 'mediaSessionGone'
@@ -148,13 +119,12 @@ export function createMediaService(
         : !mediaCommandSupported(session, command)
           ? 'mediaCommandUnsupported'
           : null;
-    if (!error && session) {
-      try {
-        await backend.controlSystemMedia(command, session);
-      } catch (failure) {
-        reportOnce(failure);
-        error = 'mediaCommandFailed';
-      }
+    if (error || !session) return { snapshot, error };
+    try {
+      await backend.controlSystemMedia(command, session);
+    } catch (failure) {
+      reportOnce(failure);
+      error = 'mediaCommandFailed';
     }
     await read();
     return { snapshot, error };
@@ -174,7 +144,7 @@ export function createMediaService(
         return { snapshot, error: 'mediaOpenFailed' };
       }
     },
-    selectSession: (id: string | null) => enqueue(() => selectSession(id)),
+    selectSession,
     control: (command: MediaCommand, id: string) => enqueue(() => control(command, id)),
     close: () => {
       closed = true;

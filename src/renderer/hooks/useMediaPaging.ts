@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { MediaSession } from '../../shared/contracts';
+import type { MediaSession } from '../../shared/media';
 import {
   isResumedWheelPush,
   isTailDecay,

@@ -1,5 +1,6 @@
 import type { Messages } from './en';
 export const ja: Messages = {
+  clipboardReadFailed: 'クリップボードを読み取れません。既存の履歴は引き続きコピーできます。',
   findingApplications: 'インストール済みアプリを検索中…',
   workflowQuickApp: '保存済みクイックアプリを追加',
   guideTypographyStep3:

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { MediaCommand, MediaError, MediaSnapshot } from '../../shared/contracts';
+import type { MediaCommand, MediaError, MediaSnapshot } from '../../shared/media';
 import { emptyMediaSnapshot } from '../../shared/media';
 import { recordRendererError } from '../lib/diagnostics';
 

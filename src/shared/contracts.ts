@@ -1,3 +1,4 @@
+import type { MediaCommand, MediaSnapshot, MediaOperationResult } from './media';
 import type { Application, LaunchTarget, LaunchResult } from './launch';
 import type { Locale } from './i18n';
 import type { WeatherSnapshot, WeatherPreferences } from './weather';
@@ -5,46 +6,6 @@ import type { AIMutation } from './aiConfiguration';
 import type { LicenseMetadata, LicenseRecord } from './licenses';
 import type { AppState, AppStatePatch } from './appState';
 import { z } from 'zod';
-export interface MediaTrack {
-  name: string;
-  artist: string;
-  album?: string;
-  artwork_url?: string | null;
-  state: string;
-  source: string;
-}
-export interface MediaSession extends MediaTrack {
-  id: string;
-  playerName: string;
-  state: 'playing' | 'paused' | 'stopped' | 'unknown';
-  capabilities: {
-    previous: boolean | null;
-    play: boolean | null;
-    pause: boolean | null;
-    next: boolean | null;
-    toggle: boolean | null;
-  };
-  isCurrent?: boolean;
-  stale?: boolean;
-}
-export type MediaError =
-  | 'mediaReadFailed'
-  | 'mediaSessionGone'
-  | 'mediaCommandUnsupported'
-  | 'mediaCommandFailed'
-  | 'mediaOpenFailed';
-export interface MediaSnapshot {
-  sessions: MediaSession[];
-  activeSessionId: string | null;
-  manualSessionId: string | null;
-  status: 'ready' | 'idle' | 'error';
-  lastSuccessfulReadAt: number | null;
-  error: MediaError | null;
-}
-export interface MediaOperationResult {
-  snapshot: MediaSnapshot;
-  error: MediaError | null;
-}
 export interface DisplayInfo {
   id: number;
   label: string;
@@ -57,7 +18,6 @@ export interface InputRect {
   height: number;
   scaleFactor: number;
 }
-export type MediaCommand = 'previous' | 'playpause' | 'next';
 export type IslandMode = 'still' | 'quick' | 'large';
 export const ScrollGestureStartSchema = z
   .object({ at: z.number().finite().nonnegative() })

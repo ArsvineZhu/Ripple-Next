@@ -94,7 +94,7 @@ The overview puts a readable clock beside weather and battery information. The c
   <img src="docs/assets/screenshots/overview.png" width="380" alt="Overview with time, date, sunny weather and a charging battery badge">
 </p>
 
-Clipboard history and tasks take care of two different kinds of loose ends: text you may need again, and things you still need to finish. Copy a clipboard entry with one click; add a task and check it off when done. Text history remains temporary, while tasks are saved locally.
+Clipboard history and tasks take care of two different kinds of loose ends: text you may need again, and things you still need to finish. Copy a clipboard entry with one click; add a task and check it off when done. Text history keeps up to 100 recent entries and one million characters in memory; repeated text moves to the front. Tasks are saved locally.
 
 <table>
   <tr>

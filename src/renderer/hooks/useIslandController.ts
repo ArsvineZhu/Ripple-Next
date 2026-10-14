@@ -80,7 +80,7 @@ export function useIslandController() {
   const quickApps = appState.quickApps;
   const { browserSearch, setBrowserSearch, searchBrowser, searchError, setSearchError } =
     useBrowserSearch();
-  const { clipboard, copyToClipboard } = useClipboard();
+  const { clipboard, clipboardReadFailed, copyToClipboard } = useClipboard();
   const { time, overviewTime, overviewDate, weather } = useOverview();
   const { percent, charging } = useBattery();
   const { alert, chargingAlert } = useBatteryAlerts({
@@ -104,7 +104,6 @@ export function useIslandController() {
     handlePointerMove,
     handlePointerUp,
   } = useNavigation({
-    mediaTrack,
     mediaAvailable:
       mediaSnapshot.status !== 'idle' || mediaActionError !== null || mediaSnapshot.error !== null,
     mode,
@@ -274,6 +273,7 @@ export function useIslandController() {
     assistantError,
     resetAssistant,
     clipboard,
+    clipboardReadFailed,
     copyToClipboard,
     tasks,
     removeTask,

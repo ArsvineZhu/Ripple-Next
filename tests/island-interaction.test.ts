@@ -123,7 +123,7 @@ describe('Island position and overlay lifecycle', () => {
         mode: 'large',
         isDragging: false,
         setMode,
-        mediaTrack: { name: 'Fixture', artist: 'Fixture', state: 'playing', source: 'fixture' },
+        mediaAvailable: true,
       });
       useEffect(() => {
         navigation = current;

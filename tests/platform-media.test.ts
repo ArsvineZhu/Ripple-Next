@@ -6,7 +6,7 @@ import {
   controlSystemMedia,
   openMediaSession,
 } from '../src/main/platform/macos/media';
-import type { MediaSession } from '../src/shared/contracts';
+import type { MediaSession } from '../src/shared/media';
 beforeEach(() => command.mockReset());
 it('opens only the selected running application, without launching an absent player', async () => {
   command.mockResolvedValueOnce('Spotify\nMusic\n').mockResolvedValueOnce('');

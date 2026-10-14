@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { runCommand } from '../../services/processes';
-import type { MediaCommand, MediaSession } from '../../../shared/contracts';
+import type { MediaCommand, MediaSession } from '../../../shared/media';
 async function runningPlayers() {
   const names = (await runCommand('/bin/ps', ['-A', '-o', 'comm=']))
     .split('\n')
@@ -49,7 +49,7 @@ return (current application's NSString's alloc()'s initWithData:data encoding:4)
     artist: info.artist,
     album: info.album,
     state: info.state,
-    artwork_url: info.artwork || null,
+    artworkUrl: info.artwork || null,
     capabilities: { previous: null, next: null, play: true, pause: true, toggle: true },
   };
 }

@@ -1,4 +1,5 @@
 export const en = {
+  clipboardReadFailed: 'Could not read the clipboard. Existing history is still available.',
   findingApplications: 'Finding installed applications…',
   workflowQuickApp: 'Add a saved quick app',
   guideTypographyStep3:

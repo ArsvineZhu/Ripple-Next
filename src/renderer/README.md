@@ -52,11 +52,11 @@ Click, Up/Down/Home/End and vertical wheel gestures select pages. Each continuou
 
 ## Launching, clipboard and feedback
 
-Page definitions own their target geometry. Tasks retains its original 380 × 250 layout, including when empty. An empty workflow page uses the search page size and centers its hint with the search field's 20px, medium-weight typography; adding a workflow restores the list size. The quick-app strip appears only when both workflows and quick apps exist, so the empty page has no footer or separator.
+Page definitions own their target geometry. Tasks retains its original 380 × 250 layout, including when empty. An empty workflow page uses the search page size and centers its hint with the search field's 20px, medium-weight typography; adding a workflow restores the list size. Quick apps also remain launchable on their own in the compact page; a fully empty page has no footer or separator.
 
-`lib/launch.ts` classifies workflow targets and browser input. Bare localhost/IPv4 addresses, including a trailing slash, are classified before path targets. Explicit URLs and app/file targets use their corresponding bridge calls. Workflows await launches in order, pause briefly between targets and continue after failures. Quick-app targets use the typed installed-app/command/URL contract.
+`shared/launch.ts` owns Application/LaunchTarget for workflows and quick apps; editors resolve target types once. Island sends an ordered target array to main and renders indexed failures. `lib/search.ts` owns browser query/template resolution and uses the explicit native openExternal bridge. There is no renderer launch loop or fixed pause.
 
-Clipboard text uses validated native reads/writes. The hook polls every two seconds and on focus; empty/image-only values are skipped. History remains in renderer memory for the current run. Copy buttons own their success/failure state. Clipboard and device polling continues while Island is collapsed.
+Clipboard text uses validated native reads/writes. The hook polls every two seconds and on focus; empty/image-only values are skipped. History keeps at most 100 distinct entries and one million characters in memory for this run; repeats move to the front and oversized values are skipped. Reads do not overlap, and failures appear beside existing history. Copy buttons own their success/failure state. Clipboard and device polling continues while Island is collapsed.
 
 `InlineNotices` places feedback at its owning feature using the existing fade-and-blur transition. Launch errors belong to their app/workflow row; media errors belong to music; search errors belong to BrowserSearchTab; settings errors belong to their field. Settings ranges use themed CSS tracks/thumbs/focus states.
 

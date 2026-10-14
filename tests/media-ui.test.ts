@@ -7,7 +7,8 @@ import { MediaSessionCarousel } from '../src/renderer/components/MediaSessionCar
 import { MediaArtwork } from '../src/renderer/components/MediaArtwork';
 import { TabPanels } from '../src/renderer/components/TabPanels';
 import { NowPlayingTab } from '../src/renderer/features/NowPlayingTab';
-import type { MediaSession, MediaSnapshot, ScrollGestureStart } from '../src/shared/contracts';
+import type { ScrollGestureStart } from '../src/shared/contracts';
+import type { MediaSession, MediaSnapshot } from '../src/shared/media';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('../src/renderer/lib/text', () => ({
@@ -26,7 +27,7 @@ const session = (id: string): MediaSession => ({
   playerName: 'Player ' + id,
   name: 'Same song',
   artist: 'Artist',
-  artwork_url: 'https://example.com/' + id + '.png',
+  artworkUrl: 'https://example.com/' + id + '.png',
   state: 'playing',
   capabilities: { previous: true, next: true, play: true, pause: true, toggle: true },
 });
@@ -205,9 +206,9 @@ it('falls back on decoding error and retries when the source or session changes,
   await act(async () => oldImage.dispatchEvent(new Event('error')));
   expect(host.querySelector('img')).toBeNull();
   expect(host.querySelector('svg')).not.toBeNull();
-  await render({ ...session('one'), artwork_url: 'new.png' });
+  await render({ ...session('one'), artworkUrl: 'new.png' });
   expect(host.querySelector('img')?.getAttribute('src')).toBe('new.png');
-  await render({ ...session('two'), artwork_url: 'new.png' }, true);
+  await render({ ...session('two'), artworkUrl: 'new.png' }, true);
   expect(host.querySelector('img')).not.toBeNull();
   await act(async () => host.querySelector('img')!.dispatchEvent(new Event('error')));
   expect(host.querySelector('img')).toBeNull();
@@ -225,7 +226,6 @@ it('binds controls to the displayed session even for identical titles and disabl
     manualSessionId: 'one',
     status: 'ready',
     error: null,
-    lastSuccessfulReadAt: 1,
   };
   const control = vi.fn();
   const render = async (id: string, busy = false) =>

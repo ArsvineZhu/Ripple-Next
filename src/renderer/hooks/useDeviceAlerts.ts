@@ -36,12 +36,6 @@ export function useDeviceAlerts(setMode: Dispatch<SetStateAction<IslandMode>>) {
     let captureTimer: ReturnType<typeof setTimeout> | undefined;
     const pollBluetooth = async () => {
       const api = window.electronAPI;
-      if (!api) {
-        if (active) {
-          bluetoothTimer = setTimeout(() => void pollBluetooth(), BLUETOOTH_POLL_INTERVAL_MS);
-        }
-        return;
-      }
       try {
         const connected = await api.getBluetoothStatus();
         if (active) setBluetooth(connected);
@@ -54,29 +48,17 @@ export function useDeviceAlerts(setMode: Dispatch<SetStateAction<IslandMode>>) {
     };
     const pollCaptureDevices = async () => {
       const api = window.electronAPI;
-      if (!api) {
-        if (active) {
-          captureTimer = setTimeout(
-            () => void pollCaptureDevices(),
-            CAPTURE_DEVICE_POLL_INTERVAL_MS,
-          );
-        }
-        return;
-      }
       try {
-        try {
-          const inUse = await api.getCameraStatus();
-          if (active) setCameraInUse(inUse);
-        } catch (error) {
-          recordRendererError('device', error);
-        }
-        if (!active) return;
-        try {
-          const inUse = await api.getMicrophoneStatus();
-          if (active) setMicrophoneInUse(inUse);
-        } catch (error) {
-          recordRendererError('device', error);
-        }
+        const results = await Promise.allSettled([
+          api.getCameraStatus(),
+          api.getMicrophoneStatus(),
+        ]);
+        if (active)
+          results.forEach((result, index) => {
+            if (result.status === 'fulfilled')
+              [setCameraInUse, setMicrophoneInUse][index]!(result.value);
+            else recordRendererError('device', result.reason);
+          });
       } finally {
         if (active)
           captureTimer = setTimeout(

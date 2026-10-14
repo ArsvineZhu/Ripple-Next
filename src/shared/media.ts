@@ -1,11 +1,46 @@
-import type { MediaCommand, MediaSession, MediaSnapshot } from './contracts';
+export interface MediaSession {
+  name: string;
+  artist: string;
+  album?: string;
+  artworkUrl?: string | null;
+  source: string;
+  id: string;
+  playerName: string;
+  state: 'playing' | 'paused' | 'stopped' | 'unknown';
+  capabilities: {
+    previous: boolean | null;
+    play: boolean | null;
+    pause: boolean | null;
+    next: boolean | null;
+    toggle: boolean | null;
+  };
+  isCurrent?: boolean;
+  stale?: boolean;
+}
+export type MediaError =
+  | 'mediaReadFailed'
+  | 'mediaSessionGone'
+  | 'mediaCommandUnsupported'
+  | 'mediaCommandFailed'
+  | 'mediaOpenFailed';
+export interface MediaSnapshot {
+  sessions: MediaSession[];
+  activeSessionId: string | null;
+  manualSessionId: string | null;
+  status: 'ready' | 'idle' | 'error';
+  error: MediaError | null;
+}
+export interface MediaOperationResult {
+  snapshot: MediaSnapshot;
+  error: MediaError | null;
+}
+export type MediaCommand = 'previous' | 'playpause' | 'next';
 
 export const emptyMediaSnapshot: MediaSnapshot = {
   sessions: [],
   activeSessionId: null,
   manualSessionId: null,
   status: 'idle',
-  lastSuccessfulReadAt: null,
   error: null,
 };
 

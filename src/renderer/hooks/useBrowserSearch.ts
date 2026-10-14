@@ -24,8 +24,7 @@ export function useBrowserSearch() {
 
     setSearchError(null);
     try {
-      if (window.electronAPI?.openExternal) await window.electronAPI.openExternal(target);
-      else window.open(target, '_blank');
+      await window.electronAPI.openExternal(target);
     } catch {
       setSearchError('searchOpenFailed');
     }

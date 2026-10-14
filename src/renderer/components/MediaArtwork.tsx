@@ -1,7 +1,7 @@
 import { Music } from 'lucide-react';
 import { useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import type { MediaSession } from '../../shared/contracts';
+import type { MediaSession } from '../../shared/media';
 import { useMediaArtwork } from '../hooks/useMediaArtwork';
 import styles from './MediaArtwork.module.css';
 

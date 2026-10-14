@@ -1,5 +1,6 @@
 import type { Messages } from './en';
 export const zhTW: Messages = {
+  clipboardReadFailed: '無法讀取剪貼簿。仍可複製已有的歷史內容。',
   findingApplications: '正在尋找已安裝應用程式…',
   workflowQuickApp: '加入已儲存的快捷應用程式',
   guideTypographyStep3:

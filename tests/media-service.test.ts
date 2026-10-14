@@ -1,6 +1,6 @@
 import { expect, it, vi } from 'vitest';
 import { createMediaService } from '../src/main/services/media';
-import type { MediaSession } from '../src/shared/contracts';
+import type { MediaSession } from '../src/shared/media';
 import { mediaCommandSupported } from '../src/shared/media';
 const session = (id: string, state: MediaSession['state']): MediaSession => ({
   id,
@@ -50,12 +50,14 @@ it('controls the displayed player even if another starts playing between polls',
 });
 it('does not redirect a command when its target exits, and clears the old manual selection', async () => {
   const x = setup([session('one', 'playing'), session('two', 'paused')]);
+  await x.media.getSnapshot();
   await x.media.selectSession('one');
   x.set([session('two', 'paused')]);
+  x.backend.controlSystemMedia.mockRejectedValueOnce(new Error('target exited'));
   const result = await x.media.control('next', 'one');
-  expect(result.error).toBe('mediaSessionGone');
+  expect(result.error).toBe('mediaCommandFailed');
   expect(result.snapshot.manualSessionId).toBeNull();
-  expect(x.backend.controlSystemMedia).not.toHaveBeenCalled();
+  expect(x.backend.controlSystemMedia).toHaveBeenCalledWith('next', session('one', 'playing'));
 });
 it('honors false capabilities, permits unknown capabilities, and refreshes after rejection', async () => {
   const item = session('one', 'playing');
@@ -67,6 +69,7 @@ it('honors false capabilities, permits unknown capabilities, and refreshes after
     ),
   ).toBe(true);
   const x = setup([item]);
+  await x.media.getSnapshot();
   expect((await x.media.control('next', 'one')).error).toBe('mediaCommandUnsupported');
   expect(x.backend.controlSystemMedia).not.toHaveBeenCalled();
   x.backend.controlSystemMedia.mockRejectedValueOnce(new Error('declined'));
@@ -85,6 +88,7 @@ it('retains stale metadata on failure, disables it, and recovers without droppin
 });
 it('isolates a failed player and coalesces simultaneous reads', async () => {
   const x = setup([session('one', 'playing'), session('two', 'paused')]);
+  await x.media.getSnapshot();
   await x.media.selectSession('one');
   x.backend.getMediaSessions.mockResolvedValueOnce({
     sessions: [session('two', 'playing')],
@@ -107,6 +111,7 @@ it('isolates a failed player and coalesces simultaneous reads', async () => {
 });
 it('serializes commands and reads and releases the backend on shutdown', async () => {
   const x = setup([session('one', 'playing')]);
+  await x.media.getSnapshot();
   let finish: () => void = () => {};
   x.backend.controlSystemMedia.mockImplementationOnce(
     () =>

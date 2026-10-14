@@ -3,7 +3,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Pause, Play, SkipBackIcon, SkipForwardIcon } from 'lucide-react';
 import type { IslandController } from '../hooks/useIslandController';
-import type { MediaSession } from '../../shared/contracts';
+import type { MediaSession } from '../../shared/media';
 import { mediaCommandSupported, selectAutomaticSession } from '../../shared/media';
 import { measureTextWidth } from '../lib/text';
 import { MediaArtwork } from '../components/MediaArtwork';

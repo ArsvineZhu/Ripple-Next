@@ -3,16 +3,17 @@ import styles from './ClipboardTab.module.css';
 import { ElasticScrollArea } from '../components/ElasticScrollArea';
 import { useTranslation } from 'react-i18next';
 import type { IslandController } from '../hooks/useIslandController';
-type Props = Pick<IslandController, 'clipboard' | 'copyToClipboard'>;
-export function ClipboardTab({ clipboard, copyToClipboard }: Props) {
+type Props = Pick<IslandController, 'clipboard' | 'clipboardReadFailed' | 'copyToClipboard'>;
+export function ClipboardTab({ clipboard, clipboardReadFailed, copyToClipboard }: Props) {
   const { t } = useTranslation();
   return (
     <ElasticScrollArea
       className={styles.container}
       id="clipboard"
-      data-empty={clipboard.length === 0 || undefined}
+      data-empty={(clipboard.length === 0 && !clipboardReadFailed) || undefined}
     >
-      {clipboard.length === 0 ? (
+      {clipboardReadFailed && <p role="alert">{t('clipboardReadFailed')}</p>}
+      {clipboard.length === 0 && !clipboardReadFailed ? (
         <p className={styles.emptyState}>{t('clipboardEmpty')}</p>
       ) : (
         clipboard.map((item, index) => (

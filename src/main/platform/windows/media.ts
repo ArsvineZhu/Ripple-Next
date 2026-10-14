@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { MediaCommand, MediaSession } from '../../../shared/contracts';
+import type { MediaCommand, MediaSession } from '../../../shared/media';
 import { powerShellLiteral, runPowerShell, winrtAsync } from './powershell';
 import { mediaArtworkBridge } from './mediaArtwork';
 import { shell } from 'electron';
@@ -120,7 +120,7 @@ foreach ($session in $all) {
       name: item.Title,
       artist: item.Artist,
       album: item.Album,
-      artwork_url: item.Artwork,
+      artworkUrl: item.Artwork,
       isCurrent: item.Current,
       state:
         item.Status === 'playing' || item.Status === 'paused' || item.Status === 'stopped'

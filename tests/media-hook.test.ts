@@ -3,7 +3,7 @@ import { act, createElement, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, expect, it, vi } from 'vitest';
 import { useMedia } from '../src/renderer/hooks/useMedia';
-import type { MediaSession, MediaSnapshot } from '../src/shared/contracts';
+import type { MediaSession, MediaSnapshot } from '../src/shared/media';
 vi.mock('../src/renderer/lib/diagnostics', () => ({ recordRendererError: vi.fn() }));
 let root: ReturnType<typeof createRoot> | undefined;
 let hook: ReturnType<typeof useMedia>;
@@ -23,7 +23,7 @@ function snapshot(artwork: string): MediaSnapshot {
     name: 'Song',
     artist: 'Artist',
     state: 'playing',
-    artwork_url: artwork,
+    artworkUrl: artwork,
     capabilities: { previous: true, next: true, play: true, pause: true, toggle: true },
   };
   return {
@@ -31,7 +31,7 @@ function snapshot(artwork: string): MediaSnapshot {
     activeSessionId: 'one',
     manualSessionId: null,
     status: 'ready',
-    lastSuccessfulReadAt: 1,
+
     error: null,
   };
 }
@@ -64,9 +64,9 @@ it('updates a changed artwork URL and distinguishes failed reading from no sessi
       status: 'idle',
     });
   await mount({ getSystemMedia: read });
-  expect(hook.mediaTrack?.artwork_url).toBe('first');
+  expect(hook.mediaTrack?.artworkUrl).toBe('first');
   await act(async () => vi.advanceTimersByTimeAsync(5000));
-  expect(hook.mediaTrack?.artwork_url).toBe('second');
+  expect(hook.mediaTrack?.artworkUrl).toBe('second');
   await act(async () => vi.advanceTimersByTimeAsync(5000));
   expect(hook.mediaSnapshot.error).toBe('mediaReadFailed');
   expect(hook.mediaTrack?.stale).toBe(true);
@@ -91,7 +91,7 @@ it('ignores an old pending poll after manual selection and refreshes control res
   await mount({ getSystemMedia: read, selectMediaSession: select, controlSystemMedia: control });
   await act(async () => hook.selectMediaSession('one'));
   await act(async () => complete(snapshot('old')));
-  expect(hook.mediaTrack?.artwork_url).toBe('new');
+  expect(hook.mediaTrack?.artworkUrl).toBe('new');
   await act(async () => hook.controlMedia('playpause', 'one'));
   expect(control).toHaveBeenCalledWith('playpause', 'one');
   expect(hook.mediaTrack?.state).toBe('paused');
@@ -129,7 +129,7 @@ it('serializes selection and retains the latest target while a previous selectio
   expect(select.mock.calls).toEqual([['one'], [null]]);
   expect(hook.mediaPageId).toBeNull();
   expect(hook.mediaBusy).toBe(false);
-  expect(hook.mediaTrack?.artwork_url).toBe('automatic');
+  expect(hook.mediaTrack?.artworkUrl).toBe('automatic');
 });
 it('queues selection during a command and restores the confirmed page when selection fails', async () => {
   let complete!: (result: { snapshot: MediaSnapshot; error: null }) => void;

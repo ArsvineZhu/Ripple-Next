@@ -81,7 +81,7 @@ it('reads capabilities and artwork over D-Bus and targets the exact unique owner
   expect(session).toMatchObject({
     name: 'Song || quote',
     artist: 'One, Two',
-    artwork_url: 'https://example.com/art.png',
+    artworkUrl: 'https://example.com/art.png',
     capabilities: { next: false, previous: true },
   });
   await controlSystemMedia('playpause', session);

@@ -1,6 +1,6 @@
 import { isInteractiveTarget } from '../lib/interactions';
 import type { PointerEvent, Dispatch, SetStateAction } from 'react';
-import type { MediaTrack, IslandMode } from '../../shared/contracts';
+import type { IslandMode } from '../../shared/contracts';
 import { nextTabId } from '../lib/navigation';
 import { islandPages } from '../lib/tabs';
 import { defaultPageLayoutContext } from '../lib/tabGeometry';
@@ -8,14 +8,12 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 import { useAppState } from '../components/AppStateProvider';
 export function useNavigation({
-  mediaTrack,
-  mediaAvailable = !!mediaTrack,
+  mediaAvailable,
   mode,
   isDragging,
   setMode,
 }: {
-  mediaTrack: MediaTrack | null;
-  mediaAvailable?: boolean;
+  mediaAvailable: boolean;
   mode: IslandMode;
   isDragging: boolean;
   setMode: Dispatch<SetStateAction<IslandMode>>;
