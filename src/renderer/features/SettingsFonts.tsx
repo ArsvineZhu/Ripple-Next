@@ -1,28 +1,29 @@
 import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { uiFontLabels, type UiFont } from '../../shared/fonts';
+import { uiFontLabels, uiFontChoices } from '../../shared/fonts';
 import type { SettingsFormProps } from './SettingsEditor';
 import styles from './SettingsFonts.module.css';
 
 const families = {
-  default: "'OpenRunde', var(--font-cjk), sans-serif",
+  default: "'Alibaba PuHuiTi 3', system-ui, sans-serif",
   system: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  'alibaba-puhuiti': "'Alibaba PuHuiTi 3', system-ui, sans-serif",
+  openrunde: "'OpenRunde', system-ui, sans-serif",
 };
 
 export function SettingsFonts({ settings }: { settings: SettingsFormProps }) {
   const { t } = useTranslation();
+  const selectedFont = settings.uiFont === 'alibaba-puhuiti' ? 'default' : settings.uiFont;
   return (
     <section className={styles.page} aria-label={t('fontSettings')}>
       <p className={styles.intro}>{t('fontSettingsHint')}</p>
       <div className={styles.choices}>
-        {(Object.keys(uiFontLabels) as UiFont[]).map((font) => (
-          <label key={font} className={styles.choice} data-selected={settings.uiFont === font}>
+        {uiFontChoices.map((font) => (
+          <label key={font} className={styles.choice} data-selected={selectedFont === font}>
             <input
               type="radio"
               name="ui-font"
               value={font}
-              checked={settings.uiFont === font}
+              checked={selectedFont === font}
               aria-label={t(uiFontLabels[font])}
               onChange={() => settings.setUiFont(font)}
             />
@@ -34,7 +35,7 @@ export function SettingsFonts({ settings }: { settings: SettingsFormProps }) {
                     ? 'fontDefaultHint'
                     : font === 'system'
                       ? 'fontSystemHint'
-                      : 'fontAlibabaHint',
+                      : 'fontOpenRundeHint',
                 )}
               </span>
               <p className={styles.sample} style={{ fontFamily: families[font] }}>

@@ -11,6 +11,7 @@ import { AIModelCustomization } from './AIModelCustomization';
 import { AIField } from './AIField';
 import { DangerAction } from '../components/DangerAction';
 import styles from './SettingsTab.module.css';
+import { aiDisplayLabel, aiDisplayNumber } from '../lib/aiDisplay';
 
 type Controller = ReturnType<typeof useAIConfiguration>;
 const protocolLabels: Record<AIProtocol, string> = {
@@ -89,7 +90,7 @@ export function AIConfigurationEntries({
               { value: 'none', label: t('notConfigured') },
               ...ready.map((model) => ({
                 value: String(model.id),
-                label: `#${model.id} · ${model.label || model.name}`,
+                label: aiDisplayLabel(p.ai.models, model, model.name),
               })),
             ]}
           />
@@ -113,7 +114,7 @@ export function AISettingsPage({
   const [credentialId, setCredentialId] = useState(0);
   const endpointOptions = p.ai.endpoints.map((item) => ({
     value: String(item.id),
-    label: `#${item.id} · ${item.label || protocolLabels[item.protocol]}`,
+    label: aiDisplayLabel(p.ai.endpoints, item, protocolLabels[item.protocol], item.protocol),
     description: item.baseUrl,
   }));
   const entry = (next: SettingsDetail, label: string, value?: string, hint?: string) => (
@@ -160,12 +161,12 @@ export function AISettingsPage({
             <div className={styles.compactItem} key={item.id}>
               {entry(
                 { page: 'aiEndpoint', id: item.id },
-                `#${item.id} · ${item.label || protocolLabels[item.protocol]}`,
+                aiDisplayLabel(p.ai.endpoints, item, protocolLabels[item.protocol], item.protocol),
                 protocolLabels[item.protocol],
                 item.baseUrl,
               )}
               <Remove
-                label={t('removeBaseUrl', { count: item.id })}
+                label={t('removeBaseUrl', { count: aiDisplayNumber(p.ai.endpoints, item.id) })}
                 onRemove={() => void p.mutate({ kind: 'remove-endpoint', id: item.id })}
               />
             </div>
@@ -203,12 +204,14 @@ export function AISettingsPage({
             <div className={styles.compactItem} key={item.id}>
               {entry(
                 { page: 'aiCredential', id: item.id },
-                `#${item.id} · ${item.label}`,
+                aiDisplayLabel(p.ai.credentials, item, t('apiKey'), 'API key'),
                 p.status[item.id] ? '••••••••' : t('notConfigured'),
-                `${t('baseUrlNumber', { count: item.endpointId })}`,
+                `${t('baseUrlNumber', { count: aiDisplayNumber(p.ai.endpoints, item.endpointId) })}`,
               )}
               <Remove
-                label={t('removeApiCredential', { count: item.id })}
+                label={t('removeApiCredential', {
+                  count: aiDisplayNumber(p.ai.credentials, item.id),
+                })}
                 onRemove={() => void p.mutate({ kind: 'remove-credential', id: item.id })}
               />
             </div>
@@ -241,7 +244,7 @@ export function AISettingsPage({
                   .filter((item) => item.endpointId === endpointId && p.status[item.id])
                   .map((item) => ({
                     value: String(item.id),
-                    label: `#${item.id} · ${item.label}`,
+                    label: aiDisplayLabel(p.ai.credentials, item, t('apiKey'), 'API key'),
                   }))}
               />
             </PrefRow>
@@ -262,12 +265,12 @@ export function AISettingsPage({
             <div className={styles.compactItem} key={item.id}>
               {entry(
                 { page: 'aiModel', id: item.id },
-                `#${item.id} · ${item.label || item.name || t('unnamedModel')}`,
+                aiDisplayLabel(p.ai.models, item, item.name || t('unnamedModel')),
                 item.id === p.ai.activeModelId ? t('activeAIModel') : undefined,
-                `${t('baseUrlNumber', { count: item.endpointId })} · ${item.name}`,
+                `${t('baseUrlNumber', { count: aiDisplayNumber(p.ai.endpoints, item.endpointId) })} · ${item.name}`,
               )}
               <Remove
-                label={t('removeAIModel', { count: item.id })}
+                label={t('removeAIModel', { count: aiDisplayNumber(p.ai.models, item.id) })}
                 onRemove={() => void p.mutate({ kind: 'remove-model', id: item.id })}
               />
             </div>
@@ -284,9 +287,9 @@ export function AISettingsPage({
             <div key={item.id}>
               {entry(
                 { page: 'aiCustomization', id: item.id },
-                `#${item.id} · ${item.label || item.name}`,
+                aiDisplayLabel(p.ai.models, item, item.name),
                 undefined,
-                t('baseUrlNumber', { count: item.endpointId }),
+                t('baseUrlNumber', { count: aiDisplayNumber(p.ai.endpoints, item.endpointId) }),
               )}
             </div>
           ))}
@@ -300,7 +303,7 @@ export function AISettingsPage({
       <PrefCard>
         <div className={styles.prefStack}>
           <PrefRow label={t('aiProtocol')}>
-            <span>{`#${item.id} · ${protocolLabels[item.protocol]}`}</span>
+            <span>{`#${aiDisplayNumber(p.ai.endpoints, item.id)} · ${protocolLabels[item.protocol]}`}</span>
           </PrefRow>
           <AIField
             label={t('configurationName')}
@@ -334,7 +337,7 @@ export function AISettingsPage({
         controller={p}
         id={item.id}
         label={item.label}
-        endpoint={`${t('baseUrlNumber', { count: item.endpointId })} · ${endpoint?.baseUrl ?? ''}`}
+        endpoint={`${t('baseUrlNumber', { count: aiDisplayNumber(p.ai.endpoints, item.endpointId) })} · ${endpoint?.baseUrl ?? ''}`}
       />
     );
   }
@@ -433,7 +436,12 @@ function ModelEditor({ controller: p, id }: { controller: Controller; id: number
             }}
             options={p.ai.endpoints.map((item) => ({
               value: String(item.id),
-              label: `#${item.id} · ${item.label}`,
+              label: aiDisplayLabel(
+                p.ai.endpoints,
+                item,
+                protocolLabels[item.protocol],
+                item.protocol,
+              ),
             }))}
           />
         </PrefRow>
@@ -448,7 +456,10 @@ function ModelEditor({ controller: p, id }: { controller: Controller; id: number
             }}
             options={p.ai.credentials
               .filter((item) => item.endpointId === endpointId && p.status[item.id])
-              .map((item) => ({ value: String(item.id), label: `#${item.id} · ${item.label}` }))}
+              .map((item) => ({
+                value: String(item.id),
+                label: aiDisplayLabel(p.ai.credentials, item, t('apiKey'), 'API key'),
+              }))}
           />
         </PrefRow>
         {keyId ? (

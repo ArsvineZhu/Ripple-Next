@@ -63,3 +63,5 @@ See [development](../../docs/development.md), [platform support](../../docs/plat
 About begins with the official icon, localized brand message and version. Metadata, feedback and licenses follow. The brand icon and shared `MediaArtwork` image disable native image dragging while their click actions remain available.
 
 `SettingsFonts` uses native radios and shared `uiFont`. `AppStateProvider` applies data-ui-font to each window; styles/fonts.css owns original WOFF2 faces. `SettingsGuide` owns user-controlled videos, pauses hidden/offscreen playback, and uses selectable prose. Internal zh-ms/zh-apple map to private i18next locales and standard zh-CN Intl formatting. See [recording provenance](../assets/guide/README.md).
+
+Default typography uses Alibaba PuHuiTi 3, with System and OpenRunde alternatives. Saved alibaba-puhuiti choices resolve to the same default specimen. `lib/aiDisplay.ts` owns contiguous display numbers and suppresses generated ID suffixes; navigation, mutations and key storage continue to use original stable IDs. Use full list order for filtered selectors so their numbers match list and binding summaries.

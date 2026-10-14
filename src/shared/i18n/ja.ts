@@ -5,7 +5,7 @@ export const ja: Messages = {
   guideTypographyStep2:
     '簡体字中国語を選ぶと、中国語の表現が選べます。標準、Microsoft Chinese、Apple Chinese で操作と技術用語は共通です。',
   guideTypographyStep1:
-    '「一般」の「フォント」で、既定、システム、Alibaba PuHuiTi 3 の見本を比較して選択します。',
+    '「一般」の「フォント」で、既定の Alibaba PuHuiTi 3、システム、OpenRunde の見本を比較して選択します。',
   guideTypographyBody: '同じ文章と数字でフォントを比較します。選択は Island と設定に反映されます。',
   guideTypographyTitle: 'フォントと中国語の表現',
   guideEditorHelp:
@@ -15,12 +15,12 @@ export const ja: Messages = {
   fontSettings: 'フォント',
   fontSettingsRowHint: 'インターフェイスの書体を選択',
   fontSettingsHint: '見本を比較し、設定と Island に使うフォントを選びます。',
-  fontDefault: '既定のフォント',
+  fontDefault: 'Alibaba PuHuiTi 3.0（既定）',
   fontSystem: 'システムフォント',
-  fontAlibaba: 'Alibaba PuHuiTi 3.0',
-  fontDefaultHint: 'Ripple の丸い欧文書体と、言語に応じたシステム書体。',
+  fontOpenRunde: 'OpenRunde',
+  fontDefaultHint: '標準、中、半太字、太字の4つのウェイトを同梱しています。',
   fontSystemHint: 'OS のインターフェイス書体。',
-  fontAlibabaHint: 'Regular、Medium、SemiBold、Bold を同梱。',
+  fontOpenRundeHint: '丸みのある欧文フォントと、言語に適したシステムフォント。',
   fontSample: 'Ripple Next。文字も、ぴったり。',
   chineseStyle: '中国語の表現',
   chineseStyleHint: '簡体字中国語の遊び心ある表現。操作と地域形式は同じです。',

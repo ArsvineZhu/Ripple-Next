@@ -45,6 +45,7 @@ it('allocates stable monotonic endpoint IDs even with concurrent additions and d
   await f.service.mutate({ kind: 'remove-endpoint', id: 2 });
   await f.service.mutate({ kind: 'add-endpoint', protocol: 'completion' });
   expect(f.read().endpoints.map((item) => item.id)).toEqual([1, 3, 4]);
+  expect(f.read().endpoints.at(-1)?.label).toBe('');
 });
 it('requires a bound, explicitly saved credential before a model is created', async () => {
   const f = fixture();
@@ -53,6 +54,7 @@ it('requires a bound, explicitly saved credential before a model is created', as
     f.service.mutate({ kind: 'add-model', endpointId: 1, credentialId: 1 }),
   ).rejects.toThrow('Save the credential');
   expect(f.has(1)).toBe(false);
+  expect(f.read().credentials[0].label).toBe('');
   await f.service.saveCredential(1, 'fixture-credential');
   await f.service.mutate({ kind: 'add-model', endpointId: 1, credentialId: 1 });
   await f.service.mutate({

@@ -5,7 +5,7 @@ export const zhTW: Messages = {
   guideTypographyStep2:
     '選擇簡體中文後，會出現中文表達。標準、微軟中文及蘋果中文使用相同的操作與技術欄位。',
   guideTypographyStep1:
-    '在「一般」開啟「字體」，比較預設、系統及阿里巴巴普惠體 3，選擇喜歡的樣張。',
+    '在「一般」開啟「字體」，比較預設的阿里巴巴普惠體 3、系統字體及 OpenRunde，選擇喜歡的樣張。',
   guideTypographyBody: '以相同文字及數字比較字體。選擇會同步套用至 Island 與設定視窗。',
   guideTypographyTitle: '字體與中文表達',
   guideEditorHelp:
@@ -15,12 +15,12 @@ export const zhTW: Messages = {
   fontSettings: '字體',
   fontSettingsRowHint: '選擇介面使用的字形',
   fontSettingsHint: '比較下方字形，再選擇設定與 Island 使用的字體。',
-  fontDefault: '預設字體',
+  fontDefault: '阿里巴巴普惠體 3.0（預設）',
   fontSystem: '系統字體',
-  fontAlibaba: '阿里巴巴普惠體 3.0',
-  fontDefaultHint: 'Ripple 的圓潤西文字體，搭配目前語言的系統字形。',
+  fontOpenRunde: 'OpenRunde',
+  fontDefaultHint: '隨應用程式提供一般、中等、半粗及粗體四個字重。',
   fontSystemHint: '使用作業系統的介面字體。',
-  fontAlibabaHint: '隨應用提供一般、中等、半粗和粗體四個字重。',
+  fontOpenRundeHint: 'Ripple 的圓潤西文字體，搭配目前語言的系統字形。',
   fontSample: 'Ripple Next，讓文字各就其位。',
   chineseStyle: '中文表達',
   chineseStyleHint: '趣味簡體中文變體，操作與區域格式保持一致。',

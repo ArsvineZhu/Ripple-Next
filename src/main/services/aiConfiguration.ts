@@ -78,7 +78,7 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
               id,
               protocol: command.protocol,
               baseUrl: defaultBaseUrls[command.protocol],
-              label: `${command.protocol} #${id}`,
+              label: '',
             });
             break;
           }
@@ -113,7 +113,7 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
             config.credentials.push({
               id,
               endpointId: command.endpointId,
-              label: `API key #${id}`,
+              label: '',
             });
             break;
           }

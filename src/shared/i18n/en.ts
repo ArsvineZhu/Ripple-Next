@@ -4,7 +4,7 @@ export const en = {
   guideTypographyStep2:
     'Choose Simplified Chinese to reveal Chinese expression. Standard, Microsoft Chinese and Apple Chinese share the same actions and technical labels.',
   guideTypographyStep1:
-    'In General, open Font. Compare Default, System and Alibaba PuHuiTi 3; select the radio beside your preferred sample.',
+    'In General, open Font. Compare the default Alibaba PuHuiTi 3, System and OpenRunde; select your preferred sample.',
   guideTypographyBody:
     'Choose a font by comparing the same text and numbers. The setting applies across the Island and Settings.',
   guideTypographyTitle: 'Typography and Chinese expression',
@@ -15,12 +15,12 @@ export const en = {
   fontSettings: 'Font',
   fontSettingsRowHint: 'Choose the interface typeface',
   fontSettingsHint: 'Compare the text samples, then choose a font for Settings and the Island.',
-  fontDefault: 'Default',
+  fontDefault: 'Alibaba PuHuiTi 3.0 (Default)',
   fontSystem: 'System font',
-  fontAlibaba: 'Alibaba PuHuiTi 3.0',
-  fontDefaultHint: 'Ripple’s rounded Latin type with language-appropriate system fallbacks.',
+  fontOpenRunde: 'OpenRunde',
+  fontDefaultHint: 'Bundled Regular, Medium, SemiBold and Bold faces.',
   fontSystemHint: 'The operating system interface font.',
-  fontAlibabaHint: 'Bundled Regular, Medium, SemiBold and Bold faces.',
+  fontOpenRundeHint: 'Ripple’s rounded Latin type with language-appropriate system fallbacks.',
   fontSample: 'Ripple Next. Every step, in its place.',
   chineseStyle: 'Chinese expression',
   chineseStyleHint: 'Optional playful Chinese; actions and regional formatting stay the same.',

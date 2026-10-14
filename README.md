@@ -115,7 +115,7 @@ Clipboard history and tasks take care of two different kinds of loose ends: text
   <img src="docs/assets/screenshots/settings.png" width="440" alt="Settings for language, hour format, time zone, startup, menu bar icon and display">
 </p>
 
-- **Choose your typography.** General → Font compares Default, System and Alibaba PuHuiTi 3 with real text samples. Simplified Chinese exposes Standard, Microsoft Chinese and Apple Chinese expressions. The guide puts keyboard controls first, followed by real recordings of typography, glass, AI and workflow editing.
+- **Choose your typography.** General → Font uses Alibaba PuHuiTi 3 by default and compares it with System and OpenRunde using real text samples. Simplified Chinese exposes Standard, Microsoft Chinese and Apple Chinese expressions. The guide puts keyboard controls first, followed by real recordings of typography, glass, AI and workflow editing.
 
 ![Font specimens and selection](docs/assets/screenshots/font-settings.png)
 

@@ -2,6 +2,7 @@
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { AISettingsPage } from '../src/renderer/features/AISettings';
 import { AIModelCustomization } from '../src/renderer/features/AIModelCustomization';
 import { defaultAIConfiguration, defaultCustomization } from '../src/shared/aiConfiguration';
 import { defaultAppState } from '../src/shared/appState';
@@ -122,4 +123,30 @@ it('executes a dangerous action only after confirmation and allows cancellation'
   await act(async () => dialog.querySelectorAll<HTMLButtonElement>('button')[1].click());
   expect(remove).toHaveBeenCalledOnce();
   expect(dialog.open).toBe(false);
+});
+
+it('renders contiguous endpoint numbers and edits the original stable ID', async () => {
+  const ai = defaultAIConfiguration();
+  ai.endpoints.push({
+    id: 4,
+    protocol: 'completion',
+    label: 'Work',
+    baseUrl: 'https://example.com/v1',
+  });
+  const navigate = vi.fn();
+  await act(async () =>
+    root.render(
+      createElement(AISettingsPage, {
+        detail: { page: 'aiEndpoints' },
+        navigate,
+        controller: { ai, status: {}, mutate: vi.fn(), saveCredential: vi.fn() },
+      }),
+    ),
+  );
+  expect(host.textContent).toContain('#2 · Work');
+  expect(host.textContent).not.toContain('#4');
+  await act(async () =>
+    host.querySelector<HTMLButtonElement>('[data-settings-entry=aiEndpoint-4]')!.click(),
+  );
+  expect(navigate).toHaveBeenCalledWith({ page: 'aiEndpoint', id: 4 });
 });

@@ -109,7 +109,7 @@ The glass entry follows position settings. A live preview above the parameters s
 
 ## Font and Chinese expression
 
-Open **General → Font** and compare Default, System and Alibaba PuHuiTi 3 using the same text sample. The choice updates Settings and the Island. Alibaba fonts are bundled locally and loaded when used.
+Open **General → Font** and compare Alibaba PuHuiTi 3 (Default), System and OpenRunde using the same text sample. The choice updates Settings and the Island. Alibaba fonts are bundled locally and loaded when used.
 
 Explicit **Simplified Chinese** reveals **Chinese expression**: Standard, Microsoft Chinese and Apple Chinese. Playful styles alter selected interface phrases while retaining ordinary technical fields and critical actions. Dates and numbers retain zh-CN formatting. Other language choices hide this row.
 

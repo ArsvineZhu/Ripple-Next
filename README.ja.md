@@ -115,7 +115,7 @@ API キーは OS の暗号化機能で保護し、画面には返しません。
   <img src="docs/assets/screenshots/settings.png" width="440" alt="言語、時刻表示、タイムゾーン、自動起動、メニューバーアイコン、ディスプレイの設定">
 </p>
 
-- **読みやすいフォントを選ぶ。** 一般 → フォントで既定、システム、Alibaba PuHuiTi 3 を比較できます。簡体字中国語には標準、Microsoft Chinese、Apple Chinese の表現を用意しています。ガイドはキー操作を最初に説明し、実際の設定操作を動画で紹介します。
+- **読みやすいフォントを選ぶ。** 一般 → フォントで既定の Alibaba PuHuiTi 3、システム、OpenRunde を比較できます。簡体字中国語には標準、Microsoft Chinese、Apple Chinese の表現を用意しています。ガイドはキー操作を最初に説明し、実際の設定操作を動画で紹介します。
 
 ![フォントの見本と選択](docs/assets/screenshots/font-settings.png)
 

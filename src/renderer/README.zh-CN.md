@@ -63,3 +63,5 @@ Select 使用非模态单选菜单；打开时设置仍可滚动，岛内关闭�
 关于页先展示官方图标、本地化品牌文案和版本，再放元信息、反馈及许可。品牌图和共用 `MediaArtwork` 封面禁用原生图片拖拽，原有点击操作保持可用。
 
 `SettingsFonts` 使用原生单选与共享 `uiFont`；`AppStateProvider` 将 data-ui-font 应用到各窗口，styles/fonts.css 管理原始 WOFF2 字重。`SettingsGuide` 管理手动播放录像，隐藏／离开可视区即暂停，正文可选择。zh-ms／zh-apple 映射为 i18next 私有语言，Intl 按标准 zh-CN 格式显示。见[录像来源](../assets/guide/README.md)。
+
+默认字体使用阿里巴巴普惠体 3，另可选择系统字体与 OpenRunde。已保存的 alibaba-puhuiti 对应同一默认样张。lib/aiDisplay.ts 管理连续显示编号，并隐藏自动生成名称中的 ID 后缀；导航、修改与密钥存储仍使用原有稳定 ID。筛选选项使用完整列表的编号，保证与列表和关联说明一致。

@@ -28,3 +28,5 @@ See the [developer guide](../../docs/development.md) and [repository map](../../
 `services/scrollGestures.ts` forwards Chromium's fresh touchpad gesture boundary (`gestureScrollBegin` / `gestureFlingCancel`, coalescing paired signals) to preload with a timestamp only. Its listeners retain the WebContents reference and are removed on destruction and window closure. It does not forward key contents, pointer coordinates or wheel payloads.
 
 Linux capture detection in `platform/linux/devices.ts` starts with `pactl`. Missing-command errors switch to `pw-dump` and the backend remains selected until restart. Active PipeWire capture is a running `Stream/Input/Audio` node; connection/command errors propagate to diagnostics.
+
+New endpoints and credentials begin with an empty editable name; renderer fallback labels use protocol/key names and current display order. Main IDs remain monotonic and are never reused for display numbering.

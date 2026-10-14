@@ -9,6 +9,7 @@ import { PreferenceSwitch } from '../components/PreferenceSwitch';
 import { PrefCard, PrefGroup, PrefRow, PrefNumberField } from './SettingsPreferences';
 import { AIField } from './AIField';
 import styles from './SettingsTab.module.css';
+import { aiDisplayLabel, aiDisplayNumber } from '../lib/aiDisplay';
 import { DangerAction } from '../components/DangerAction';
 
 export function AIModelCustomization({
@@ -40,10 +41,10 @@ export function AIModelCustomization({
     <>
       <PrefCard>
         <div className={styles.prefStack}>
-          <span className={styles.label}>{`#${model.id} · ${model.label || model.name}`}</span>
+          <span className={styles.label}>{aiDisplayLabel(p.ai.models, model, model.name)}</span>
           <p
             className={styles.bindingSummary}
-          >{`${t('baseUrlNumber', { count: endpoint.id })}: ${endpoint.baseUrl}`}</p>
+          >{`${t('baseUrlNumber', { count: aiDisplayNumber(p.ai.endpoints, endpoint.id) })}: ${endpoint.baseUrl}`}</p>
           <p className={styles.bindingSummary}>{`${t('aiModel')}: ${model.name}`}</p>
           <p className={styles.hint}>{t('aiModelBindingLocked')}</p>
         </div>

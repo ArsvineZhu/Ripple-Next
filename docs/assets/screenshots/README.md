@@ -33,4 +33,6 @@ Use sample content for clipboard and AI, and keep credentials and personal endpo
 
 Return to the [documentation catalog](../../INDEX.md) or [product tour](../../../README.md).
 
+AI endpoint numbers and font defaults were refreshed on 2026-10-14 after the follow-up correction. [AI endpoints](ai-endpoints.png) shows the surviving entry as #1 after deletion, with its original internal ID preserved.
+
 New Settings captures: [Font](font-settings.png), [Glass preview](liquid-glass-settings.png), [About hero](about.png). The [recorded flows](../../../src/assets/guide/README.md) use the same real application with demo data.
