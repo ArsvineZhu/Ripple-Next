@@ -1,8 +1,11 @@
 .sticky {
   position: sticky;
-  top: 0;
-  z-index: 1;
-  padding-bottom: 8px;
+  top: calc(-1 * var(--settings-space-5, 20px));
+  z-index: 3;
+  isolation: isolate;
+  margin-inline: calc(-1 * var(--settings-space-6, 28px));
+  padding: var(--settings-space-5, 20px) var(--settings-space-6, 28px) var(--settings-space-3, 12px);
+  box-shadow: 0 1px 0 var(--settings-divider);
   background: var(--settings-bg);
 }
 

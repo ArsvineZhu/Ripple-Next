@@ -101,7 +101,11 @@
   }
 }
 
-.entry:focus-visible {
+.entry.surface:focus-visible {
   outline: 1px solid var(--control-focus, var(--island-text-color));
   outline-offset: -1px;
+}
+
+.entry.bare:focus-visible::placeholder {
+  opacity: 0.85;
 }

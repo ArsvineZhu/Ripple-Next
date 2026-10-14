@@ -11,6 +11,7 @@ import {
   PreferenceGroup,
   PreferenceRow,
   PreferenceNumberField,
+  PreferenceButton,
 } from '../components/preferences';
 import { AIField } from './AIField';
 import styles from '../components/preferences/Preferences.module.css';
@@ -164,14 +165,13 @@ export function AIModelCustomization({
               </motion.div>
             ))}
           </AnimatePresence>
-          <button
-            type="button"
-            className={styles.addRowButton}
+          <PreferenceButton
+            variant="secondary"
             onClick={() => void p.mutate({ kind: 'add-injection', id })}
           >
             <Plus size={16} />
             {t('addInjection')}
-          </button>
+          </PreferenceButton>
         </div>
       </PreferenceCard>
       <PreferenceGroup caption={t('modelParameters')}>

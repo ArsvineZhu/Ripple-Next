@@ -14,6 +14,7 @@ import {
   PreferenceGroup,
   PreferenceRow,
   PreferenceNumberField,
+  PreferenceButton,
 } from '../components/preferences';
 import styles from '../components/preferences/Preferences.module.css';
 import previewStyles from './SettingsLiquidGlass.module.css';
@@ -24,7 +25,7 @@ function GlassPreview() {
   const [checked, setChecked] = useState(true);
   const [choice, setChoice] = useState('default');
   return (
-    <div className={previewStyles.sticky}>
+    <div className={previewStyles.sticky} data-glass-preview-sticky>
       <PreferenceCard caption={t('glassPreview')}>
         <div className={previewStyles.preview} data-glass-preview data-glass-host>
           <div className={previewStyles.header}>
@@ -146,9 +147,8 @@ export function SettingsLiquidGlass({ settings: p }: { settings: SettingsValues 
                 />
               ))}
             </PreferenceGroup>
-            <button
-              type="button"
-              className={styles.addRowButton}
+            <PreferenceButton
+              variant="secondary"
               onClick={() => {
                 const {
                   settingsGlassEnabled: _settings,
@@ -159,7 +159,7 @@ export function SettingsLiquidGlass({ settings: p }: { settings: SettingsValues 
               }}
             >
               {t('restoreGlassDefaults')}
-            </button>
+            </PreferenceButton>
           </motion.div>
         )}
       </AnimatePresence>
