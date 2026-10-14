@@ -397,7 +397,7 @@ export const en = {
   colorPickerFailed: 'Could not open the system color picker. On Linux, install zenity or kdialog.',
   showTrayFailed: 'Could not update the menu bar icon.',
   stateSaveFailed: 'Could not save your settings.',
-  stateLoadFailed: 'Could not load saved settings. Defaults are active.',
+  stateLoadFailed: 'Could not load saved data. Your data has not been changed.',
   inputShapeFailed: 'Could not initialize the Linux click-through region.',
   windowLoadFailed: 'Could not load the Ripple Next window.',
   missingApiKey: 'Enter your API key in settings.',

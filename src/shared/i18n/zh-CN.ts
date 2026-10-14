@@ -369,7 +369,7 @@ export const zhCN: Messages = {
   colorPickerFailed: '无法打开系统颜色选择器。Linux 需要安装 zenity 或 kdialog。',
   showTrayFailed: '无法更新菜单栏图标。',
   stateSaveFailed: '无法保存设置。',
-  stateLoadFailed: '无法读取已保存的设置，当前使用默认值。',
+  stateLoadFailed: '无法读取已保存的数据。你的数据没有被修改。',
   inputShapeFailed: '无法初始化 Linux 点击穿透区域。',
   windowLoadFailed: '无法加载 Ripple Next 窗口。',
   missingApiKey: '请在设置中填写 API 密钥。',

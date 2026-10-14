@@ -391,7 +391,7 @@ export const ja: Messages = {
     'システムの色選択を開けませんでした。Linux では zenity または kdialog をインストールしてください。',
   showTrayFailed: 'メニューバーアイコンを更新できませんでした。',
   stateSaveFailed: '設定を保存できませんでした。',
-  stateLoadFailed: '保存済み設定を読み込めません。既定値を使用しています。',
+  stateLoadFailed: '保存済みデータを読み込めません。データは変更されていません。',
   inputShapeFailed: 'Linux のクリック透過領域を初期化できませんでした。',
   windowLoadFailed: 'Ripple Next ウィンドウを読み込めませんでした。',
   missingApiKey: '設定でAPIキーを入力してください。',

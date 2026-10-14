@@ -6,7 +6,6 @@ import { measureTextWidth } from '../lib/text';
 import { useAssistant } from './useAssistant';
 import { useTasks } from './useTasks';
 import { useWorkflows } from './useWorkflows';
-import { useQuickApps } from './useQuickApps';
 import { useBrowserSearch } from './useBrowserSearch';
 import { useClipboard } from './useClipboard';
 import { useOverview } from './useOverview';
@@ -25,7 +24,7 @@ import { useIslandPreview } from './useIslandPreview';
 import { freeIslandPosition } from '../lib/islandPosition';
 export function useIslandController() {
   const { t } = useTranslation();
-  const { state: appState, updateState } = useAppState();
+  const { state: appState } = useAppState();
   const [requestedMode, setMode] = useReducer(modeReducer, 'still');
   const {
     batteryAlertsEnabled,
@@ -36,44 +35,18 @@ export function useIslandController() {
     hideNotActiveIslandEnabled,
     showInfoWhenIdleEnabled,
     leaveDelayMs,
-    searchUrlTemplate,
-    setSearchUrlTemplate,
-    handleLeaveDelayChange,
     hourFormat,
     showAmPm,
     timeZone,
     weatherUnit,
     theme,
-    setTheme,
     bgColor,
     textColor,
     bgImage,
-    displays,
-    currentDisplayId,
     weatherLocation,
-    setWeatherLocation,
-    autoLaunchEnabled,
     positionMode,
-    setPositionMode,
     islandX,
     islandY,
-    handleBatteryAlertsChange,
-    handleIslandBorderChange,
-    handleIslandCornerRadiusChange,
-    handleStandbyChange,
-    handleLargeStandbyChange,
-    handleHourFormatChange,
-    handleTimeZoneChange,
-    handleAutoLaunchChange,
-    handlehideNotActiveIslandChange,
-    handleShowInfoWhenIdleChange,
-    handleWeatherUnitChange,
-    handleBgColorChange,
-    handleTextColorChange,
-    handleDisplayChange,
-    handleIslandXChange,
-    handleIslandYChange,
-    handleBgImageChange,
   } = useSettingsContext();
   const isPreview = useIslandPreview();
   const mode = isPreview
@@ -95,7 +68,6 @@ export function useIslandController() {
     isHovered,
     setIsHovered,
     isDragging,
-    beginPositionChange,
     finishPositionChange,
     setAssistantActive,
     leave,
@@ -107,46 +79,19 @@ export function useIslandController() {
     largeStandby: largeStandbyEnabled,
     leaveDelayMs,
   });
-  const handlePositionChange = (value: string) => {
-    if (value === positionMode) return;
-    beginPositionChange();
-    setPositionMode(value);
-  };
   const {
     asked,
     setAsked,
     aiAnswer,
     assistantError,
-    setAIAnswer,
     userText,
     setUserText,
     resetAssistant,
     askAI,
   } = useAssistant();
   const { tasks, taskText, setTaskText, addTask, removeTask } = useTasks();
-  const { workflows, openWorkflow, removeWorkflow } = useWorkflows();
-  const {
-    quickApps,
-    newQuickApp,
-    quickAppMode,
-    setQuickAppMode,
-    executable,
-    setExecutable,
-    argumentLines,
-    setArgumentLines,
-    workingDirectory,
-    setWorkingDirectory,
-    appUrl,
-    setAppUrl,
-    handleQuickAppInput,
-    selectQuickApp,
-    appSuggestions,
-    showSuggestions,
-    setShowSuggestions,
-    handleQaChange,
-    addQuickApp,
-    removeQuickApp,
-  } = useQuickApps();
+  const { workflows, openWorkflow } = useWorkflows();
+  const quickApps = appState.quickApps;
   const { browserSearch, setBrowserSearch, searchBrowser, searchError, setSearchError } =
     useBrowserSearch();
   const { clipboard, copyToClipboard } = useClipboard();
@@ -168,12 +113,6 @@ export function useIslandController() {
   const { bluetoothAlert, cameraInUse, cameraAlert, microphoneInUse, microphoneAlert } =
     useDeviceAlerts(setMode);
   const {
-    tabOrder,
-    hiddenTabs,
-    defaultTabId,
-    setDefaultTabId,
-    moveTabOrder,
-    toggleTabVisibility,
     currentTabId,
     direction,
     currentTab,
@@ -257,19 +196,8 @@ export function useIslandController() {
     if (savedDisplayId && window.electronAPI?.setDisplay) {
       void window.electronAPI.setDisplay(savedDisplayId);
     }
+  }, [appState.settings.displayId]);
 
-    if (!appState.settings.welcomeShown) {
-      const timer = setTimeout(() => {
-        void window.electronAPI.openExternal(
-          'https://github.com/ArsvineZhu/Ripple-Next/blob/main/instructions.md',
-        );
-        updateState({ settings: { welcomeShown: true } });
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [appState.settings.displayId, appState.settings.welcomeShown, updateState]);
-
-  const isFree = positionMode === 'free';
   const getSideStyles = () => {
     switch (positionMode) {
       case 'top-left':
@@ -364,8 +292,6 @@ export function useIslandController() {
     searchBrowser,
     searchError,
     setSearchError,
-    searchUrlTemplate,
-    setSearchUrlTemplate,
     workflows,
     openWorkflow,
     quickApps,
@@ -376,7 +302,6 @@ export function useIslandController() {
     askAI,
     aiAnswer,
     assistantError,
-    setAIAnswer,
     resetAssistant,
     clipboard,
     copyToClipboard,
@@ -386,65 +311,14 @@ export function useIslandController() {
     setTaskText,
     addTask,
     hourFormat,
-    handleHourFormatChange,
     timeZone,
-    handleTimeZoneChange,
-    autoLaunchEnabled,
-    handleAutoLaunchChange,
-    displays,
-    currentDisplayId,
-    handleDisplayChange,
-    tabOrder,
-    hiddenTabs,
-    moveTabOrder,
-    setDefaultTabId,
-    defaultTabId,
-    toggleTabVisibility,
-    setTheme,
     positionMode,
-    handlePositionChange,
-    isFree,
     islandX,
-    handleIslandXChange,
     islandY,
-    handleIslandYChange,
-    handleIslandBorderChange,
-    handleIslandCornerRadiusChange,
-    handlehideNotActiveIslandChange,
-    handleBgColorChange,
-    handleTextColorChange,
-    handleBgImageChange,
     batteryAlertsEnabled,
-    handleBatteryAlertsChange,
-    handleStandbyChange,
-    handleLargeStandbyChange,
-    handleShowInfoWhenIdleChange,
     weatherLocation,
-    setWeatherLocation,
     weatherUnit,
-    handleWeatherUnitChange,
-    newQuickApp,
-    quickAppMode,
-    setQuickAppMode,
-    executable,
-    setExecutable,
-    argumentLines,
-    setArgumentLines,
-    workingDirectory,
-    setWorkingDirectory,
-    appUrl,
-    setAppUrl,
-    handleQuickAppInput,
-    selectQuickApp,
-    setShowSuggestions,
-    addQuickApp,
-    showSuggestions,
-    appSuggestions,
-    handleQaChange,
-    removeQuickApp,
     leaveDelayMs,
-    handleLeaveDelayChange,
-    removeWorkflow,
   };
 }
 export type IslandController = ReturnType<typeof useIslandController>;

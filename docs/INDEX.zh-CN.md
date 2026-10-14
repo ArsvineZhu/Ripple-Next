@@ -2,6 +2,8 @@
 
 # 文档目录
 
+[功能与内部能力地图](architecture.zh-CN.md)：完整使用路径、数据归属、重复机制及当前全库整改。
+
 ## 使用 Ripple Next
 
 - 产品介绍：[简体中文](../README.zh-CN.md)、[繁體中文](../README.zh-TW.md)、[English](../README.md)、[日本語](../README.ja.md)。

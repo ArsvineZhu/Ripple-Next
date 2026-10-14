@@ -2,6 +2,8 @@
 
 # 仓库地图
 
+[功能与内部能力地图](docs/architecture.zh-CN.md) 跟踪完整使用路径、责任归属和当前全库整改。
+
 - [文档目录](docs/INDEX.zh-CN.md)：开发、发布与使用说明。
 - [主进程](src/main/README.zh-CN.md)：生命周期、托盘、窗口、IPC 和平台服务。
 - [Preload](src/preload/README.zh-CN.md)：隔离的 renderer 桥接层。

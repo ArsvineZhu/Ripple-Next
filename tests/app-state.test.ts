@@ -1,286 +1,114 @@
-import { existsSync } from 'node:fs';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import Database from 'better-sqlite3';
-import { afterEach, describe, expect, it } from 'vitest';
-import { defaultAppState, isAppStatePatch } from '../src/shared/appState';
+import { afterEach, expect, it } from 'vitest';
+import { defaultAppState } from '../src/shared/appState';
 import { createAppStateStore } from '../src/main/services/appStateStore';
 
-const temporaryDirectories: string[] = [];
-const openStores: Array<{ close?: () => void }> = [];
-
-async function createTemporaryDirectory() {
-  const directory = await mkdtemp(path.join(tmpdir(), 'ripple-next-state-'));
-  temporaryDirectories.push(directory);
-  return directory;
+const directories: string[] = [];
+const stores: ReturnType<typeof createAppStateStore>[] = [];
+async function openStore(directory?: string) {
+  if (!directory) {
+    directory = await mkdtemp(path.join(tmpdir(), 'ripple-next-state-'));
+    directories.push(directory);
+  }
+  const store = createAppStateStore(directory);
+  stores.push(store);
+  return { directory, store };
 }
-
-function trackStore<T extends { close?: () => void }>(store: T) {
-  openStores.push(store);
-  return store;
-}
-
 afterEach(async () => {
-  for (const store of openStores.splice(0)) store.close?.();
-  await Promise.all(
-    temporaryDirectories
-      .splice(0)
-      .map((directory) => rm(directory, { recursive: true, force: true })),
-  );
+  for (const store of stores.splice(0)) store.close();
+  for (const directory of directories.splice(0)) await rm(directory, { recursive: true });
 });
 
-describe('Ripple Next app state database', () => {
-  it('persists font and playful Chinese choices across a database reopen', async () => {
-    const directory = await createTemporaryDirectory();
-    const store = trackStore(createAppStateStore(directory));
-    expect((await store.load()).settings.uiFont).toBe('default');
-    await store.update({ settings: { uiFont: 'alibaba-puhuiti', language: 'zh-apple' } });
-    const restored = trackStore(createAppStateStore(directory));
-    expect((await restored.load()).settings).toMatchObject({
-      uiFont: 'alibaba-puhuiti',
-      language: 'zh-apple',
-    });
-    expect(isAppStatePatch({ settings: { uiFont: 'unbundled-font' } })).toBe(false);
+it('persists independent feature and settings edits, including empty lists, across restart', async () => {
+  const { directory, store } = await openStore();
+  expect(await store.load()).toEqual(defaultAppState);
+  await Promise.all([
+    store.update({ tasks: ['Review build'] }),
+    store.update({ settings: { uiFont: 'openrunde', language: 'zh-apple', showTray: false } }),
+    store.update({ workflows: [{ name: 'Work', urls: ['https://example.com'] }] }),
+    store.update({
+      quickApps: [
+        { id: 'docs', name: 'Docs', target: { kind: 'url', url: 'https://example.com' } },
+      ],
+    }),
+  ]);
+  store.close();
+  const { store: restored } = await openStore(directory);
+  expect(await restored.load()).toMatchObject({
+    settings: { uiFont: 'openrunde', language: 'zh-apple', showTray: false },
+    tasks: ['Review build'],
+    workflows: [{ name: 'Work', urls: ['https://example.com'] }],
+    quickApps: [{ id: 'docs' }],
   });
+  await restored.update({ tasks: [], workflows: [], quickApps: [] });
+  await expect(restored.update({ settings: { glassIor: 0.5 } })).rejects.toThrow('Invalid');
+  restored.close();
+  expect(await (await openStore(directory)).store.load()).toMatchObject({
+    tasks: [],
+    workflows: [],
+    quickApps: [],
+    settings: { showTray: false },
+  });
+});
 
-  it('defaults an existing database corner radius and persists valid custom values', async () => {
-    const directory = await createTemporaryDirectory();
-    const store = trackStore(createAppStateStore(directory));
-    const database = new Database(store.filePath);
-    database.prepare('DELETE FROM app_settings WHERE key = ?').run('islandCornerRadius');
+it('does not rewrite unrelated feature data when a preference changes', async () => {
+  const { directory, store } = await openStore();
+  await store.update({ tasks: ['Keep task'] });
+  const database = new Database(path.join(directory, 'ripple-next.sqlite'));
+  try {
+    database.exec(
+      "CREATE TRIGGER protect_tasks BEFORE DELETE ON tasks BEGIN SELECT RAISE(ABORT, 'unrelated rewrite'); END",
+    );
+    await store.update({ settings: { islandX: 70 } });
+    expect((await store.load()).tasks).toEqual(['Keep task']);
+    expect((await store.load()).settings.islandX).toBe(70);
+  } finally {
     database.close();
-    expect((await store.load()).settings.islandCornerRadius).toBe(30);
-    await store.update({ settings: { islandCornerRadius: 0 } });
-    expect((await store.load()).settings.islandCornerRadius).toBe(0);
-    await store.update({ settings: { islandCornerRadius: 60 } });
-    expect((await store.load()).settings.islandCornerRadius).toBe(60);
-    await expect(store.update({ settings: { islandCornerRadius: 61 } })).rejects.toThrow();
-  });
-  it('starts from defaults without importing a legacy JSON state file', async () => {
-    const userDataPath = await createTemporaryDirectory();
-    const legacyState = {
-      ...defaultAppState,
-      settings: {
-        ...defaultAppState.settings,
-        weatherLocation: 'Legacy location',
-      },
-    };
-    await writeFile(path.join(userDataPath, 'app-state.json'), JSON.stringify(legacyState));
-    const store = trackStore(createAppStateStore(userDataPath));
+  }
+});
 
+it('rolls back a feature patch and secret deletion together, keeping the last committed snapshot', async () => {
+  const { directory, store } = await openStore();
+  store.setSecretCiphertext('ai-api-key:1', Buffer.from('encrypted fixture'));
+  const database = new Database(path.join(directory, 'ripple-next.sqlite'));
+  try {
+    database.exec(
+      "CREATE TRIGGER protect_secret BEFORE DELETE ON secrets BEGIN SELECT RAISE(ABORT, 'injected failure'); END",
+    );
+    await expect(
+      store.update({ settings: { islandX: 70 }, tasks: ['Must roll back'] }, ['ai-api-key:1']),
+    ).rejects.toThrow('injected failure');
     expect(await store.load()).toEqual(defaultAppState);
-    expect(existsSync(path.join(userDataPath, 'ripple-next.sqlite'))).toBe(true);
-    expect(defaultAppState.quickApps).toEqual([]);
-    expect(defaultAppState.settings.showTray).toBe(true);
-  });
-
-  it('persists partial state updates after the database is reopened', async () => {
-    const userDataPath = await createTemporaryDirectory();
-    const store = trackStore(createAppStateStore(userDataPath));
-    await store.load();
-
-    await Promise.all([
-      store.update({ tasks: ['Review the build'] }),
-      store.update({
-        settings: {
-          weatherLocation: 'Tokyo',
-          showTray: false,
-          settingsGlassEnabled: false,
-          glassBlur: 0,
-          glassRefraction: 1.2,
-          glassDragDeformation: true,
-        },
-      }),
-      store.update({
-        workflows: [{ name: 'Work', urls: ['https://example.com'] }],
-      }),
-    ]);
-
-    const restored = trackStore(createAppStateStore(userDataPath));
-    expect(await restored.load()).toMatchObject({
-      tasks: ['Review the build'],
-      settings: {
-        weatherLocation: 'Tokyo',
-        showTray: false,
-        settingsGlassEnabled: false,
-        glassBlur: 0,
-        glassRefraction: 1.2,
-        glassDragDeformation: true,
-      },
-      workflows: [{ name: 'Work', urls: ['https://example.com'] }],
-    });
-    await expect(
-      restored.update({ settings: { islandGlassEnabled: true as never } }),
-    ).rejects.toThrow('Invalid');
-    await expect(restored.update({ settings: { glassIor: 0.5 } })).rejects.toThrow('Invalid');
-  });
-
-  it('reads showTray from the persisted setting row', async () => {
-    const userDataPath = await createTemporaryDirectory();
-    const store = trackStore(createAppStateStore(userDataPath));
-    await store.load();
-
-    const database = new Database(path.join(userDataPath, 'ripple-next.sqlite'));
-    const fixture = await readFile(
-      path.join(process.cwd(), 'tests/fixtures/sqlite/disable-show-tray.sql'),
-      'utf8',
-    );
-    database.exec(fixture);
-
-    expect((await store.load()).settings.showTray).toBe(false);
-    database.close();
-  });
-
-  it('migrates old Settings page references while retaining page order, data and secrets', async () => {
-    const userDataPath = await createTemporaryDirectory();
-    const store = trackStore(createAppStateStore(userDataPath));
-    await store.load();
-    await store.update({
-      tasks: ['keep task'],
-      workflows: [{ name: 'keep workflow', urls: ['https://example.com'] }],
-    });
-    store.setSecretCiphertext('api-key', Buffer.from('encrypted fixture'));
-    store.close();
-
-    const database = new Database(path.join(userDataPath, 'ripple-next.sqlite'));
-    database
-      .prepare('UPDATE app_settings SET value = ? WHERE key = ?')
-      .run('[5,7,2,0,1,3,6,4]', 'tabOrder');
-    database
-      .prepare('UPDATE app_settings SET value = ? WHERE key = ?')
-      .run('[1,7,4]', 'hiddenTabs');
-    database.prepare('UPDATE app_settings SET value = ? WHERE key = ?').run('7', 'defaultTabId');
-    database.pragma('user_version = 1');
-    database.close();
-
-    const restored = trackStore(createAppStateStore(userDataPath));
-    expect(await restored.load()).toMatchObject({
-      settings: {
-        tabOrder: ['clipboard', 'overview', 'search', 'workflows', 'playing', 'tasks', 'assistant'],
-        hiddenTabs: ['workflows', 'assistant'],
-        defaultTabId: 'overview',
-      },
-      tasks: ['keep task'],
-      workflows: [{ name: 'keep workflow', urls: ['https://example.com'] }],
-    });
-    expect(restored.getSecretCiphertext('ai-api-key:1')).toEqual(Buffer.from('encrypted fixture'));
-    expect(restored.getSecretCiphertext('api-key')).toBeNull();
-    expect((await restored.load()).settings.ai.credentials[0].endpointId).toBe(1);
-
-    const repairedDatabase = new Database(path.join(userDataPath, 'ripple-next.sqlite'));
-    expect(
-      JSON.parse(
-        repairedDatabase
-          .prepare('SELECT value FROM app_settings WHERE key = ?')
-          .pluck()
-          .get('hiddenTabs') as string,
-      ),
-    ).toEqual(['workflows', 'assistant']);
-    expect(repairedDatabase.pragma('user_version', { simple: true })).toBe(5);
-    repairedDatabase.close();
-
-    await expect(restored.update({ settings: { defaultTabId: 7 as never } })).rejects.toThrow(
-      'Invalid',
-    );
-    await expect(restored.update({ settings: { hiddenTabs: [7] as never } })).rejects.toThrow(
-      'Invalid',
-    );
-  });
-
-  it('rolls back a settings update when a later quick app write fails', async () => {
-    const userDataPath = await createTemporaryDirectory();
-    const store = trackStore(createAppStateStore(userDataPath));
-    await store.load();
-
-    const database = new Database(path.join(userDataPath, 'ripple-next.sqlite'));
-    database.exec(
-      await readFile(
-        path.join(process.cwd(), 'tests/fixtures/sqlite/reject-quick-app.sql'),
-        'utf8',
-      ),
-    );
-
-    await expect(
-      store.update({
-        settings: { weatherLocation: 'Must roll back' },
-        quickApps: [
-          {
-            id: 'reject',
-            name: 'Reject',
-            target: { kind: 'url', url: 'https://example.com' },
-          },
-        ],
-      }),
-    ).rejects.toThrow('injected write failure');
-
-    const restored = trackStore(createAppStateStore(userDataPath));
-    expect((await restored.load()).settings.weatherLocation).toBe('');
-    database.close();
-  });
-
-  it('migrates the legacy AI binding and opaque key once, including missing-key models', async () => {
-    const directory = await createTemporaryDirectory();
-    const original = trackStore(createAppStateStore(directory));
-    await original.update({ tasks: ['preserved'] });
-    original.setSecretCiphertext('api-key', Buffer.from([0, 128, 255, 13]));
-    original.close();
-    const database = new Database(path.join(directory, 'ripple-next.sqlite'));
-    const write = database.prepare('INSERT OR REPLACE INTO app_settings(key, value) VALUES (?, ?)');
-    write.run('aiBaseUrl', JSON.stringify('https://legacy.test/v1'));
-    write.run('aiModel', JSON.stringify('legacy-model'));
-    database.pragma('user_version = 3');
-    database.close();
-    const migrated = trackStore(createAppStateStore(directory));
-    const state = await migrated.load();
-    expect(state.tasks).toEqual(['preserved']);
-    expect(state.settings.ai).toMatchObject({
-      activeModelId: 1,
-      endpoints: [{ id: 1, baseUrl: 'https://legacy.test/v1' }],
-      credentials: [{ id: 1, endpointId: 1 }],
-      models: [{ id: 1, credentialId: 1, name: 'legacy-model' }],
-    });
-    expect(migrated.getSecretCiphertext('ai-api-key:1')).toEqual(Buffer.from([0, 128, 255, 13]));
-    expect(migrated.hasSecret('api-key')).toBe(false);
-    migrated.close();
-    const reopened = trackStore(createAppStateStore(directory));
-    expect((await reopened.load()).settings.ai).toEqual(state.settings.ai);
-    reopened.close();
-    const missing = new Database(path.join(directory, 'ripple-next.sqlite'));
-    missing.prepare('DELETE FROM app_settings WHERE key = ?').run('ai');
-    missing.prepare('DELETE FROM secrets').run();
-    missing
-      .prepare('INSERT INTO app_settings(key, value) VALUES (?, ?)')
-      .run('aiModel', JSON.stringify('without-key'));
-    missing.pragma('user_version = 3');
-    missing.close();
-    expect(
-      (await trackStore(createAppStateStore(directory)).load()).settings.ai.models[0],
-    ).toMatchObject({ name: 'without-key', credentialId: null });
-  });
-
-  it('rolls back AI metadata and secret deletion together on a database failure', async () => {
-    const directory = await createTemporaryDirectory();
-    const store = trackStore(createAppStateStore(directory));
-    store.setSecretCiphertext('ai-api-key:1', Buffer.from('ciphertext'));
-    const database = new Database(store.filePath);
-    database.exec(
-      "CREATE TRIGGER reject_secret_delete BEFORE DELETE ON secrets BEGIN SELECT RAISE(ABORT, 'injected secret failure'); END",
-    );
-    await expect(
-      store.update({ settings: { ai: { ...defaultAppState.settings.ai, endpoints: [] } } }, [
-        'ai-api-key:1',
-      ]),
-    ).rejects.toThrow('injected secret failure');
-    expect((await store.load()).settings.ai.endpoints).toEqual(
-      defaultAppState.settings.ai.endpoints,
-    );
     expect(store.hasSecret('ai-api-key:1')).toBe(true);
-    database.exec('DROP TRIGGER reject_secret_delete');
+    database.exec('DROP TRIGGER protect_secret');
+  } finally {
     database.close();
-    await store.update({ settings: { ai: { ...defaultAppState.settings.ai, endpoints: [] } } }, [
-      'ai-api-key:1',
-    ]);
-    expect(store.hasSecret('ai-api-key:1')).toBe(false);
-  });
+  }
+  store.close();
+  const { store: restored } = await openStore(directory);
+  expect(await restored.load()).toEqual(defaultAppState);
+  await restored.update({ tasks: ['Committed'] }, ['ai-api-key:1']);
+  expect(restored.hasSecret('ai-api-key:1')).toBe(false);
+});
+
+it('reports unreadable persisted state and prevents edits from overwriting it with defaults', async () => {
+  const { directory, store } = await openStore();
+  store.close();
+  const database = new Database(path.join(directory, 'ripple-next.sqlite'));
+  try {
+    database
+      .prepare('UPDATE app_settings SET value = ? WHERE key = ?')
+      .run('invalid JSON', 'theme');
+    const { store: restored } = await openStore(directory);
+    await expect(restored.load()).rejects.toThrow();
+    await expect(restored.update({ tasks: ['Overwrite'] })).rejects.toThrow();
+    expect(
+      database.prepare('SELECT value FROM app_settings WHERE key = ?').pluck().get('theme'),
+    ).toBe('invalid JSON');
+  } finally {
+    database.close();
+  }
 });

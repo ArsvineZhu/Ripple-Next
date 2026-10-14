@@ -13,6 +13,8 @@ Main 管理应用生命周期、托盘、透明窗口、IPC 校验和系统能�
 
 服务负责原子状态存储、加密 API key、应用内通知、AI 请求、应用发现与启动、开机启动；平台适配器封装 Linux、macOS 和 Windows 差异。`ipc.ts` 校验发送方和 payload，共享类型见[shared 说明](../shared/README.zh-CN.md)。
 
+`appStateStore.ts` 管理当前 SQLite schema、预编译语句和主进程唯一快照，只提交变动的设置行或功能列表，事务成功后发布新快照。相关密钥删除在同一事务中。读取失败直接抛出并显示启动错误；默认值和失败写入不会覆盖原数据。历史迁移链与版本分发已删除。
+
 `services/colorPicker.ts` 管理原生 RGB 对话框及进程生命周期。IPC 只允许设置窗口调用，校验 RGB hex 并关联窗口；关闭窗口时终止进程，取消返回 null，正常选色不设超时。Windows 使用关联窗口的 `ColorDialog`，macOS 使用 `choose color`，Linux 按桌面选择 kdialog／zenity。依赖见[平台说明](../../docs/platform-compatibility.zh-CN.md#原生功能对照)。
 
 随应用打包的系统提示词位于 `prompts/default-assistant.md`。每次 AI 请求前，由 `prompts/injections.ts` 解析 `{{product}}`、`{{developer}}`、`{{version}}`、`{{license}}`、`{{repository}}`、`{{issues}}`、`{{timezone}}` 和 `{{current_time}}`。静态信息来自 `package.json`，`{{version}}` 使用 Electron 的 `app.getVersion()`。时间信息遵循应用设置的时区；选择“跟随系统”时使用操作系统时区，`{{current_time}}` 格式为 `YYYY-MM-DD HH:mm:ss`。未知变量保持原文，用户输入不会经过模板替换。

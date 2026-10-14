@@ -37,15 +37,15 @@ Oxlint 关闭 `react/set-state-in-effect`，因为 OS 遥测和偏好 effect 会
 
 Main 拥有应用生命周期、托盘、透明窗口、系统能力和 typed IPC。服务拥有状态持久化、安全凭据、通知、AI 请求、应用发现/启动和自动启动；平台适配器封装系统差异。Preload 暴露 typed `electronAPI`，shared Zod schema 验证状态文件和启动目标。Renderer 拥有视图和交互；XState 管理鼠标离开、几何重入、焦点、菜单与拖动状态。
 
-状态服务使用新用户数据目录中的 `ripple-next.sqlite` 保存设置、任务、工作流、快捷应用和已加密的 API key。编号 schema migration 位于 `src/main/database/migrations/`，命名查询位于 `src/main/database/queries/`，全部使用 `.sql` 文件；TypeScript 只绑定参数并控制事务。Renderer 在显示界面前读取状态快照，再通过 typed patch 更新；设置和功能数据不使用 `localStorage`。API key 使用 Electron `safeStorage` 加密，且不会返回 renderer。Linux 缺少 OS 密钥存储时拒绝保存密钥。Ripple Next 不读取或迁移旧 Ripple 数据目录。Linux 自启动优先使用绝对路径 `XDG_CONFIG_HOME/autostart`，否则使用 `~/.config/autostart`。
+状态服务使用新用户数据目录中的 `ripple-next.sqlite` 保存设置、任务、工作流、快捷应用和已加密的 API key。`src/main/database/schema.sql` 定义当前表，`appStateStore.ts` 管理预编译 SQL、主进程唯一快照和事务，只写本次变化的设置行或功能列表。读取失败直接抛出，写入失败保留已提交快照；不再运行历史迁移链或版本分发。Renderer 在显示界面前读取状态快照，再通过 typed patch 更新；设置和功能数据不使用 `localStorage`。API key 使用 Electron `safeStorage` 加密，且不会返回 renderer。Linux 缺少 OS 密钥存储时拒绝保存密钥。Ripple Next 不读取或迁移旧 Ripple 数据目录。Linux 自启动优先使用绝对路径 `XDG_CONFIG_HOME/autostart`，否则使用 `~/.config/autostart`。
 
-AI SDK 的 `streamText` 为 Chat Completions 使用现有 OpenAI 兼容适配器，并按所选带序号接口选择 OpenAI Responses 或 Anthropic 适配器。`aiConfiguration.ts` 管理配置图，密文使用 `ai-api-key:<id>` 命名记录；main 串行修改、保留模型自定义，并原子删除关联密钥。Migration 4／5 保留原配置和密文。普通配置自动保存，凭据替换需明确提交；上下文上限按字符计数，上下文感知仍关闭。内置系统提示词保留在 `src/main/prompts/default-assistant.md`；`xstate`、`@xstate/react` 管理可取消交互延迟，自定义应用命令通过 `spawn` 参数数组执行。
+AI SDK 的 `streamText` 为 Chat Completions 使用现有 OpenAI 兼容适配器，并按所选带序号接口选择 OpenAI Responses 或 Anthropic 适配器。`aiConfiguration.ts` 管理配置图，密文使用 `ai-api-key:<id>` 命名记录；main 串行修改、保留模型自定义，并原子删除关联密钥。普通配置自动保存，凭据替换需明确提交；上下文上限按字符计数，上下文感知仍关闭。内置系统提示词保留在 `src/main/prompts/default-assistant.md`；`xstate`、`@xstate/react` 管理可取消交互延迟，自定义应用命令通过 `spawn` 参数数组执行。
 
 浏览器搜索地址模板保存在设置中，必须包含 `{query}`；直接输入 HTTP(S) 地址仍会作为网址打开。时钟和日期使用当前语言，并可跟随系统时区或指定 IANA 时区。错误会路由到所属功能区行内展示；`InlineNotices` 沿用 Island 的 Motion 淡入与模糊过渡。长内容区使用系统原生纵向滚动，横向页签使用可接续的连续动画与有界回弹；AI 回答会随内容增长，并限制在当前屏幕可用高度内。设置页滑块由对应 CSS Module 统一管理主题轨道、滑块和焦点样式。
 
 ## 页面注册
 
-页面使用 `overview`、`tasks` 等稳定字符串标识，位置由保存的排序决定。`src/shared/pages.ts` 管理内置页面元信息，以及固定或依内容计算的尺寸策略；`src/renderer/lib/tabs.tsx` 将它们与图标、渲染函数组合。创建 Island 页面注册表时可添加新定义，提供 ID、标题、图标、渲染函数及尺寸策略。可用条件、圆角、对齐和阻止折叠能力可按需设置。导航与动画从注册表读取页面。SQLite migration 3 转换已有数字 ID，保留页面排序及功能数据。
+页面使用 `overview`、`tasks` 等稳定字符串标识，位置由保存的排序决定。`src/shared/pages.ts` 管理内置页面元信息，以及固定或依内容计算的尺寸策略；`src/renderer/lib/tabs.tsx` 将它们与图标、渲染函数组合。创建 Island 页面注册表时可添加新定义，提供 ID、标题、图标、渲染函数及尺寸策略。可用条件、圆角、对齐和阻止折叠能力可按需设置。导航与动画从注册表读取页面。当前数据契约直接使用命名页面 ID。
 
 ## 本地诊断
 

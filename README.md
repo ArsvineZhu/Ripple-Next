@@ -150,6 +150,8 @@ The [developer guide](docs/development.md) owns setup prerequisites, checks, pac
 
 Settings, tasks, workflows and quick apps are saved in Ripple Next's own local database. API-key ciphertext is protected through the OS encryption service. Clipboard history lasts for the session; AI exchanges remain in the current session.
 
+If saved data cannot be read, the app shows an error with a diagnostics-folder action and leaves your data unchanged.
+
 Searches and webpages open in the system browser. Weather uses the configured location with an external weather service. AI uses your configured endpoint. Local diagnostics omit API keys, clipboard text, prompts and answers; crash-report uploads are disabled. Minidumps are process snapshots and should be reviewed before sharing.
 
 Ripple Next uses its own profile. Installed-app targets remain platform-specific when you move a profile to another OS.

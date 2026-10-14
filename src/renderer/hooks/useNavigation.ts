@@ -6,7 +6,6 @@ import { islandPages } from '../lib/tabs';
 import { defaultPageLayoutContext } from '../lib/tabGeometry';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
-import { TABS } from '../lib/tabs';
 import { useAppState } from '../components/AppStateProvider';
 export function useNavigation({
   mediaTrack,
@@ -21,22 +20,8 @@ export function useNavigation({
   isDragging: boolean;
   setMode: Dispatch<SetStateAction<IslandMode>>;
 }) {
-  const { state, updateState } = useAppState();
+  const { state } = useAppState();
   const { tabOrder, hiddenTabs, defaultTabId } = state.settings;
-  const setDefaultTabId = (defaultTabId: string) => updateState({ settings: { defaultTabId } });
-  const moveTabOrder = (fromIdx: number, toIdx: number) => {
-    if (toIdx < 0 || toIdx >= tabOrder.length) return;
-    const newOrder = [...tabOrder];
-    const [moved] = newOrder.splice(fromIdx, 1);
-    if (moved !== undefined) newOrder.splice(toIdx, 0, moved);
-    updateState({ settings: { tabOrder: newOrder } });
-  };
-  const toggleTabVisibility = (id: string) => {
-    const newHidden = hiddenTabs.includes(id)
-      ? hiddenTabs.filter((tab) => tab !== id)
-      : [...hiddenTabs, id];
-    if (newHidden.length < TABS.length) updateState({ settings: { hiddenTabs: newHidden } });
-  };
   const isMusicActive = mediaAvailable;
   const visibleTabs = useMemo(
     () =>
@@ -174,12 +159,6 @@ export function useNavigation({
     };
   }, [moveTab, currentTabId, visibleTabs, setMode]);
   return {
-    tabOrder,
-    hiddenTabs,
-    defaultTabId,
-    setDefaultTabId,
-    moveTabOrder,
-    toggleTabVisibility,
     currentTabId,
     direction,
     currentTab,

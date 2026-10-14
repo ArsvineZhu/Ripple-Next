@@ -4,6 +4,8 @@
 
 The renderer owns Island presentation, interaction and feature feedback. OS access stays behind the [preload bridge](../preload/README.md). `Island.tsx` composes feature views and QuickView; `useIslandController` composes the feature hooks.
 
+Island reads saved quick apps without mounting their editor or building a discovery cache. Page ordering, visibility and default-page edits belong to Settings only. Launch opens the built-in Guide without opening a browser after a delay. A failed bootstrap displays a localized error and a diagnostics-folder action before feature hooks mount.
+
 ## State, language and style
 
 The dedicated settings window follows the OS light/dark preference with neutral surfaces and green enabled switches. Windows accent border highlighting is disabled. Static interface text is not selectable; editable fields retain selection and clipboard editing. Position choices retain round radio indicators, including inside the superellipse shell. Text fields have a 36 CSS pixel minimum height.
@@ -14,7 +16,7 @@ Settings starts on a keyboard-first Guide with actual workflow recordings. Categ
 
 `PreferenceSwitch` uses a native checkbox with switch semantics, Space/Enter activation, focus feedback and controlled boolean values. Labels describe the enabled effect; clock/temperature switches also explain their off state. Autostart disables its switch during the native operation and keeps the saved state on failure. `Select`/`SearchableSelect` retain Radix/cmdk menu and search behavior, with right-aligned closed values and left-aligned popup labels, leading checkmarks and optional descriptions. The glass popup expands/collapses as one surface and keeps foreground opacity separate from backdrop sampling. Native color fields use a plain swatch/value button and Settings-only system-picker IPC. Reduced motion skips deformation and transitions.
 
-Island navigation contains seven feature pages, with no settings entry. Settings opens through application launch or the tray/menu. The page registry combines stable string IDs and layout policies from `shared/pages.ts` with icons and render functions in `lib/tabs.tsx`. Navigation, settings and geometry consume the registry. Additional definitions can be registered through `createIslandPageRegistry`. SQLite migrations 2 and 3 remove the former settings entry and convert numeric feature IDs to named IDs while preserving their order. When no configured page is available, navigation falls back to Overview.
+Island navigation contains seven feature pages, with no settings entry. Settings opens through application launch or the tray/menu. The page registry combines stable string IDs and layout policies from `shared/pages.ts` with icons and render functions in `lib/tabs.tsx`. Navigation, settings and geometry consume the registry. Additional definitions can be registered through `createIslandPageRegistry`. When no configured page is available, navigation falls back to Overview.
 
 `AppStateProvider` loads the main-owned snapshot and serializes typed patches. `AppStateProvider` synchronizes saved language into every renderer; `SettingsProvider` edits the shared preference. `Intl` formats time and dates in the selected locale and zone; expanded 12-hour time keeps the localized day period in the smaller date line. Location editors preserve a city/region/country tuple and the joined weather query. Automatic mode shows the latest main-owned location snapshot, refreshing on entry, focus and every minute. Renderer has no weather credential or direct weather fetch.
 

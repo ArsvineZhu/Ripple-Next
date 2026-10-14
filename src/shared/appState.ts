@@ -76,14 +76,12 @@ const AppSettingsSchema = z
       .max(128)
       .refine((values) => new Set(values).size === values.length),
     leaveDelayMs: z.number().finite().min(0).max(2000),
-    welcomeShown: z.boolean(),
   })
   .strict();
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
 
 const AppStateSchema = z
   .object({
-    schemaVersion: z.literal(1),
     settings: AppSettingsSchema,
     tasks: z.array(z.string()),
     workflows: z.array(WorkflowSchema),
@@ -103,7 +101,6 @@ const AppStatePatchSchema = z
 export type AppStatePatch = z.infer<typeof AppStatePatchSchema>;
 
 export const defaultAppState: AppState = {
-  schemaVersion: 1,
   settings: {
     ...defaultGlassPreferences,
     language: 'system' satisfies LanguagePreference,
@@ -139,7 +136,6 @@ export const defaultAppState: AppState = {
     tabOrder: [...DEFAULT_PAGE_IDS],
     hiddenTabs: [],
     leaveDelayMs: 400,
-    welcomeShown: false,
   },
   tasks: [],
   workflows: [] as Workflow[],

@@ -9,5 +9,6 @@
 - Write human documentation in direct, concrete language. Do not use defensive justification, apologetic positioning or boundary-seeking filler. Preserve user prose edits.
 - Use one agent unless the user explicitly requests delegation.
 - Track Objective, Decisions and Current Work; return to the authorized objective after investigation.
+- Keep the active whole-repository capability map in docs/architecture.md and its zh-CN counterpart current. Verify complete runtime paths; remove obsolete internal compatibility and redundant verification scaffolding.
 - Keep current branch notes under 4.1.0-beta.1 explicitly unreleased; preserve published 4.0.0 history.
 - Keep bundled font bytes and notices intact. Guide demos must use actual captured application flows, with provenance and selectable prose.

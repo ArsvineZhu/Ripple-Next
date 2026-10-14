@@ -369,7 +369,7 @@ export const zhTW: Messages = {
   colorPickerFailed: '無法開啟系統色彩選擇器。Linux 需要安裝 zenity 或 kdialog。',
   showTrayFailed: '無法更新選單列圖示。',
   stateSaveFailed: '無法儲存設定。',
-  stateLoadFailed: '無法讀取已儲存的設定，目前使用預設值。',
+  stateLoadFailed: '無法讀取已儲存的資料。你的資料沒有被修改。',
   inputShapeFailed: '無法初始化 Linux 點擊穿透區域。',
   windowLoadFailed: '無法載入 Ripple Next 視窗。',
   missingApiKey: '請在設定中填寫 API 金鑰。',

@@ -193,14 +193,6 @@ async function startApplication() {
     let initialState = defaultAppState;
     try {
       initialState = await stateStore.load();
-      const loadError = stateStore.getLoadError();
-      if (loadError) {
-        diagnosticsService.recordError('application', loadError);
-        notices.report(
-          'stateLoadFailed',
-          loadError instanceof Error ? loadError.message : String(loadError),
-        );
-      }
     } catch (error) {
       diagnosticsService.recordError('application', error);
       notices.report(

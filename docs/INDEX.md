@@ -12,6 +12,8 @@
 
 ## Develop and release
 
+- [Feature and capability map](architecture.md): complete user paths, data ownership, confirmed duplication and the active refactor.
+
 - [Design principles](design-principles.md): interaction and visual direction.
 - [Development](development.md): runtime prerequisites, architecture, commands and tool ownership.
 - [Release acceptance](release.md): packages, publication and native runtime checks.
