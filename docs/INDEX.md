@@ -23,10 +23,8 @@
 - 4.0.0-beta.2: [English](releases/4.0.0-beta.2.en.md), [简体中文](releases/4.0.0-beta.2.zh-CN.md).
 - 4.0.0-beta.1: [English](releases/4.0.0-beta.1.en.md), [简体中文](releases/4.0.0-beta.1.zh-CN.md).
 
-## Design records
+## Current unreleased work
 
-- [Local diagnostics design](superpowers/specs/2026-10-06-local-diagnostics-design.md): the original proposal and decisions.
-- [Local diagnostics implementation plan](superpowers/plans/2026-10-06-local-diagnostics.md): the implementation sequence for that proposal.
-- Chinese design records: [proposal](superpowers/specs/2026-10-06-local-diagnostics-design.zh-CN.md), [implementation plan](superpowers/plans/2026-10-06-local-diagnostics.zh-CN.md).
-
-Design records preserve historical context. The maintained guides describe current behavior and validation.
+- [4.1.0-beta.1](releases/4.1.0-beta.1.en.md): all PR #14 changes since 4.0.0.
+- [Unreleased overview](releases/unreleased.md).
+- [Recorded guide assets](../src/assets/guide/README.md): source, scenes and refresh rules.

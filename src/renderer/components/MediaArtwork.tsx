@@ -60,6 +60,7 @@ export function MediaArtwork({
           key={JSON.stringify([session?.id, artwork.url])}
           src={artwork.url}
           alt=""
+          draggable={false}
           onError={artwork.onError}
         />
       ) : (

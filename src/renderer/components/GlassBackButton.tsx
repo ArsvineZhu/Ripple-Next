@@ -1,11 +1,19 @@
 import { useRef } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, type LucideIcon } from 'lucide-react';
 import { GlassSurface } from './liquidGlass/GlassSurface';
 import motion from './liquidGlass/GlassSurface.module.css';
 import styles from './GlassBackButton.module.css';
 import { useGlassPreferences } from './liquidGlass/GlassPreferences';
 
-export function GlassBackButton({ label, onClick }: { label: string; onClick(): void }) {
+export function GlassBackButton({
+  label,
+  onClick,
+  icon: Icon = ArrowLeft,
+}: {
+  label: string;
+  onClick(): void;
+  icon?: LucideIcon;
+}) {
   const ref = useRef<HTMLButtonElement>(null);
   const glass = useGlassPreferences();
   return (
@@ -14,12 +22,13 @@ export function GlassBackButton({ label, onClick }: { label: string; onClick(): 
       type="button"
       className={`${styles.button} ${motion.actor}`}
       aria-label={label}
+      title={label}
       onClick={onClick}
       data-island-interactive
       data-glass-enabled={glass.settingsGlassEnabled}
     >
       <GlassSurface controlRef={ref} actorRef={ref} radius={18} button />
-      <ArrowLeft size={18} className={styles.icon} aria-hidden="true" />
+      <Icon size={18} className={styles.icon} aria-hidden="true" />
     </button>
   );
 }

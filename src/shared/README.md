@@ -19,3 +19,5 @@ See the [developer guide](../../docs/development.md) and [repository map](../../
 `diagnostics.ts` defines safe error metadata and structured IPC, capability and lifecycle events. Native clipboard methods are explicit members of the shared IPC contract; diagnostics never include their text payloads.
 
 `ScrollGestureStartSchema` validates the native touchpad boundary's timestamp-only payload. Main produces it, preload validates it, and renderer uses it to separate fresh gestures from older momentum.
+
+`fonts.ts` validates uiFont choices. i18n owns original playful Chinese overlays; localeForFormatting normalizes internal/private language variants before Intl. Font and glass defaults apply to new settings without overwriting saved choices.

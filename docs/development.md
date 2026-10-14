@@ -70,3 +70,9 @@ The [four product READMEs](INDEX.md) introduce features; this guide owns toolcha
 `pnpm package` runs `scripts/collect-licenses.mjs`. It collects installed dependency license notices plus the pinned glass sources into `src/assets/third-party/licenses.json`, and copies Chromium's distributed license HTML to generated `out/license-assets`. Forge includes both resources; Settings loads the metadata first and requests text only for the selected entry. Regenerate after dependency changes. Keep generated output and runtime reports outside Git.
 
 Weather lookup and credentials stay in main. A bounded cache separates location/unit/credential identities and shares concurrent requests; changing a key invalidates its cached result. Renderer refreshes automatic-location previews on entry, focus and once per minute. See the [user guide](../instructions.md) and [glass controls](../src/renderer/components/liquidGlass/README.md) for behavior and recorded UI costs.
+
+## Typography and guide assets
+
+Persisted `uiFont` is validated in shared/fonts.ts and applied per renderer by AppStateProvider. Original WOFF2 font files and their notice live in [Alibaba font resources](../src/assets/fonts/alibaba-puhuiti/README.md); do not convert or subset them. Main/tray use zh-ms/zh-apple, i18next uses valid private BCP 47 identifiers, and Intl uses zh-CN. Curated overlays inherit all unmodified zh-CN keys.
+
+[Guide recording provenance](../src/assets/guide/README.md) owns capture scenes and refresh instructions. Capture actual application actions in a separate demo profile. Camera edits may crop/zoom captured frames; never invent UI frames. Update posters, localized steps and the screenshot gallery together.

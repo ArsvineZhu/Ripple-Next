@@ -5,3 +5,5 @@ Keep OS access behind window.electronAPI. Own timers and mutable refs inside hoo
 Use the Search page as the standard for empty workflows: its registered target size, centered 20px medium-weight hint text, and no empty action strip. Tasks retains its full list geometry and original layout even when empty. Keep stable page IDs and page-specific layout policies in the registry; navigation order is separate from identity.
 
 Initialize bundled i18n before render; keep language preferences in SettingsProvider. Use feature/control CSS Modules and Island-scoped Select portals. Movement and open-menu guards belong to useIslandInteraction; preserve settings content and scroll during position commits.
+
+Use the shared uiFont preference in every renderer. Normalize playful Chinese variants before Intl. Guide videos must be user-initiated and pause offscreen/unmounted; do not replace real workflow footage with mock interaction diagrams.

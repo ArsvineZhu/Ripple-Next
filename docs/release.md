@@ -66,3 +66,7 @@ Record package creation, automated tests and native runtime observations separat
 Ripple Next stores preferences, tasks, workflows, quick apps and OS-encrypted API-key ciphertext in `ripple-next.sqlite` under its user-data directory. Numbered migrations live in `src/main/database/migrations/`; runtime SQL lives in `.sql` resources. Verify state survives an update and key availability is reported correctly. The old Ripple profile is separate. Linux autostart changes only its own `ripple-next.desktop` in the active XDG autostart directory.
 
 See [platform support](platform-compatibility.md) for native integration and diagnostic detail, and [screenshot capture notes](assets/screenshots/README.md) when refreshing promotional assets.
+
+## 4.1.0-beta.1 acceptance additions
+
+The current branch is unreleased; [beta notes](releases/4.1.0-beta.1.en.md) own its scope. Verify Font selection in Settings and Island, persistence after restart, original WOFF2 loading, and all three explicit Simplified Chinese expressions with unchanged numeric/date formatting. Review the keyboard-first guide, decode all four videos, pause offscreen and when switching sections, and confirm only one video plays. Check glass defaults/live preview, disabled ordinary controls, held switch dragging, slider attraction and rounded fill, confirmation entry/exit, About hero and non-draggable artwork. Keep native macOS/Linux acceptance separate from Windows renderer checks.

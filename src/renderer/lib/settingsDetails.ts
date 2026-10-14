@@ -5,6 +5,7 @@ export type SettingsDetail =
       page:
         | 'backgroundImage'
         | 'liquidGlass'
+        | 'fonts'
         | 'searchTemplate'
         | 'weatherLocation'
         | 'weatherApiKey'
@@ -23,6 +24,7 @@ export type SettingsDetail =
 export const detailLabels: Record<SettingsDetail['page'], keyof Messages> = {
   backgroundImage: 'backgroundImage',
   liquidGlass: 'liquidGlassExperimental',
+  fonts: 'fontSettings',
   searchTemplate: 'searchEngineUrl',
   weatherLocation: 'location',
   weatherApiKey: 'weatherApiKey',

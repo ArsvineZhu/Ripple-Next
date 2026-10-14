@@ -16,10 +16,10 @@
   --notice-error-color: var(--settings-fg);
 
   /* Type scale */
-  --settings-font-nav: 13px;
-  --settings-font-body: 13px;
-  --settings-font-label: 13px;
-  --settings-font-caption: 11px;
+  --settings-font-nav: 14px;
+  --settings-font-body: 14px;
+  --settings-font-label: 14px;
+  --settings-font-caption: 12px;
 
   /* Spacing */
   --settings-space-1: 4px;

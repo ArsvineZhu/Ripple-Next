@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import Database from 'better-sqlite3';
 import { afterEach, describe, expect, it } from 'vitest';
-import { defaultAppState } from '../src/shared/appState';
+import { defaultAppState, isAppStatePatch } from '../src/shared/appState';
 import { createAppStateStore } from '../src/main/services/appStateStore';
 
 const temporaryDirectories: string[] = [];
@@ -31,6 +31,19 @@ afterEach(async () => {
 });
 
 describe('Ripple Next app state database', () => {
+  it('persists font and playful Chinese choices across a database reopen', async () => {
+    const directory = await createTemporaryDirectory();
+    const store = trackStore(createAppStateStore(directory));
+    expect((await store.load()).settings.uiFont).toBe('default');
+    await store.update({ settings: { uiFont: 'alibaba-puhuiti', language: 'zh-apple' } });
+    const restored = trackStore(createAppStateStore(directory));
+    expect((await restored.load()).settings).toMatchObject({
+      uiFont: 'alibaba-puhuiti',
+      language: 'zh-apple',
+    });
+    expect(isAppStatePatch({ settings: { uiFont: 'unbundled-font' } })).toBe(false);
+  });
+
   it('defaults an existing database corner radius and persists valid custom values', async () => {
     const directory = await createTemporaryDirectory();
     const store = trackStore(createAppStateStore(directory));

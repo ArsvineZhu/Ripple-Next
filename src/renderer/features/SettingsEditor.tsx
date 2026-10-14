@@ -7,6 +7,7 @@ import { WeatherLocationEditor } from './WeatherSettings';
 import { WorkflowEditor } from './WorkflowEditor';
 import { AISettingsPage } from './AISettings';
 import { ThirdPartyLicenses } from './ThirdPartyLicenses';
+import { SettingsFonts } from './SettingsFonts';
 import { Select } from '../components/Select';
 import type { useSettingsWindowController } from '../hooks/useSettingsWindowController';
 import type { SettingsDetail } from '../lib/settingsDetails';
@@ -313,6 +314,8 @@ export function SettingsEditor(props: Props) {
     <ElasticScrollArea id="settings-detail-container" className={styles.container}>
       {page === 'liquidGlass' ? (
         <SettingsLiquidGlass settings={props.settings} />
+      ) : page === 'fonts' ? (
+        <SettingsFonts settings={props.settings} />
       ) : page === 'thirdPartyLicenses' ? (
         <ThirdPartyLicenses />
       ) : [

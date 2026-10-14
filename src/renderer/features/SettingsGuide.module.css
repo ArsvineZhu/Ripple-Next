@@ -1,131 +1,89 @@
+.guide {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.guide p,
+.guide ol,
+.guide code {
+  user-select: text;
+}
 .intro {
-  padding: 6px 2px;
+  padding: 8px 2px;
 }
 .intro h1 {
-  margin: 0 0 10px;
-  font-size: 27px;
+  margin: 0 0 16px;
+  font-size: 28px;
+  line-height: 1.1;
   letter-spacing: -0.02em;
-  font-weight: 650;
+  font-weight: 600;
+  text-wrap: balance;
 }
-.intro p {
+.intro p,
+.card p,
+.card li {
   margin: 0;
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 65ch;
+  overflow-wrap: break-word;
+}
+.intro p,
+.card p {
   color: var(--settings-muted);
+  text-wrap: pretty;
 }
 .card {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 20px;
+  padding: 24px;
 }
-.card p {
+.card h2 {
   margin: 0;
-  font-size: 14px;
-  line-height: 1.65;
-  color: var(--settings-muted);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-wrap: balance;
 }
-.demoStage {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 185px;
+.card ol {
+  margin: 0;
+  padding-inline-start: 24px;
+  display: grid;
+  gap: 12px;
+}
+.recording {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
   border-radius: 16px;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 23px,
-      color-mix(in srgb, var(--settings-fg) 4%, transparent) 23px 24px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 23px,
-      color-mix(in srgb, var(--settings-fg) 4%, transparent) 23px 24px
-    );
+  background: #101010;
 }
-.demoIsland {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgb(255 255 255 / 18%);
-  color: #fff;
-  background: #0d0d0d;
-  box-shadow: 0 12px 28px rgb(0 0 0 / 18%);
-  cursor: pointer;
-  corner-shape: superellipse(1.62);
-}
-.demoIsland strong {
-  font-size: 23px;
-  font-weight: 550;
-}
-.demoIsland small {
-  font-size: 11px;
-  color: #bbb;
-}
-.demoTabs {
-  font-size: 12px;
-}
-.pointer {
-  position: absolute;
-  top: 65%;
-  left: 67%;
-  pointer-events: none;
-  color: var(--settings-fg);
-}
-.demoActions,
-.pageActions,
-.links {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-.demoActions button,
-.pageActions button,
-.links button {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-  min-height: 32px;
-  border: 1px solid var(--settings-border);
-  border-radius: 16px;
-  padding: 5px 12px;
-  color: var(--settings-fg);
-  background: var(--control-bg);
-  cursor: pointer;
-}
-.demoActions button[aria-pressed='true'] {
-  background: var(--settings-fg);
-  color: var(--settings-bg);
-}
-.pageActions span {
-  font-size: 12px;
+.caption {
+  margin: 0 2px;
   color: var(--settings-muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 .keyRow {
   display: grid;
   grid-template-columns: minmax(140px, 0.9fr) minmax(0, 1.7fr);
-  gap: 20px;
+  gap: 24px;
   padding: 8px 0;
 }
 .keyRow strong {
   font-size: 14px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .keyRow p {
   margin-top: 4px;
-  font-size: 13px;
+  font-size: 14px;
 }
 .keyCaps {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  gap: 5px;
+  gap: 6px;
 }
 .keyCaps kbd {
   padding: 5px 8px;
@@ -136,10 +94,11 @@
   border-bottom-width: 3px;
   border-radius: 6px;
   font: 12px var(--font-system, sans-serif);
+  font-variant-numeric: tabular-nums;
 }
 .gesture {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
   border-top: 1px solid var(--settings-divider);
   padding-top: 16px;
@@ -147,34 +106,21 @@
 .gesture svg {
   flex-shrink: 0;
 }
-.settingDiagram {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-  font-size: 14px;
-}
-.connections {
-  display: flex;
-  flex-wrap: wrap;
+.openSettings {
+  align-self: flex-start;
+  display: inline-flex;
   gap: 8px;
   align-items: center;
-  justify-content: center;
-  padding: 15px 8px;
-  background: var(--control-bg);
-  border-radius: 12px;
-  font-size: 13px;
-}
-.connections span {
-  padding: 6px 8px;
-  background: var(--settings-card);
-  border-radius: 8px;
+  min-height: 40px;
+  padding: 8px 16px;
   border: 1px solid var(--settings-border);
+  border-radius: 24px;
+  color: var(--settings-fg);
+  background: var(--control-bg);
+  cursor: pointer;
+  font-size: 14px;
 }
-.links {
-  justify-content: flex-start;
-}
-.card button:focus-visible {
+.openSettings:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 3px;
 }
@@ -182,5 +128,8 @@
   .keyRow {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+  .card {
+    padding: 16px;
   }
 }

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { localeForFormatting } from '../../shared/i18n';
 import styles from './OverviewTab.module.css';
 import typography from '../styles/typography.module.css';
 import { WeatherIcon } from '../components/WeatherIcon';
@@ -24,7 +25,7 @@ export function OverviewTab({
   const number = (value: number | string | null) =>
     value === null || value === ''
       ? '??'
-      : new Intl.NumberFormat(i18n.language).format(Number(value));
+      : new Intl.NumberFormat(localeForFormatting(i18n.language)).format(Number(value));
   return (
     <>
       <div className={styles.statusRow}>

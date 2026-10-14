@@ -1,0 +1,45 @@
+.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-bottom: 8px;
+  background: var(--settings-bg);
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background-image:
+    linear-gradient(var(--settings-divider) 1px, transparent 1px),
+    linear-gradient(90deg, var(--settings-divider) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.header,
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header p {
+  margin: 0;
+  color: var(--settings-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.switchRow {
+  min-height: 32px;
+  font-size: 13px;
+}

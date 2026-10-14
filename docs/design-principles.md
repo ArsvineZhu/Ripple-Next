@@ -47,3 +47,9 @@ For each change, identify the user's task, current state, and next feedback. App
 - [Apple Human Interface Guidelines: Menus](https://developer.apple.com/design/human-interface-guidelines/menus)
 - [Vercel v0: Design systems](https://v0.dev/docs/design-systems)
 - [Vercel: AI-powered prototyping with design systems](https://vercel.com/blog/ai-powered-prototyping-with-design-systems)
+
+## Reading and learning
+
+Use 16px body copy with 1.5–1.6 line height and a 60–75 character measure for guides. Keep UI labels at 14px, captions at least 12px, and headings in descending sizes. Balance short headings, wrap descriptions naturally, and use tabular numbers for changing values. Guide prose stays selectable. Font choices use the same specimen so their differences are visible.
+
+Teach workflows with actual recorded application actions, user-controlled playback and camera motion that guides attention. Keep keyboard guidance first. Playful Chinese is an optional expression under explicit Simplified Chinese; preserve clear destructive actions, technical identifiers and regional formatting.

@@ -9,6 +9,7 @@ import SettingsApp from './SettingsApp';
 import { installRendererErrorHandlers, rendererRootErrorHandlers } from './lib/diagnostics';
 import './styles/base.css';
 import './styles/tokens.css';
+import './styles/fonts.css';
 installRendererErrorHandlers(window);
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element not found');

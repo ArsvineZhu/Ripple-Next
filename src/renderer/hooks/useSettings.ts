@@ -3,11 +3,11 @@ import { useCallback, useRef, useState } from 'react';
 import type { AppSettings, PositionMode } from '../../shared/appState';
 import type { DisplayInfo } from '../../shared/contracts';
 import type { LanguagePreference } from '../../shared/i18n';
-import { changeLanguagePreference } from '../i18n';
 import { useAppState } from '../components/AppStateProvider';
 import { useNotifications } from '../components/NotificationProvider';
 import { GlassPreferencesSchema } from '../../shared/glassPreferences';
 import type { GlassPreferences } from '../../shared/glassPreferences';
+import type { UiFont } from '../../shared/fonts';
 
 export function useSettings(initialHasWeatherApiKey = false) {
   const { state, updateState } = useAppState();
@@ -31,7 +31,6 @@ export function useSettings(initialHasWeatherApiKey = false) {
 
   const handleLanguageChange = (value: LanguagePreference) => {
     updateSettings({ language: value });
-    void changeLanguagePreference(value);
   };
   const handleBatteryAlertsChange = (batteryAlerts: boolean) => updateSettings({ batteryAlerts });
   const handleIslandBorderChange = (islandBorder: boolean) => updateSettings({ islandBorder });
@@ -103,6 +102,8 @@ export function useSettings(initialHasWeatherApiKey = false) {
     updateSettings({ positionMode: positionMode as PositionMode });
 
   return {
+    uiFont: settings.uiFont,
+    setUiFont: (uiFont: UiFont) => updateSettings({ uiFont }),
     glassPreferences: GlassPreferencesSchema.parse(settings),
     setGlassPreferences: (patch: Partial<GlassPreferences>) => updateSettings(patch),
     weatherLocationParts,

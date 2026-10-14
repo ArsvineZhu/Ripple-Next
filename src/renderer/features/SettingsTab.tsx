@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Star,
   Languages,
+  Type,
   Clock3,
   SunMoon,
   Globe2,
@@ -26,12 +27,14 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { author, bugs, license, productName, repository, version } from '../../../package.json';
+import appIcon from '../../assets/icons/icon.png';
 import { useMemo } from 'react';
 import { TABS } from '../lib/tabs';
 import { Select } from '../components/Select';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { useSettingsContext } from '../components/SettingsProvider';
-import { languagePreference } from '../../shared/i18n';
+import { languagePreference, baseLanguage, localeForFormatting } from '../../shared/i18n';
+import { uiFontLabels } from '../../shared/fonts';
 import { InlineNotices } from '../components/InlineNotices';
 import { ElasticScrollArea } from '../components/ElasticScrollArea';
 import { PreferenceSlider } from '../components/PreferenceSlider';
@@ -49,6 +52,7 @@ import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference'
 import styles from './SettingsTab.module.css';
 
 const detailIcons: Partial<Record<SettingsDetail['page'], LucideIcon>> = {
+  fonts: Type,
   weatherLocation: MapPin,
   weatherApiKey: CloudSun,
   searchTemplate: Search,
@@ -107,7 +111,7 @@ export function SettingsTab(
     [t],
   );
   const number = (value: number, decimals = 0) =>
-    new Intl.NumberFormat(i18n.language, {
+    new Intl.NumberFormat(localeForFormatting(i18n.language), {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     }).format(value);
@@ -140,7 +144,7 @@ export function SettingsTab(
             <PrefRow icon={Languages} label={t('language')}>
               <Select
                 label={t('language')}
-                value={language}
+                value={baseLanguage(language)}
                 onValueChange={(value) => handleLanguageChange(languagePreference(value))}
                 options={[
                   { value: 'system', label: t('system'), description: t('systemLanguageHint') },
@@ -151,6 +155,44 @@ export function SettingsTab(
                 ]}
               />
             </PrefRow>
+            <AnimatePresence initial={false}>
+              {baseLanguage(language) === 'zh-CN' && (
+                <motion.div
+                  key="chinese-style"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: reduced ? 0 : 0.2 }}
+                >
+                  <PrefRow label={t('chineseStyle')} hint={t('chineseStyleHint')}>
+                    <Select
+                      label={t('chineseStyle')}
+                      value={language}
+                      onValueChange={(value) => handleLanguageChange(languagePreference(value))}
+                      options={[
+                        { value: 'zh-CN', label: t('chineseStandard') },
+                        {
+                          value: 'zh-ms',
+                          label: t('chineseMicrosoft'),
+                          description: t('chineseMicrosoftHint'),
+                        },
+                        {
+                          value: 'zh-apple',
+                          label: t('chineseApple'),
+                          description: t('chineseAppleHint'),
+                        },
+                      ]}
+                    />
+                  </PrefRow>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            {entry(
+              { page: 'fonts' },
+              t('fontSettings'),
+              t(uiFontLabels[p.uiFont]),
+              t('fontSettingsRowHint'),
+            )}
             <PrefRow icon={Clock3} label={t('hourFormat')} hint={t('hourFormatHint')}>
               <PreferenceSwitch
                 label={t('hourFormat')}
@@ -237,18 +279,6 @@ export function SettingsTab(
       )}
       {p.category === 'appearance' && (
         <>
-          <PrefGroup>
-            {entry(
-              { page: 'liquidGlass' },
-              t('liquidGlassExperimental'),
-              t(
-                p.glassPreferences.settingsGlassEnabled
-                  ? 'glassStateEnabled'
-                  : 'glassStateDisabled',
-              ),
-              t('liquidGlassExperimentalHint'),
-            )}
-          </PrefGroup>
           <PrefGroup>
             <PrefRow icon={Palette} label={t('theme')}>
               <Select
@@ -362,6 +392,18 @@ export function SettingsTab(
               </AnimatePresence>
             </div>
           </PrefCard>
+          <PrefGroup>
+            {entry(
+              { page: 'liquidGlass' },
+              t('liquidGlassExperimental'),
+              t(
+                p.glassPreferences.settingsGlassEnabled
+                  ? 'glassStateEnabled'
+                  : 'glassStateDisabled',
+              ),
+              t('liquidGlassExperimentalHint'),
+            )}
+          </PrefGroup>
           <PrefGroup caption={t('colorsAssets')}>
             <PrefRow label={t('islandColor')}>
               <NativeColorField
@@ -620,13 +662,19 @@ export function SettingsTab(
       )}
       {p.category === 'about' && (
         <>
-          <PrefGroup caption={t('aboutSystem')}>
-            <PrefRow label={t('applicationName')}>
-              <span className={styles.aboutValue}>{productName}</span>
-            </PrefRow>
-            <PrefRow label={t('appVersion')}>
-              <span className={styles.aboutValue}>{version}</span>
-            </PrefRow>
+          <section
+            className={styles.aboutHero}
+            aria-labelledby="about-product-title"
+            data-about-hero
+          >
+            <img src={appIcon} alt="" width={72} height={72} draggable={false} />
+            <h2 id="about-product-title">{productName}</h2>
+            <p>{t('aboutTagline')}</p>
+            <span>
+              {t('appVersion')} {version}
+            </span>
+          </section>
+          <PrefGroup>
             <PrefRow label={t('developer')}>
               <span className={styles.aboutValue}>{author.name}</span>
             </PrefRow>

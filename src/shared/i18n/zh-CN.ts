@@ -1,5 +1,62 @@
 import type { Messages } from './en';
 export const zhCN: Messages = {
+  guideTypographyStep3:
+    '趣味变体改变部分界面措辞。日期与数字仍按标准简体中文格式显示，选择标准中文即可恢复普通表达。',
+  guideTypographyStep2:
+    '选择简体中文后，会出现“中文表达”。标准、微软中文和苹果中文使用相同的操作与技术字段。',
+  guideTypographyStep1:
+    '在“常规”中进入“字体”，比较默认字体、系统字体与阿里巴巴普惠体 3，点选喜欢的样张。',
+  guideTypographyBody: '用相同文字和数字比较字体。选择会同步应用到 Island 与设置窗口。',
+  guideTypographyTitle: '字体与中文表达',
+  guideEditorHelp:
+    '带箭头的设置项进入编辑页。胶囊返回键恢复上一页及其滚动位置。删除或清除数据时，需要再次确认。',
+  guideRecordingNote:
+    '在 Windows 上的 Ripple Next 中，使用独立演示配置录制。通过视频控件播放、暂停或跳转。画面包含运镜，界面文字为简体中文。',
+  fontSettings: '字体',
+  fontSettingsRowHint: '选择界面使用的字形',
+  fontSettingsHint: '比较下面的字形，再选择设置与 Island 使用的字体。',
+  fontDefault: '默认字体',
+  fontSystem: '系统字体',
+  fontAlibaba: '阿里巴巴普惠体 3.0',
+  fontDefaultHint: 'Ripple 的圆润西文字体，搭配当前语言的系统字形。',
+  fontSystemHint: '使用操作系统的界面字体。',
+  fontAlibabaHint: '随应用提供常规、中等、半粗和粗体四个字重。',
+  fontSample: 'Ripple Next，让文字各就其位。',
+  chineseStyle: '中文表达',
+  chineseStyleHint: '趣味中文变体，操作与区域格式保持一致。',
+  chineseStandard: '普通简体中文',
+  chineseMicrosoft: '微软中文 · 趣味',
+  chineseApple: '苹果中文 · 趣味',
+  chineseMicrosoftHint: '认真直译、系统关怀，偶尔吟诗。',
+  chineseAppleHint: '双关、反复和精心雕琢的断句。',
+  guideOpenSection: '打开相关设置',
+  guideAITitle: 'AI：关联接口、密钥和模型',
+  guideAIBody:
+    '录像展示编辑模型、替换系统提示词并添加具名的时间注入。示例接口与密钥是演示数据，过程中不发送模型请求。',
+  guideAIStep1:
+    '添加带名称的 Base URL，包含服务 API 路径，例如 /v1。为该接口添加密钥，并点击保存。',
+  guideAIStep2:
+    '填写完整模型 ID，再选择接口、密钥和协议：OpenAI 兼容 Chat Completions、OpenAI Responses 或 Anthropic Messages。',
+  guideAIStep3:
+    '设为默认模型，或在助手中切换。每个模型可单独调整系统提示词、温度、思考强度、输出上限与本地上下文上限。',
+  guideAIStep4:
+    '注入列表按顺序追加已启用的命名文本片段。调整顺序即可改变最终系统提示词。上下文感知选项尚未开放。',
+  guideAIVariables: '提示词和注入片段可使用这些变量：',
+  guideWorkflowTitle: '快捷应用与工作流：打开工作环境',
+  guideWorkflowBody:
+    '快捷应用打开一个目标，工作流依次打开多个目标。录像展示命名工作流、分行填写两个地址，再返回列表。',
+  guideWorkflowStep1: '点击添加，选择已安装应用、网站或可执行文件，并填写便于查找的名称。',
+  guideWorkflowStep2:
+    '填写工作流名称，每行写一个应用或地址。使用 + 添加行、× 移除行；逗号保留在同一个目标中。点击现有条目名称可进入编辑。',
+  guideWorkflowStep3:
+    '在 Island 中启动工作流。目标启动失败时会在该行提示，后续目标仍会继续；完整长名称可在编辑页查看。',
+  guideGlassTitle: '液态玻璃：按下、拖动与调整',
+  guideGlassBody:
+    '录像展示实时预览、按住并拖动滑块、切换开关，以及开启和关闭设置页玻璃。亲自操作预览，可以感受节点附近的吸附。',
+  guideGlassStep1: '按下即放大手柄。靠近节点时，拖动会减慢并吸引真实取值；继续拖动即可越过节点。',
+  guideGlassStep2: '按住开关向左或向右越过中点，便会切换状态。松手后恢复白色手柄。',
+  guideGlassStep3:
+    '在位置设置之后打开液态玻璃实验页。上方的实时预览在调整参数时保持可见。关闭设置玻璃会恢复普通控件；灵动岛玻璃尚未开放。',
   liquidGlassExperimental: '液态玻璃（实验性）',
   liquidGlassExperimentalHint: '调整设置控件的实验材质和鼠标响应。',
   settingsGlassEnabled: '设置页启用 Liquid Glass',
@@ -7,6 +64,13 @@ export const zhCN: Messages = {
   islandGlassEnabled: '灵动岛启用 Liquid Glass',
   islandGlassUnavailable: '内测中，未开放。',
   glassParameters: '玻璃参数',
+  glassPreview: '实时预览',
+  glassPreviewHint: '按下或拖动控件，预览当前材质与形变。',
+  glassPreviewReset: '还原预览',
+  glassPreviewSlider: '预览滑杆',
+  glassPreviewSwitch: '预览开关',
+  glassPreviewMenu: '预览菜单',
+  aboutTagline: '把桌面的常用动作，收进一座灵动岛。',
   glassIorLabel: '折射率',
   glassRefractionLabel: '折射强度',
   glassDispersionLabel: '色散',
@@ -14,7 +78,7 @@ export const zhCN: Messages = {
   glassSaturationLabel: '饱和度',
   glassSpecularLabel: '高光倍率',
   glassDragDeformationLabel: '拖拽形变（实验）',
-  glassDragDeformationHint: '按住拖动时沿移动方向形变，默认关闭。',
+  glassDragDeformationHint: '按住拖动时沿移动方向形变。',
   glassElasticityLabel: '鼠标弹性',
   glassSnapLabel: '节点吸附范围（CSS px）',
   restoreGlassDefaults: '恢复默认参数',
@@ -23,21 +87,7 @@ export const zhCN: Messages = {
   language: '语言',
   settingsNavGuide: '使用指南',
   guideTitle: '认识 Ripple Next',
-  guideIntro: '用小小的 Island 查看信息、控制音乐和执行快捷操作。先试试下方示意，再配置常用功能。',
-  guideIsland: 'Island 如何展开',
-  guideDemoLabel: 'Island 交互示意',
-  guideIslandHint:
-    '悬停查看简短信息，点击背景展开。按钮和输入框执行自身操作，不会切换 Island 状态。',
-  guideSearchDemo: '搜索网页',
-  guideWorkflowDemo: '启动工作流',
-  guideDemoCaption: '交互示意',
-  guideQuickCaption: '快速查看当前信息',
-  guideStill: '收起',
-  guideQuick: '简短视图',
-  guideLarge: '展开',
-  guidePreviousDemo: '前一个示意页面',
-  guideNextDemo: '后一个示意页面',
-  guideTryPages: '试试切换页面',
+  guideIntro: '先熟悉键位，再跟着真实设置录像，将 Ripple Next 调整为顺手的样子。',
   guideKeyboard: '键位与手势',
   guidePages: '切换功能页',
   guidePagesHint: '焦点不在输入框时，左右方向键切换功能页，按可见顺序循环。',
@@ -48,18 +98,10 @@ export const zhCN: Messages = {
   guideSliders: '调整滑杆',
   guideSlidersHint:
     '方向键调整，按住 Shift 细调，Home／End 到达两端。拖动连续取值，松手靠近标记时轻微吸附。',
-  guideMusic: '切换音乐来源',
-  guideMusicHint: '聚焦音乐区域后，上下方向键选择来源，Home／End 到首尾。选择 A 恢复自动选择。',
-  guideGestures: '横向滚轮或触控板手势切换页面；纵向滚动留在内容内，在音乐页可切换来源。',
+  guideGestures: '横向滚轮或触控板手势切换 Island 页面；纵向滚动留在当前内容内。',
   guideSettings: '按你的习惯设置',
-  guideSettingsRow: '设置项',
-  guideSettingsEditor: '编辑页面',
-  guideAutosave: '带箭头的设置项进入编辑页。普通修改自动存储，胶囊返回键恢复上一页及其滚动位置。',
   guideSecrets: 'API 密钥在本机加密，已保存时显示圆点；仅输入新值不会存储，点击更改才会提交。',
   guideColors: '颜色框调用系统选取器。开关标签说明开启后的效果；位置滑杆始终对应真实输入值。',
-  guideAIFlow: 'AI 配置关系',
-  guideAIFlowHint:
-    '先创建 Base URL 并保存对应密钥，再把模型绑定到这组接口与密钥。自定义参数始终归属于其编号模型。',
   guideReopen: '再次启动 Ripple 或通过托盘重新打开设置。关闭设置窗口后，Island 仍继续运行。',
   thirdPartyLicenses: '第三方许可',
   thirdPartyLicenseHint: '查看开源组件及其随应用分发的版权和许可证文本。',

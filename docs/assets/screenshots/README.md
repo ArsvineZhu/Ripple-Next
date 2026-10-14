@@ -1,6 +1,6 @@
 # Screenshot gallery
 
-The original PNGs were captured on 2026-10-09 from the packaged Ripple Next Linux renderer using an isolated demonstration profile. Settings and the new guide/control images were refreshed on 2026-10-13 from the built Windows Electron 44.5.1 renderer at DPR 1.5. They show the 4.0.0 interface and current settings changes. The Windows functional captures use CDP focus/pointer emulation; they do not establish physical mouse input or GPU frame completion.
+The original PNGs were captured on 2026-10-09 from the packaged Ripple Next Linux renderer using an isolated demonstration profile. Control images were refreshed on 2026-10-13. Guide, Font, Glass settings, About and General were refreshed on 2026-10-14 from the built Windows Electron 44.5.1 renderer at DPR 1.5. Island images show published 4.0.0; the current Settings captures show unreleased 4.1.0-beta.1. The Windows functional captures use CDP focus/pointer emulation; they do not establish physical mouse input or GPU frame completion.
 
 Media sessions came from two demonstration MPRIS players and an original geometric album cover. Weather, battery, clipboard and the assistant response used controlled sample data. The assistant picture demonstrates rendering and code copying; its text was supplied locally. The four Overview images use the application's own locale selection. Images are cropped around the Island and retain its real layout and transparent surround.
 
@@ -19,7 +19,7 @@ The current control images show the compact 52 × 26 switch and 40-pixel slider 
 | Clipboard                         | [clipboard.png](clipboard.png)                     |
 | Tasks                             | [tasks.png](tasks.png)                             |
 | Settings                          | [settings.png](settings.png)                       |
-| Illustrated interactive guide     | [guide.png](guide.png)                             |
+| Keyboard-first recorded guide     | [guide.png](guide.png)                             |
 | White resting controls            | [glass-controls-rest.png](glass-controls-rest.png) |
 | Switch held as a clear lens       | [glass-switch-held.png](glass-switch-held.png)     |
 | Slider held as a clear lens       | [glass-slider-held.png](glass-slider-held.png)     |
@@ -32,3 +32,5 @@ Build the current application using the [developer guide](../../development.md).
 Use sample content for clipboard and AI, and keep credentials and personal endpoints out of captures. Label simulated service content in the captions. Preserve actual card geometry, typography, controls and indicators. Store optimized PNGs here and link them relatively so GitHub and local previews display the same assets.
 
 Return to the [documentation catalog](../../INDEX.md) or [product tour](../../../README.md).
+
+New Settings captures: [Font](font-settings.png), [Glass preview](liquid-glass-settings.png), [About hero](about.png). The [recorded flows](../../../src/assets/guide/README.md) use the same real application with demo data.

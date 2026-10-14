@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { createInstance } from 'i18next';
-import { languagePreference, messages, resolveLocale } from '../src/shared/i18n';
+import {
+  languagePreference,
+  messages,
+  resolveLocale,
+  localeForI18next,
+  localeForFormatting,
+  baseLanguage,
+} from '../src/shared/i18n';
 import { formatDateShort, formatTime, formatOverviewDate } from '../src/renderer/lib/date';
 import { defaultAppState } from '../src/shared/appState';
 describe('language selection', () => {
@@ -21,6 +28,36 @@ describe('language selection', () => {
   });
 });
 describe('bundled messages and formatting', () => {
+  it('switches Chinese styles with standard fallback, clear critical actions and zh-CN formats', async () => {
+    const instance = createInstance();
+    await instance.init({
+      resources: Object.fromEntries(
+        Object.entries(messages).map(([locale, translation]) => [
+          localeForI18next(locale as keyof typeof messages),
+          { translation },
+        ]),
+      ),
+      fallbackLng: 'zh-CN',
+      keySeparator: false,
+    });
+    const date = new Date('2026-10-13T06:05:00Z');
+    for (const locale of ['zh-ms', 'zh-apple'] as const) {
+      expect(languagePreference(locale)).toBe(locale);
+      expect(baseLanguage(locale)).toBe('zh-CN');
+      expect(localeForFormatting(localeForI18next(locale))).toBe('zh-CN');
+      await instance.changeLanguage(localeForI18next(locale));
+      expect(instance.t('guideTitle')).toBe(messages[locale].guideTitle);
+      expect(instance.t('guideTitle')).not.toBe(messages['zh-CN'].guideTitle);
+      expect(instance.t('quit')).toBe(messages['zh-CN'].quit);
+      expect(instance.t('glassIorLabel')).toBe(messages['zh-CN'].glassIorLabel);
+      expect(formatOverviewDate(locale, date, 'Asia/Tokyo', true)).toBe(
+        formatOverviewDate('zh-CN', date, 'Asia/Tokyo', true),
+      );
+      expect(formatTime(locale, true, date, 'Asia/Tokyo', true)).toBe(
+        formatTime('zh-CN', true, date, 'Asia/Tokyo', true),
+      );
+    }
+  });
   it('ships matching non-empty keys and interpolation variables in every language', () => {
     const keys = Object.keys(messages.en).sort();
     const variables = (text: string) =>

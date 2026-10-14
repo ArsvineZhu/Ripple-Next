@@ -8,6 +8,7 @@ import { useWeatherPreview } from '../hooks/useWeatherPreview';
 import type { SettingsFormProps } from './SettingsEditor';
 import { PrefCard, PrefRow } from './SettingsPreferences';
 import styles from './SettingsTab.module.css';
+import { localeForFormatting } from '../../shared/i18n';
 
 export function WeatherLocationEditor({ settings: p }: { settings: SettingsFormProps }) {
   const { t, i18n } = useTranslation();
@@ -15,7 +16,9 @@ export function WeatherLocationEditor({ settings: p }: { settings: SettingsFormP
   const reduced = useReducedMotionPreference();
   const automatic = p.weatherLocation === 'auto:ip';
   const { snapshot, loading } = useWeatherPreview(automatic, p.weatherRefreshToken);
-  const eastAsian = ['zh', 'ja'].includes(new Intl.Locale(i18n.language).language);
+  const eastAsian = ['zh', 'ja'].includes(
+    new Intl.Locale(localeForFormatting(i18n.language)).language,
+  );
   const address = snapshot?.location
     ? (eastAsian
         ? [snapshot.location.country, snapshot.location.region]

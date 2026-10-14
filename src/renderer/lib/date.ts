@@ -1,9 +1,12 @@
+import { localeForFormatting } from '../../shared/i18n';
+
 export function formatDateShort(
   locale: string,
   input?: string | number | Date,
   timeZone = 'system',
 ) {
   const date = input === undefined ? new Date() : new Date(input);
+  locale = localeForFormatting(locale);
   const formatted = new Intl.DateTimeFormat(locale, {
     weekday: 'short',
     month: 'short',
@@ -28,6 +31,7 @@ export function formatTime(
   timeZone = 'system',
   showAmPm = false,
 ) {
+  locale = localeForFormatting(locale);
   const options: Intl.DateTimeFormatOptions = {
     hour: 'numeric',
     minute: '2-digit',
@@ -62,6 +66,7 @@ export function formatOverviewDate(
   timeZone = 'system',
   showPeriod = false,
 ) {
+  locale = localeForFormatting(locale);
   const zone = timeZone === 'system' ? {} : { timeZone };
   const language = new Intl.Locale(locale).language;
   let date = new Intl.DateTimeFormat(locale, {

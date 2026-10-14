@@ -1,5 +1,65 @@
 import type { Messages } from './en';
 export const ja: Messages = {
+  guideTypographyStep3:
+    '遊び心のある表現は一部の文言を変えます。日時と数字は標準の簡体字中国語形式です。標準を選ぶと通常の文言に戻ります。',
+  guideTypographyStep2:
+    '簡体字中国語を選ぶと、中国語の表現が選べます。標準、Microsoft Chinese、Apple Chinese で操作と技術用語は共通です。',
+  guideTypographyStep1:
+    '「一般」の「フォント」で、既定、システム、Alibaba PuHuiTi 3 の見本を比較して選択します。',
+  guideTypographyBody: '同じ文章と数字でフォントを比較します。選択は Island と設定に反映されます。',
+  guideTypographyTitle: 'フォントと中国語の表現',
+  guideEditorHelp:
+    '矢印のある項目は編集画面を開きます。戻るボタンで前の画面とスクロール位置に戻ります。削除や消去には確認が必要です。',
+  guideRecordingNote:
+    'Windows の Ripple Next を専用デモ設定で録画しています。再生、一時停止、シークができます。パンとズームを含み、画面は簡体字中国語です。',
+  fontSettings: 'フォント',
+  fontSettingsRowHint: 'インターフェイスの書体を選択',
+  fontSettingsHint: '見本を比較し、設定と Island に使うフォントを選びます。',
+  fontDefault: '既定のフォント',
+  fontSystem: 'システムフォント',
+  fontAlibaba: 'Alibaba PuHuiTi 3.0',
+  fontDefaultHint: 'Ripple の丸い欧文書体と、言語に応じたシステム書体。',
+  fontSystemHint: 'OS のインターフェイス書体。',
+  fontAlibabaHint: 'Regular、Medium、SemiBold、Bold を同梱。',
+  fontSample: 'Ripple Next。文字も、ぴったり。',
+  chineseStyle: '中国語の表現',
+  chineseStyleHint: '簡体字中国語の遊び心ある表現。操作と地域形式は同じです。',
+  chineseStandard: '標準の簡体字中国語',
+  chineseMicrosoft: 'Microsoft 中国語 · パロディ',
+  chineseApple: 'Apple 中国語 · パロディ',
+  chineseMicrosoftHint: '直訳調、真面目な気遣い、ときどき詩。',
+  chineseAppleHint: '言葉遊び、反復、凝った短い表現。',
+  guideOpenSection: '関連する設定を開く',
+  guideAITitle: 'AI：エンドポイント、キー、モデルを接続',
+  guideAIBody:
+    '録画ではモデルの編集、システムプロンプトの変更、時刻の注入を追加します。接続先とキーはデモ用で、モデルへのリクエストは送信しません。',
+  guideAIStep1:
+    '名前付き Base URL を追加し、/v1 などサービスの API パスを含めます。その接続先のキーを追加して保存します。',
+  guideAIStep2:
+    '完全なモデル ID を入力し、接続先、キー、プロトコルを選びます。OpenAI 互換 Chat Completions、OpenAI Responses、Anthropic Messages に対応します。',
+  guideAIStep3:
+    '初期モデルを設定するか助手で切り替えます。モデルごとにシステムプロンプト、温度、推論強度、出力上限、ローカルコンテキスト上限を調整できます。',
+  guideAIStep4:
+    '注入リストは有効な名前付きテキストを順番に追加します。順序で最終システムプロンプトを調整できます。コンテキスト認識はまだ利用できません。',
+  guideAIVariables: 'プロンプトと注入に使える変数：',
+  guideWorkflowTitle: 'アプリとワークフロー：作業環境を開く',
+  guideWorkflowBody:
+    'クイックアプリは一つの対象を、ワークフローは複数を順番に開きます。録画では名前と二つの URL を入力し、一覧に戻ります。',
+  guideWorkflowStep1:
+    '追加からインストール済みアプリ、ウェブサイト、実行ファイルを選び、探しやすい名前を付けます。',
+  guideWorkflowStep2:
+    '名前を入力し、1行に1つのアプリやアドレスを置きます。+ で行を追加、× で削除でき、コンマは対象の中に残ります。既存項目の名前から編集できます。',
+  guideWorkflowStep3:
+    'Island から起動します。対象の失敗はその行に表示され、その後の対象は引き続き起動します。長い名前は編集ページで確認できます。',
+  guideGlassTitle: 'Liquid Glass：押す、ドラッグ、調整',
+  guideGlassBody:
+    '録画ではライブプレビュー、スライダーの押下とドラッグ、スイッチ、ガラスの有効と無効を比較します。プレビューで吸着を体験できます。',
+  guideGlassStep1:
+    '押した瞬間にハンドルが拡大します。目盛りの近くでは実際の値が引き寄せられ、さらにドラッグすると目盛りを越えられます。',
+  guideGlassStep2:
+    'スイッチを押したまま左右にドラッグし、中点を越えると状態が変わります。離すと白いハンドルに戻ります。',
+  guideGlassStep3:
+    '位置設定の後にある Liquid Glass の実験ページを開きます。パラメータ調整中も上のプレビューを確認できます。設定ガラスをオフにすると通常のコントロールに戻り、Island のガラスは未公開です。',
   liquidGlassExperimental: 'Liquid Glass（実験）',
   liquidGlassExperimentalHint: '設定の実験的な材質とポインター応答を調整します。',
   settingsGlassEnabled: '設定で Liquid Glass を使用',
@@ -7,6 +67,13 @@ export const ja: Messages = {
   islandGlassEnabled: 'Island で Liquid Glass を使用',
   islandGlassUnavailable: '内部テスト中。まだ利用できません。',
   glassParameters: 'ガラスのパラメーター',
+  glassPreview: 'ライブプレビュー',
+  glassPreviewHint: '押す・ドラッグする操作で、現在の質感と変形を確認できます。',
+  glassPreviewReset: 'プレビューをリセット',
+  glassPreviewSlider: 'プレビューのスライダー',
+  glassPreviewSwitch: 'プレビューのスイッチ',
+  glassPreviewMenu: 'プレビューのメニュー',
+  aboutTagline: '次の操作を、すぐ手元に。',
   glassIorLabel: '屈折率',
   glassRefractionLabel: '屈折の強さ',
   glassDispersionLabel: '分散',
@@ -23,22 +90,7 @@ export const ja: Messages = {
   language: '言語',
   settingsNavGuide: '使い方',
   guideTitle: 'Ripple Next を使ってみよう',
-  guideIntro:
-    '小さな Island で情報、音楽、クイック操作をまとめます。下の例を試してから、使う機能を設定してください。',
-  guideIsland: 'Island の開き方',
-  guideDemoLabel: 'Island の操作例',
-  guideIslandHint:
-    'ホバーで簡易表示、背景をクリックすると展開します。ボタンや入力欄はそれぞれの操作を実行します。',
-  guideSearchDemo: 'ウェブ検索',
-  guideWorkflowDemo: 'ワークフローを起動',
-  guideDemoCaption: '操作の例',
-  guideQuickCaption: '現在の情報をすばやく確認',
-  guideStill: '折りたたむ',
-  guideQuick: '簡易表示',
-  guideLarge: '展開',
-  guidePreviousDemo: '前の例のページ',
-  guideNextDemo: '次の例のページ',
-  guideTryPages: 'ページ切り替えを試す',
+  guideIntro: 'まずキー操作を確認し、実際の設定画面の録画を見ながら使いやすく調整しましょう。',
   guideKeyboard: 'キーとジェスチャー',
   guidePages: '機能ページを切り替え',
   guidePagesHint: '入力欄にフォーカスがない時、左右キーで表示順にページを切り替えます。',
@@ -50,23 +102,13 @@ export const ja: Messages = {
   guideSliders: 'スライダーを調整',
   guideSlidersHint:
     '矢印で調整し、Shift で細かく変更します。Home／End は両端へ。ドラッグは連続的で、離した時に目盛りへ吸着します。',
-  guideMusic: '音楽ソースを切り替え',
-  guideMusicHint:
-    '音楽領域を選択し、上下キーでソース、Home／End で最初と最後へ。A で自動選択に戻ります。',
   guideGestures:
-    '横方向のホイールやトラックパッドでページを切り替えます。縦スクロールは内容内で動き、音楽ページではソースを切り替えます。',
+    '横方向のホイールやトラックパッドで Island のページを切り替えます。縦スクロールは現在の内容をスクロールします。',
   guideSettings: '自分に合う設定に',
-  guideSettingsRow: '設定項目',
-  guideSettingsEditor: '編集画面',
-  guideAutosave:
-    '矢印の項目は編集画面を開きます。通常の変更は自動保存し、戻るボタンで前の画面とスクロール位置を復元します。',
   guideSecrets:
     'API キーはローカルで暗号化され、保存後は丸印で表示します。入力だけでは保存されず、変更を押して確定します。',
   guideColors:
     '色は OS の選択画面を使います。スイッチの名前は有効時の動作を示し、位置スライダーは実際の入力値に一致します。',
-  guideAIFlow: 'AI の設定関係',
-  guideAIFlowHint:
-    'Base URL を作成して対応キーを保存し、その組にモデルを結び付けます。カスタマイズは番号付きモデルに属します。',
   guideReopen:
     'Ripple を再起動するかトレイから設定を開きます。設定を閉じても Island は動作を続けます。',
   thirdPartyLicenses: 'サードパーティのライセンス',

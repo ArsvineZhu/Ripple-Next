@@ -200,7 +200,7 @@ it('attracts the native value while held, allows leaving a stop and keeps keyboa
     });
   await moveValue(49.5);
   expect(changed).toHaveBeenLastCalledWith(50);
-  await moveValue(49);
+  await moveValue(48.5);
   expect(Number(input.value)).toBeGreaterThan(49.8);
   expect(Number(input.value)).toBeLessThan(50);
   const attracted = Number(input.value);
@@ -208,8 +208,8 @@ it('attracts the native value while held, allows leaving a stop and keeps keyboa
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })),
   );
   expect(changed).toHaveBeenLastCalledWith(Number((attracted + 1).toFixed(6)));
-  await moveValue(46);
-  expect(changed).toHaveBeenLastCalledWith(46);
+  await moveValue(44);
+  expect(changed).toHaveBeenLastCalledWith(44);
   await act(async () => input.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true })));
   await moveValue(49);
   expect(changed).toHaveBeenLastCalledWith(49);
@@ -269,7 +269,7 @@ it('keeps the real range, continuous values, keyboard fine adjustment and pointe
   );
   expect(changed).toHaveBeenLastCalledWith(50);
   changed.mockClear();
-  input.value = '47';
+  input.value = '44';
   await act(async () =>
     input.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 4, bubbles: true })),
   );

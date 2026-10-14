@@ -11,6 +11,7 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 import { useNotifications } from './NotificationProvider';
+import { changeLanguagePreference } from '../i18n';
 
 interface AppStateContextValue {
   state: AppState;
@@ -36,6 +37,12 @@ export function AppStateProvider({
 }) {
   const [state, setState] = useState(initialState);
   const { notify } = useNotifications();
+  useEffect(() => {
+    document.documentElement.dataset.uiFont = state.settings.uiFont;
+  }, [state.settings.uiFont]);
+  useEffect(() => {
+    void changeLanguagePreference(state.settings.language);
+  }, [state.settings.language]);
   const writes = useRef({
     authoritative: initialState,
     inFlight: null as AppStatePatch | null,

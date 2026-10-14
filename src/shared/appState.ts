@@ -5,6 +5,7 @@ import type { LanguagePreference } from './i18n';
 import { DEFAULT_PAGE_ID, DEFAULT_PAGE_IDS, PageIdSchema } from './pages';
 import { AIConfigurationSchema, defaultAIConfiguration } from './aiConfiguration';
 import { GlassPreferencesSchema, defaultGlassPreferences } from './glassPreferences';
+import { UiFontSchema } from './fonts';
 
 const HourFormatSchema = z.enum(['12-hr', '24-hr']);
 const WeatherUnitSchema = z.enum(['f', 'c']);
@@ -33,7 +34,8 @@ function isValidTimeZone(value: string) {
 const AppSettingsSchema = z
   .object({
     ...GlassPreferencesSchema.shape,
-    language: z.enum(['system', 'en', 'zh-CN', 'zh-TW', 'ja']),
+    language: z.enum(['system', 'en', 'zh-CN', 'zh-TW', 'ja', 'zh-ms', 'zh-apple']),
+    uiFont: UiFontSchema.default('default'),
     searchUrlTemplate: z.string().max(2048).default('https://www.google.com/search?q={query}'),
     ai: AIConfigurationSchema.default(defaultAIConfiguration),
     autoLaunch: z.boolean(),
@@ -105,6 +107,7 @@ export const defaultAppState: AppState = {
   settings: {
     ...defaultGlassPreferences,
     language: 'system' satisfies LanguagePreference,
+    uiFont: 'default',
     searchUrlTemplate: 'https://www.google.com/search?q={query}',
     ai: defaultAIConfiguration(),
     autoLaunch: false,

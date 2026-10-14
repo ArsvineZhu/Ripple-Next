@@ -23,9 +23,8 @@
 - 4.0.0-beta.2：[简体中文](releases/4.0.0-beta.2.zh-CN.md)、[English](releases/4.0.0-beta.2.en.md)。
 - 4.0.0-beta.1：[简体中文](releases/4.0.0-beta.1.zh-CN.md)、[English](releases/4.0.0-beta.1.en.md)。
 
-## 设计记录
+## 当前未发布内容
 
-- [本地诊断设计](superpowers/specs/2026-10-06-local-diagnostics-design.zh-CN.md)：原始提案与决策。
-- [本地诊断实施计划](superpowers/plans/2026-10-06-local-diagnostics.zh-CN.md)：该提案的实施顺序。
-
-设计记录保留当时的背景；维护中的指南说明当前行为和验证方法。
+- [4.1.0-beta.1](releases/4.1.0-beta.1.zh-CN.md)：PR #14 自 4.0.0 以来的全部改动。
+- [未发布概览](releases/unreleased.md)。
+- [指南录像素材（英语）](../src/assets/guide/README.md)：来源、流程与更新规范。

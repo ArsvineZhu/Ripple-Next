@@ -70,3 +70,9 @@ Forge 在启动和打包前清理 `.vite`；`.vite`、`out`、报告和 `node_mo
 `pnpm package` 执行 `scripts/collect-licenses.mjs`，将已安装依赖及锁定玻璃源码的许可收集到 `src/assets/third-party/licenses.json`，把 Chromium 许可 HTML 复制到生成目录 `out/license-assets`，Forge 将两者放入资源包。设置先读取元数据，选择条目时再读取文本；依赖变化后重新生成。生成输出与运行报告不入 Git。
 
 天气请求及凭据留在 main。有界缓存按位置、单位和凭据区分结果，并复用并发请求；更换密钥后使用新的缓存身份。Renderer 在进入、聚焦和每分钟刷新自动定位预览。操作见[使用指南](../instructions.zh-CN.md)，材质与测量见[设置玻璃](../src/renderer/components/liquidGlass/README.zh-CN.md)。
+
+## 字体与指南素材
+
+共享 fonts.ts 校验 uiFont，AppStateProvider 在每个 renderer 应用字体。原始 WOFF2 与许可见[字体资源](../src/assets/fonts/alibaba-puhuiti/README.md)，不要转换或裁剪。主进程／托盘使用 zh-ms／zh-apple，i18next 使用合法私有 BCP 47 标识，Intl 使用 zh-CN。覆盖表继承未改动的标准中文键。
+
+[指南录像来源](../src/assets/guide/README.md)记录场景与更新方法。在独立演示配置录制真实动作，运镜可裁切／缩放已有画面，不要制作虚假的 UI 帧。同步更新封面、本地化步骤与截图画廊。

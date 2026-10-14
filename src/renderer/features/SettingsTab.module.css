@@ -9,6 +9,39 @@
   background: transparent;
 }
 
+.aboutHero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px 20px;
+  text-align: center;
+}
+
+.aboutHero img {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+}
+
+.aboutHero h2 {
+  margin: 4px 0 0;
+  font-size: 26px;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.aboutHero p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.aboutHero > span {
+  color: var(--settings-muted);
+  font-size: 12px;
+}
+
 .container :global(.scroll-content) {
   display: flex;
   flex-direction: column;

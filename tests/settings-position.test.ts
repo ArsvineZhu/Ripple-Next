@@ -3,6 +3,8 @@ import { act, createElement, useLayoutEffect } from 'react';
 import type { ChangeEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+
+vi.mock('../src/renderer/i18n', () => ({ changeLanguagePreference: vi.fn() }));
 import { AppStateProvider } from '../src/renderer/components/AppStateProvider';
 import { useSettings } from '../src/renderer/hooks/useSettings';
 import { defaultAppState } from '../src/shared/appState';

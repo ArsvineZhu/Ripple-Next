@@ -1,6 +1,7 @@
 import styles from './QuickView.module.css';
 import typography from '../styles/typography.module.css';
 import { useTranslation } from 'react-i18next';
+import { localeForFormatting } from '../../shared/i18n';
 import { AnimatePresence } from 'motion/react';
 import { motion } from 'motion/react';
 import { MediaArtwork } from './MediaArtwork';
@@ -74,7 +75,7 @@ export function QuickView({
   const number = (value: number | string | null) =>
     value === null || value === ''
       ? '??'
-      : new Intl.NumberFormat(i18n.language).format(Number(value));
+      : new Intl.NumberFormat(localeForFormatting(i18n.language)).format(Number(value));
   return (
     <>
       {mode !== 'large' &&

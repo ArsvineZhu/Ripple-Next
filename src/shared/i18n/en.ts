@@ -1,4 +1,65 @@
 export const en = {
+  guideTypographyStep3:
+    'The playful variants change selected interface phrases. Dates and numbers keep standard Simplified Chinese formatting. Choose Standard to return to the ordinary wording.',
+  guideTypographyStep2:
+    'Choose Simplified Chinese to reveal Chinese expression. Standard, Microsoft Chinese and Apple Chinese share the same actions and technical labels.',
+  guideTypographyStep1:
+    'In General, open Font. Compare Default, System and Alibaba PuHuiTi 3; select the radio beside your preferred sample.',
+  guideTypographyBody:
+    'Choose a font by comparing the same text and numbers. The setting applies across the Island and Settings.',
+  guideTypographyTitle: 'Typography and Chinese expression',
+  guideEditorHelp:
+    'Rows with a chevron open an editor. The capsule back button returns to the previous page and restores its scroll position. Deleting or clearing data asks for confirmation.',
+  guideRecordingNote:
+    'Recorded in Ripple Next on Windows with a separate demo profile. Play, pause or seek using the video controls. The recordings include camera pans and zooms; interface labels are in Simplified Chinese.',
+  fontSettings: 'Font',
+  fontSettingsRowHint: 'Choose the interface typeface',
+  fontSettingsHint: 'Compare the text samples, then choose a font for Settings and the Island.',
+  fontDefault: 'Default',
+  fontSystem: 'System font',
+  fontAlibaba: 'Alibaba PuHuiTi 3.0',
+  fontDefaultHint: 'Ripple’s rounded Latin type with language-appropriate system fallbacks.',
+  fontSystemHint: 'The operating system interface font.',
+  fontAlibabaHint: 'Bundled Regular, Medium, SemiBold and Bold faces.',
+  fontSample: 'Ripple Next. Every step, in its place.',
+  chineseStyle: 'Chinese expression',
+  chineseStyleHint: 'Optional playful Chinese; actions and regional formatting stay the same.',
+  chineseStandard: 'Standard Simplified Chinese',
+  chineseMicrosoft: 'Microsoft Chinese · playful',
+  chineseApple: 'Apple Chinese · playful',
+  chineseMicrosoftHint: 'Literal translation, earnest reassurance and occasional poetry.',
+  chineseAppleHint: 'Wordplay, repetition and deliberately polished phrasing.',
+  guideOpenSection: 'Open related settings',
+  guideAITitle: 'AI: connect an endpoint, key and model',
+  guideAIBody:
+    'The recording edits a model, replaces its system prompt and adds a named time injection. Its example endpoint and key are demonstration values; it sends no model request.',
+  guideAIStep1:
+    'Add a named Base URL with the service API path, such as /v1. Add a key for that endpoint and explicitly save it.',
+  guideAIStep2:
+    'Add the exact model ID, then select its endpoint, key and protocol: OpenAI-compatible Chat Completions, OpenAI Responses or Anthropic Messages.',
+  guideAIStep3:
+    'Set a default model or switch in the assistant. Each model can override its system prompt, temperature, reasoning effort, output limit and local context limit.',
+  guideAIStep4:
+    'The injection list appends enabled, named text fragments in order. Reorder them to control the final system prompt. The context-awareness option remains unavailable.',
+  guideAIVariables: 'Prompt and injection variables can include:',
+  guideWorkflowTitle: 'Quick apps and workflows: open a working context',
+  guideWorkflowBody:
+    'A quick app opens one target; a workflow opens several in order. The recording creates a named workflow, enters two addresses on separate rows and returns to its list.',
+  guideWorkflowStep1:
+    'Use Add to choose an installed app, website or executable. Name it so you can find it in the Island.',
+  guideWorkflowStep2:
+    'Enter a name and one app or address per row. Use + to add a row and × to remove one; commas stay inside a target. Click an existing entry name to edit it.',
+  guideWorkflowStep3:
+    'Launch the workflow from the Island. A target failure appears on its row, and later targets still run. Long names stay readable in the editor.',
+  guideGlassTitle: 'Liquid Glass: press, drag and tune',
+  guideGlassBody:
+    'The recording opens the live preview, presses and drags a slider, switches a control and compares Settings with glass on and off. Try the preview yourself to feel stop attraction.',
+  guideGlassStep1:
+    'Pressing immediately enlarges the handle. Near a stop, dragging slows and attracts the actual value; keep dragging to move beyond it.',
+  guideGlassStep2:
+    'Drag a switch left or right across its midpoint to change state while held. Releasing restores the white resting handle.',
+  guideGlassStep3:
+    'Open Liquid Glass (Exp) after position settings. Its sticky live preview shows changes as you tune parameters. Turning Settings glass off restores ordinary controls; Island glass remains unavailable.',
   liquidGlassExperimental: 'Liquid Glass (Exp)',
   liquidGlassExperimentalHint: 'Adjust the experimental Settings material and pointer response.',
   settingsGlassEnabled: 'Use Liquid Glass in Settings',
@@ -6,6 +67,13 @@ export const en = {
   islandGlassEnabled: 'Use Liquid Glass in the Island',
   islandGlassUnavailable: 'In internal testing; not available yet.',
   glassParameters: 'Glass parameters',
+  glassPreview: 'Live preview',
+  glassPreviewHint: 'Press or drag a control to preview the current material and motion.',
+  glassPreviewReset: 'Reset preview',
+  glassPreviewSlider: 'Preview slider',
+  glassPreviewSwitch: 'Preview switch',
+  glassPreviewMenu: 'Preview menu',
+  aboutTagline: 'Your next action, close at hand.',
   glassIorLabel: 'Index of refraction',
   glassRefractionLabel: 'Refraction strength',
   glassDispersionLabel: 'Dispersion',
@@ -13,7 +81,7 @@ export const en = {
   glassSaturationLabel: 'Saturation',
   glassSpecularLabel: 'Highlight multiplier',
   glassDragDeformationLabel: 'Drag deformation (experimental)',
-  glassDragDeformationHint: 'Stretch the handle along a held drag. Off by default.',
+  glassDragDeformationHint: 'Stretch the handle along a held drag.',
   glassElasticityLabel: 'Pointer elasticity',
   glassSnapLabel: 'Stop attraction (CSS px)',
   restoreGlassDefaults: 'Restore default parameters',
@@ -23,21 +91,7 @@ export const en = {
   settingsNavGuide: 'User guide',
   guideTitle: 'Meet Ripple Next',
   guideIntro:
-    'A small Island for information, music and quick actions. Try the examples below, then configure the features you use.',
-  guideIsland: 'How the Island opens',
-  guideDemoLabel: 'Interactive Island example',
-  guideIslandHint:
-    'Hover for a quick view. Click the background to expand. Buttons and inputs keep their own actions.',
-  guideSearchDemo: 'Search the web',
-  guideWorkflowDemo: 'Open a workflow',
-  guideDemoCaption: 'Interactive example',
-  guideQuickCaption: 'A quick look at what is happening',
-  guideStill: 'Collapsed',
-  guideQuick: 'Quick view',
-  guideLarge: 'Expanded',
-  guidePreviousDemo: 'Previous example page',
-  guideNextDemo: 'Next example page',
-  guideTryPages: 'Try switching pages',
+    'Start with the keyboard, then follow real settings recordings to make Ripple Next your own.',
   guideKeyboard: 'Keys and gestures',
   guidePages: 'Switch feature pages',
   guidePagesHint:
@@ -50,23 +104,13 @@ export const en = {
   guideSliders: 'Adjust sliders',
   guideSlidersHint:
     'Arrow keys adjust; Shift makes finer changes. Home/End reach the two endpoints. Dragging keeps continuous values and snaps at marked stops on release.',
-  guideMusic: 'Choose a music source',
-  guideMusicHint:
-    'When the music area has focus, Up/Down select a source; Home/End reach the first/last. Select A to return to automatic choice.',
   guideGestures:
-    'Horizontal wheel or trackpad gestures switch pages. Vertical scrolling stays in the content, or selects a source in Now Playing.',
+    'Horizontal wheel or trackpad gestures switch Island pages. Vertical scrolling stays inside the current content.',
   guideSettings: 'Make it yours',
-  guideSettingsRow: 'A settings row',
-  guideSettingsEditor: 'Its editor',
-  guideAutosave:
-    'Rows with a chevron open an editor. Ordinary changes save automatically. The back capsule restores the previous page and scroll.',
   guideSecrets:
     'API keys are encrypted. A saved key appears as dots; typing a replacement does not save it. Choose Change to commit it.',
   guideColors:
     'Color fields open your system picker. Switch labels describe what enabling them does. Position sliders keep their real input value.',
-  guideAIFlow: 'AI binding flow',
-  guideAIFlowHint:
-    'Create a Base URL, save a key for it, then bind a model to that pair. Model customization stays attached to its numbered model.',
   guideReopen:
     'Launch Ripple again or use the tray to reopen Settings. Closing Settings keeps the Island running.',
   thirdPartyLicenses: 'Third-party licenses',

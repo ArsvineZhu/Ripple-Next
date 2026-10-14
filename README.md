@@ -28,7 +28,7 @@ Start with a compact glance, hover for quick information, and click to open a fu
   <img src="docs/assets/screenshots/media.png" width="440" alt="Ripple Next music card with album artwork, playback controls, and an internal A and player-dot column">
 </p>
 
-> Screenshots show the running Linux application with sample media, AI responses, clipboard, weather and battery data. Read the [4.0.0 release notes](docs/releases/4.0.0.en.md) for the complete update.
+> Island screenshots show the published Linux 4.0.0 app with sample data; current Settings screenshots show Windows 4.1.0-beta.1. Read the [unreleased beta notes](docs/releases/4.1.0-beta.1.en.md) and [capture provenance](docs/assets/screenshots/README.md).
 
 ## Seven Island pages and a settings window
 
@@ -105,7 +105,7 @@ Clipboard history and tasks take care of two different kinds of loose ends: text
 
 - **Place it where it belongs.** Select a display, use a snap position, or adjust its free position with immediate slider feedback. Appearance settings keeps a live Island preview visible. Sliders have endpoint labels and gentle snap markers, with free adjustment between them.
 - **Choose the appearance.** Default, Sleek Black and Windows 95 themes; custom colors, an image URL or a local background file; an optional border and adjustable expanded corners (0–60px).
-- **Adjust settings directly.** Start with the illustrated interactive guide and clear settings icons. Compact sliders and switches reveal larger clear glass handles immediately on press. Sliders attract nearby stops during dragging; switches can be dragged left or right. Handles stay still on approach; drag deformation is an optional experiment. Menu highlights move continuously. Appearance & Position has Liquid Glass (Exp) parameters and a switch to restore ordinary controls. Island glass remains unavailable. Red destructive actions ask for confirmation. About presents product information before third-party licenses.
+- **Adjust settings directly.** Start with the keyboard-first guide with actual recordings and clear settings icons. Compact sliders and switches reveal larger clear glass handles immediately on press. Sliders attract nearby stops during dragging; switches can be dragged left or right. Handles stay still on approach; drag deformation starts enabled and can be adjusted in the experiment. Menu highlights move continuously. Appearance & Position has Liquid Glass (Exp) parameters and a switch to restore ordinary controls. Island glass remains unavailable. Red destructive actions ask for confirmation. About starts with the app icon, brand and version before feedback and licenses.
 - **Keep the pages you use.** Reorder or hide seven Island feature pages and choose the default. Launch Ripple or use the tray menu to open Settings.
 - **Control when it stays visible.** Compact, hover and expanded modes; inactive hiding, Quick Standby, Large Standby and a configurable 0–2000 ms pointer-leave delay.
 - **Fit your desktop routine.** Startup control and, on macOS, a menu bar icon toggle; Windows and Linux always keep the tray. Platform specifics are in the guides.
@@ -115,9 +115,15 @@ Clipboard history and tasks take care of two different kinds of loose ends: text
   <img src="docs/assets/screenshots/settings.png" width="440" alt="Settings for language, hour format, time zone, startup, menu bar icon and display">
 </p>
 
+- **Choose your typography.** General → Font compares Default, System and Alibaba PuHuiTi 3 with real text samples. Simplified Chinese exposes Standard, Microsoft Chinese and Apple Chinese expressions. The guide puts keyboard controls first, followed by real recordings of typography, glass, AI and workflow editing.
+
+![Font specimens and selection](docs/assets/screenshots/font-settings.png)
+
+![About brand and version](docs/assets/screenshots/about.png)
+
 ## Try Ripple Next
 
-This version is **Ripple Next 4.0.0**, the first stable release. Explore the [release notes](docs/releases/4.0.0.en.md), then choose a `RippleNext-…` package for your platform from [Releases](https://github.com/ArsvineZhu/Ripple-Next/releases).
+This branch prepares **Ripple Next 4.1.0-beta.1**; it is not published yet. Read the [beta change list](docs/releases/4.1.0-beta.1.en.md). The latest published stable version is [4.0.0](docs/releases/4.0.0.en.md); download its platform package from [Releases](https://github.com/ArsvineZhu/Ripple-Next/releases).
 
 | Platform | Published build targets         | Packages                      |
 | -------- | ------------------------------- | ----------------------------- |

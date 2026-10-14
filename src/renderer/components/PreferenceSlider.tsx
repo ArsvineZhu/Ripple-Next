@@ -52,7 +52,7 @@ export function PreferenceSlider({
     );
   const attractionRange = (input: HTMLInputElement) => {
     const travel = Math.max(1, input.getBoundingClientRect().width - 32);
-    return Math.min((range * glass.glassSnapPixels) / travel, range * 0.04);
+    return Math.min((range * glass.glassSnapPixels) / travel, (range / (stages - 1)) * 0.45);
   };
   const clear = useCallback(() => {
     dragging.current = directDrag.current = false;

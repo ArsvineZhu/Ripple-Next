@@ -8,11 +8,11 @@ Renderer 负责 Island 展示、交互和各功能反馈，系统访问通过 [p
 
 独立设置窗口随系统明暗偏好使用中性配色，开启的开关使用绿色，并关闭 Windows 系统强调色边框。普通界面文字不可选中，输入框保留文字选择和复制粘贴。位置选项保留圆形单选指示器，不受窗口超椭圆样式影响。文本输入框最小高度为 36 CSS 像素。
 
-设置默认打开图文和交互动效的使用指南；类别和关键设置行使用现有 Lucide 图标。`SettingsApp` 管理类别过渡与多级编辑历史，只有已提交的视图进入历史，返回恢复滚动与焦点。普通编辑自动保存有效值，API 密钥需手动保存／更改。`AISettings` 管理接口、密钥、模型列表及模型自定义；数字参数使用 148 × 36 CSS 像素输入框和风格化步进按钮。`WorkflowEditor` 每行编辑一个目标。`DangerAction` 管理红色危险按钮及可取消的原生确认框。条件字段与导航均有动画，减少动态效果时直接切换。关于页先显示产品元信息，再提供可搜索的第三方许可。
+设置默认打开键位优先并使用真实流程录像的使用指南；类别和关键设置行使用现有 Lucide 图标。`SettingsApp` 管理类别过渡与多级编辑历史，只有已提交的视图进入历史，返回恢复滚动与焦点。普通编辑自动保存有效值，API 密钥需手动保存／更改。`AISettings` 管理接口、密钥、模型列表及模型自定义；数字参数使用 148 × 36 CSS 像素输入框和风格化步进按钮。`WorkflowEditor` 每行编辑一个目标。`DangerAction` 管理红色危险按钮及可取消的带进入／退出动画的 HTML alertdialog。条件字段与导航均有动画，减少动态效果时直接切换。关于页先显示产品元信息，再提供可搜索的第三方许可。
 
 Island 导航只包含七个功能页；设置窗口通过应用启动、托盘或菜单打开。页面注册表把 `shared/pages.ts` 中的稳定字符串 ID、尺寸策略与 `lib/tabs.tsx` 中的图标、渲染函数组合起来，供导航、设置与几何动画使用。新增页面通过 `createIslandPageRegistry` 注册。SQLite migration 2、3 移除原设置入口，将数字 ID 转为命名 ID，保留功能页排序。没有可用的配置页面时，导航显示总览。
 
-`AppStateProvider` 加载主进程快照并串行发送类型化补丁；`SettingsProvider` 管理 renderer 语言偏好。`Intl` 按所选语言和时区格式化时间、日期；展开的 12 小时时钟在较小日期行中显示本地化时段。位置编辑保留城市／行政区／国家三元组及拼接查询；自动模式显示主进程返回的位置快照，在进入、聚焦和每分钟刷新。Renderer 不持有天气密钥，也不直接请求天气服务。
+`AppStateProvider` 加载主进程快照并串行发送类型化补丁；`AppStateProvider` 在各 renderer 同步保存的语言，`SettingsProvider` 编辑共享偏好。`Intl` 按所选语言和时区格式化时间、日期；展开的 12 小时时钟在较小日期行中显示本地化时段。位置编辑保留城市／行政区／国家三元组及拼接查询；自动模式显示主进程返回的位置快照，在进入、聚焦和每分钟刷新。Renderer 不持有天气密钥，也不直接请求天气服务。
 
 `styles/base.css` 负责透明文档、字体和共享动画，`styles/tokens.css` 负责主题／字体 token。Island、通用控件和功能视图各自拥有 CSS Modules。静态展示写入对应模块，动态颜色／几何和 Motion 参数留在所属模块。`OverlayProvider` 将 Select 菜单挂载在 Island 内，`useIslandInteraction` 管理移动、焦点、指针离开与菜单保护。
 
@@ -59,3 +59,7 @@ Select 使用非模态单选菜单；打开时设置仍可滚动，岛内关闭�
 `useBackgroundImage` 接受远程 URL 或本地路径，在输入稳定后检查解码，忽略过期结果并安全引用 CSS URL。主进程通过专用协议提供当前配置的本地图片，错误保留在对应设置旁。
 
 见[开发指南](../../docs/development.zh-CN.md)、[平台支持](../../docs/platform-compatibility.zh-CN.md)和[仓库地图](../../INDEX.zh-CN.md)。
+
+关于页先展示官方图标、本地化品牌文案和版本，再放元信息、反馈及许可。品牌图和共用 `MediaArtwork` 封面禁用原生图片拖拽，原有点击操作保持可用。
+
+`SettingsFonts` 使用原生单选与共享 `uiFont`；`AppStateProvider` 将 data-ui-font 应用到各窗口，styles/fonts.css 管理原始 WOFF2 字重。`SettingsGuide` 管理手动播放录像，隐藏／离开可视区即暂停，正文可选择。zh-ms／zh-apple 映射为 i18next 私有语言，Intl 按标准 zh-CN 格式显示。见[录像来源](../assets/guide/README.md)。

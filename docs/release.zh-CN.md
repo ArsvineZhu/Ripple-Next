@@ -66,3 +66,7 @@ Windows 检查原快捷方式参数／工作目录、Store Shell 激活、可执
 设置、任务、工作流、快捷应用和系统加密的 API-key 密文保存在用户数据目录的 `ripple-next.sqlite`。编号迁移位于 `src/main/database/migrations/`，运行 SQL 为 `.sql` 资源。验证升级后状态保留与密钥可用性，旧 Ripple 配置使用独立目录。Linux 仅修改当前 XDG 自启动目录中自己的 `ripple-next.desktop`。
 
 原生集成和诊断细节见[平台支持](platform-compatibility.zh-CN.md)；更新宣传素材时参照[截图拍摄说明（英语）](assets/screenshots/README.md)。
+
+## 4.1.0-beta.1 新增验收
+
+当前分支尚未发布，[beta 说明](releases/4.1.0-beta.1.zh-CN.md)记录范围。检查字体在设置与 Island 中同步、重启后保留、原始 WOFF2 加载，以及简体中文的三种表达与日期／数字格式。检查键位优先指南、四段视频解码、离开可视区或分类时暂停、一次只播放一个。检查玻璃默认值与预览、关闭后的普通控件、按住拖动开关、滑杆吸附与圆头填充、确认框进入／退出、关于 hero 与禁用图片拖拽。原生 macOS／Linux 验收单独记录。
