@@ -84,3 +84,5 @@ SettingsTab 只挂载选中的分类或编辑页。常规页管理显示器发�
 任务与浏览器搜索自行持有草稿。Island 使用 React Activity，在折叠时保留页面状态并暂停页面副作用；可见页面间切换也保留草稿。AI 和剪贴板 hooks 留在页面生命周期之外，因为 AI 状态控制尺寸及折叠，剪贴板在折叠时继续采集。功能视图直接接收所属 hook 的模型，不再依赖整个 Island 控制器。
 
 LaunchButton 统一管理工作流与快捷应用的等待、防重复触发及逐项失败。MediaControl 统一展开音乐页与 QuickView 的能力检查、当前会话标识、播放图标和焦点／禁用状态。MarkdownContent 管理回答排版、代码容器和原生复制。WeatherIcon、MediaArtwork、ElasticScrollArea 与页面注册表继续管理各自已有契约。
+
+Select 将选项值类型贯穿当前值、选项与回调。主题菜单直接使用持久化的 default／sleek-black／win95，选择默认时以一个 patch 提交 default 和对应颜色。

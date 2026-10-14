@@ -41,10 +41,10 @@ export function SettingsAppearance({
         <PreferenceRow icon={Palette} label={t('theme')}>
           <Select
             label={t('theme')}
-            value={p.settings.theme === 'default' ? 'none' : p.settings.theme}
-            onValueChange={(value) => p.setTheme(value as AppSettings['theme'])}
+            value={p.settings.theme}
+            onValueChange={p.setTheme}
             options={[
-              { value: 'none', label: t('defaultTheme'), description: t('defaultThemeHint') },
+              { value: 'default', label: t('defaultTheme'), description: t('defaultThemeHint') },
               {
                 value: 'sleek-black',
                 label: t('sleekBlack'),
