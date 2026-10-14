@@ -39,7 +39,7 @@ Main 拥有应用生命周期、托盘、透明窗口、系统能力和 typed IP
 
 状态服务使用新用户数据目录中的 `ripple-next.sqlite` 保存设置、任务、工作流、快捷应用和已加密的 API key。`src/main/database/schema.sql` 定义当前表，`appStateStore.ts` 管理预编译 SQL、主进程唯一快照和事务，只写本次变化的设置行或功能列表。读取失败直接抛出，写入失败保留已提交快照；不再运行历史迁移链或版本分发。Renderer 在显示界面前读取状态快照，再通过 typed patch 更新；设置和功能数据不使用 `localStorage`。API key 使用 Electron `safeStorage` 加密，且不会返回 renderer。Linux 缺少 OS 密钥存储时拒绝保存密钥。Ripple Next 不读取或迁移旧 Ripple 数据目录。Linux 自启动优先使用绝对路径 `XDG_CONFIG_HOME/autostart`，否则使用 `~/.config/autostart`。
 
-AI SDK 的 `streamText` 为 Chat Completions 使用现有 OpenAI 兼容适配器，并按所选带序号接口选择 OpenAI Responses 或 Anthropic 适配器。`aiConfiguration.ts` 管理配置图，密文使用 `ai-api-key:<id>` 命名记录；main 串行修改、保留模型自定义，并原子删除关联密钥。普通配置自动保存，凭据替换需明确提交；上下文上限按字符计数，上下文感知仍关闭。内置系统提示词保留在 `src/main/prompts/default-assistant.md`；`xstate`、`@xstate/react` 管理可取消交互延迟，自定义应用命令通过 `spawn` 参数数组执行。
+AI SDK 的 `streamText` 为 Chat Completions 使用现有 OpenAI 兼容适配器，并按所选带序号接口选择 OpenAI Responses 或 Anthropic 适配器。`src/main/ai/configuration.ts` 管理配置图，密文使用 `ai-api-key:<id>` 命名记录；main 串行修改、保留模型自定义，并原子删除关联密钥。普通配置自动保存，凭据替换需明确提交；上下文上限按字符计数，上下文感知仍关闭。内置系统提示词保留在 `src/main/ai/default-assistant.md`；`xstate`、`@xstate/react` 管理可取消交互延迟，自定义应用命令通过 `spawn` 参数数组执行。
 
 浏览器搜索地址模板保存在设置中，必须包含 `{query}`；直接输入 HTTP(S) 地址仍会作为网址打开。时钟和日期使用当前语言，并可跟随系统时区或指定 IANA 时区。错误会路由到所属功能区行内展示；`InlineNotices` 沿用 Island 的 Motion 淡入与模糊过渡。长内容区使用系统原生纵向滚动，横向页签使用可接续的连续动画与有界回弹；AI 回答会随内容增长，并限制在当前屏幕可用高度内。设置页滑块由对应 CSS Module 统一管理主题轨道、滑块和焦点样式。
 
@@ -53,7 +53,7 @@ AI SDK 的 `streamText` 为 Chat Completions 使用现有 OpenAI 兼容适配器
 
 Ripple Next 将 `ripple-next.log` 写入 `<userData>/diagnostics/`，Electron minidump 保存在其中的 `crashes/` 子目录。可在设置页的“诊断”区域选择“打开诊断文件夹”。日志传输大小上限为 5 MiB；每次启动时会清理超过 30 天的崩溃报告，并只保留最新的 10 份。
 
-崩溃报告不会上传。AI 日志记录请求 ID、阶段耗时、增量数量和回答字符数，不记录提示词或回答正文。错误记录包含错误类型和堆栈帧，不包含自由格式的错误消息。minidump 是二进制进程快照，应作为敏感的本机诊断数据处理。
+崩溃报告不会上传。IPC 诊断记录操作耗时和安全错误。Renderer 崩溃上下文只保留回答字符数，不记录提示词或回答正文。错误记录包含错误类型和堆栈帧，不包含自由格式的错误消息。minidump 是二进制进程快照，应作为敏感的本机诊断数据处理。
 
 Linux 使用透明 XWayland 窗口，并限制在所选显示器的工作区内，以保留桌面面板。仅让 X11 `ShapeInput` 跟随动画中的 Island；修改 `ShapeBounding` 可能出现黑边。X11 客户端保持静态导入并打入安装包。Island 始终通过同一 X11 客户端请求 `_NET_WM_STATE_SKIP_TASKBAR`。设置窗口是独立的普通 BrowserWindow。Island 需等 renderer ready 且首次输入区域得到确认后才显示。边界说明见[主进程](../src/main/README.zh-CN.md)、[preload](../src/preload/README.zh-CN.md)和[renderer](../src/renderer/README.zh-CN.md)。
 

@@ -47,7 +47,13 @@ const AIEndpointSchema = z
     id: Id,
     protocol: AIProtocolSchema,
     label: z.string().max(128),
-    baseUrl: z.string().max(2048),
+    baseUrl: z
+      .url()
+      .max(2048)
+      .refine((value) => {
+        const url = new URL(value);
+        return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password;
+      }, 'Base URL must be HTTP(S) without embedded credentials'),
   })
   .strict();
 const AICredentialSchema = z
@@ -58,7 +64,7 @@ const AIModelSchema = z
     id: Id,
     endpointId: Id,
     credentialId: Id.nullable(),
-    name: z.string().max(256),
+    name: z.string().trim().max(256),
     label: z.string().max(128),
     customization: ModelCustomizationSchema,
   })
@@ -162,7 +168,7 @@ export const AIMutationSchema = z.discriminatedUnion('kind', [
     .object({
       kind: z.literal('edit-endpoint'),
       id: Id,
-      baseUrl: z.string().max(2048).optional(),
+      baseUrl: AIEndpointSchema.shape.baseUrl.optional(),
       label: z.string().max(128).optional(),
     })
     .strict(),
@@ -177,7 +183,7 @@ export const AIMutationSchema = z.discriminatedUnion('kind', [
       id: Id,
       endpointId: Id,
       credentialId: Id,
-      name: z.string().max(256).optional(),
+      name: AIModelSchema.shape.name.optional(),
       label: z.string().max(128).optional(),
     })
     .strict(),

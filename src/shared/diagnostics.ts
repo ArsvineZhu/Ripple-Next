@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { InvokeMap, IslandMode, NoticeCode } from './contracts';
+import type { InvokeMap, IslandMode } from './contracts';
 import { PageIdSchema } from './pages';
 
 const DimensionsSchema = z
@@ -195,16 +195,6 @@ export type DiagnosticEvent =
       state: 'initialized' | 'ready' | 'failed' | 'updated';
       width?: number;
       height?: number;
-    }
-  | {
-      kind: 'assistant-request';
-      requestId: string;
-      phase: 'started' | 'first-delta' | 'completed' | 'cancelled' | 'failed';
-      errorCode?: NoticeCode;
-      elapsedMs?: number;
-      firstDeltaMs?: number;
-      deltaCount?: number;
-      answerCharacters?: number;
     }
   | {
       kind: 'renderer-context';

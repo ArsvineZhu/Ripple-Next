@@ -11,7 +11,6 @@ type Props = Pick<
   | 'asked'
   | 'userText'
   | 'setUserText'
-  | 'setAsked'
   | 'askAI'
   | 'textColor'
   | 'bgColor'
@@ -26,7 +25,6 @@ export function AssistantTab({
   asked,
   userText,
   setUserText,
-  setAsked,
   askAI,
   textColor,
   bgColor,
@@ -59,7 +57,6 @@ export function AssistantTab({
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
                   resetAnswerContentSize();
-                  setAsked(true);
                   askAI();
                 }
               }}
@@ -70,7 +67,6 @@ export function AssistantTab({
               id="chatsubmit"
               onClick={() => {
                 resetAnswerContentSize();
-                setAsked(true);
                 askAI();
               }}
               style={{ backgroundColor: textColor, color: bgColor }}
@@ -93,11 +89,12 @@ export function AssistantTab({
               data-empty={(!aiAnswer && !assistantError) || undefined}
               onContentSizeChange={onAnswerContentSizeChange}
             >
-              {assistantError ? (
-                <span role="status">
+              {assistantError && (
+                <span role="alert">
                   {t(assistantError.kind)} {assistantError.detail}
                 </span>
-              ) : aiAnswer ? (
+              )}
+              {aiAnswer ? (
                 <ReactMarkdown
                   components={{
                     pre: ({ node, children, ...props }) => {
@@ -130,9 +127,9 @@ export function AssistantTab({
                 >
                   {aiAnswer}
                 </ReactMarkdown>
-              ) : (
+              ) : !assistantError ? (
                 <span className={styles.thinking}>{t('thinking')}</span>
-              )}
+              ) : null}
             </ElasticScrollArea>
             <button
               className={styles.anotherButton}

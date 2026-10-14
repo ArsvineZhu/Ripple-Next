@@ -131,10 +131,14 @@ export interface AppNotice {
   area: NoticeArea;
   detail?: string;
 }
-export type AssistantEvent =
-  | { requestId: string; kind: 'delta'; content: string }
-  | { requestId: string; kind: 'done' }
-  | { requestId: string; kind: 'error'; code: NoticeCode; detail?: string };
+export interface AssistantEvent {
+  requestId: string;
+  content: string;
+}
+export type AssistantResult =
+  | { status: 'complete'; text: string }
+  | { status: 'cancelled' }
+  | { status: 'error'; code: NoticeCode; detail?: string };
 interface AppBootstrap {
   state: AppState;
   hasWeatherApiKey: boolean;
@@ -160,7 +164,7 @@ export interface InvokeMap {
   'renderer-ready': { args: []; result: void };
   'start-assistant': {
     args: [requestId: string, prompt: string];
-    result: string | null;
+    result: AssistantResult;
   };
   'cancel-assistant': { args: [requestId: string]; result: void };
   'get-system-locale': { args: []; result: string };
@@ -208,7 +212,7 @@ export interface ElectronAPI {
   launchTargets(targets: LaunchTarget[]): Promise<LaunchResult>;
   discoverApps(query: string): Promise<Application[]>;
   rendererReady(): Promise<void>;
-  startAssistant(requestId: string, prompt: string): Promise<string | null>;
+  startAssistant(requestId: string, prompt: string): Promise<AssistantResult>;
   cancelAssistant(requestId: string): Promise<void>;
   onAppNotice(callback: (notice: AppNotice) => void): () => void;
   onAppStateChanged(callback: (state: AppState) => void): () => void;

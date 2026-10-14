@@ -7,7 +7,7 @@ import {
 } from '../src/shared/aiConfiguration';
 import { defaultAppState } from '../src/shared/appState';
 import type { AppStatePatch } from '../src/shared/appState';
-import { createAIConfigurationService } from '../src/main/services/aiConfiguration';
+import { createAIConfigurationService } from '../src/main/ai/configuration';
 
 function fixture() {
   let state = structuredClone(defaultAppState);
@@ -27,6 +27,7 @@ function fixture() {
         else ciphertext.delete(name);
       },
       hasSecret: async (name) => ciphertext.has(name),
+      getSecret: async (name) => ciphertext.get(name) ?? null,
     },
   );
   return {

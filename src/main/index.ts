@@ -15,9 +15,9 @@ import { shouldQuitAfterLastWindow } from './appLifecycle';
 import { configureSettingsWindow, openSettingsWindow } from './settingsWindow';
 import { createAppStateStore } from './services/appStateStore';
 import { createSecretStore } from './services/secretStore';
-import { createAssistantService } from './services/assistant';
+import { createAssistantService } from './ai/assistant';
 import { createWeatherService } from './services/weather';
-import { createAIConfigurationService } from './services/aiConfiguration';
+import { createAIConfigurationService } from './ai/configuration';
 import { createNoticeBus } from './services/noticeBus';
 import { initializeDiagnostics, type DiagnosticsService } from './services/diagnostics';
 import {
@@ -116,9 +116,8 @@ async function startApplication() {
         }
       : {}),
   });
-  const assistant = createAssistantService(stateStore, secretStore, {
-    getAppVersion: () => app.getVersion(),
-  });
+  const aiConfiguration = createAIConfigurationService(stateStore, secretStore);
+  const assistant = createAssistantService(aiConfiguration, () => app.getVersion());
   // macOS honors showTray; Windows/Linux always keep the tray.
   const applyShowTray = (visible: boolean) => {
     try {
@@ -218,7 +217,7 @@ async function startApplication() {
       secretStore,
       assistant,
       weather: createWeatherService(secretStore),
-      aiConfiguration: createAIConfigurationService(stateStore, secretStore),
+      aiConfiguration,
       notices,
       diagnostics: diagnosticsService,
       applyShowTray,

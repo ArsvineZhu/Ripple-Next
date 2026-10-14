@@ -75,7 +75,7 @@ Open **Settings → Diagnostics → Open diagnostics folder**. Files live under 
 
 Main and renderer share a session ID. Records include runtime versions, display scales, native backend and secure-storage availability, window/process lifecycle, suspend/resume, display changes, GPU status, and IPC channel/outcome/duration. Healthy polling logs its first result. Repeated identical failures are counted and limited to one record per minute, followed by recovery.
 
-Errors retain stack frames, codes, signals and bounded causes; Windows native errors can include HRESULT. AI records include request IDs, timing, delta counts and answer length. Commands/output, IPC arguments/results, app targets, endpoint URLs, keys, clipboard text, prompts and answers are excluded. The main log rotates at 5 MiB.
+Errors retain stack frames, codes, signals and bounded causes; Windows native errors can include HRESULT. Renderer crash context retains the answer character count; AI lifecycle counters are not logged. Commands/output, IPC arguments/results, app targets, endpoint URLs, keys, clipboard text, prompts and answers are excluded. The main log rotates at 5 MiB.
 
 Crash uploads are disabled. Startup removes dumps older than 30 days and retains the 10 newest `.dmp` files across Crashpad subdirectories while preserving metadata. Minidumps contain process snapshots: inspect them before sharing. For an issue, include Ripple version, OS/desktop, the failing operation, reproduction steps and relevant sanitized records.
 

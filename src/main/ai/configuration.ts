@@ -8,6 +8,7 @@ import {
 import type { AIConfiguration, AIMutation } from '../../shared/aiConfiguration';
 import type { AppState, AppStatePatch } from '../../shared/appState';
 import { randomUUID } from 'node:crypto';
+import { AIError } from './error';
 
 interface StateStore {
   load(): Promise<AppState>;
@@ -16,6 +17,7 @@ interface StateStore {
 interface Secrets {
   setSecret(name: string, value: string): Promise<void>;
   hasSecret(name: string): Promise<boolean>;
+  getSecret(name: string): Promise<string | null>;
 }
 
 /** Main allocates IDs and owns graph edits and encrypted credential writes. */
@@ -48,6 +50,19 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
       throw new TypeError('Save the credential first');
   };
   return {
+    async activeModel() {
+      const { settings } = await stateStore.load();
+      const model = settings.ai.models.find((item) => item.id === settings.ai.activeModelId);
+      const endpoint = settings.ai.endpoints.find((item) => item.id === model?.endpointId);
+      if (!model?.name || !endpoint)
+        throw new AIError('invalidAISettings', 'Select a configured model');
+      const apiKey =
+        model.credentialId === null
+          ? null
+          : await secrets.getSecret(aiSecretName(model.credentialId));
+      if (!apiKey) throw new AIError('missingApiKey', 'Save the selected model credential');
+      return { model, endpoint, apiKey, timeZone: settings.timeZone };
+    },
     async status() {
       return metadata((await stateStore.load()).settings.ai);
     },
@@ -85,9 +100,6 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
           case 'edit-endpoint': {
             const item = endpoint(command.id);
             const baseUrl = command.baseUrl ?? item.baseUrl;
-            const url = new URL(baseUrl);
-            if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password)
-              throw new TypeError('Base URL must be HTTP(S) without embedded credentials');
             Object.assign(item, {
               baseUrl: baseUrl.trim().replace(/\/+$/, ''),
               label: command.label ?? item.label,

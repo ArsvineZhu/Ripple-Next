@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest';
-import { streamCompatibleChat } from '../src/main/services/compatibleChat';
+import { streamCompatibleChat } from '../src/main/ai/stream';
 import { defaultCustomization } from '../src/shared/aiConfiguration';
 import type { AIProtocol } from '../src/shared/aiConfiguration';
 
@@ -98,15 +98,19 @@ it.each(['completion', 'responses', 'anthropic'] as const)(
     expect(
       await streamCompatibleChat(
         {
-          protocol,
-          baseUrl: 'https://fixture.test/v1/',
+          endpoint: { id: 1, label: 'Fixture', protocol, baseUrl: 'https://fixture.test/v1/' },
           apiKey: 'fixture-key',
-          model: 'fixture-model',
+          model: {
+            id: 1,
+            endpointId: 1,
+            credentialId: 1,
+            name: 'fixture-model',
+            label: 'Fixture',
+            customization,
+          },
           prompt: 'Question',
           version: '4.0.0',
-          timezone: 'UTC',
-          current_time: '2026-10-13 12:00:00',
-          customization,
+          timeZone: 'UTC',
         },
         { fetchImpl, onDelta },
       ),
@@ -129,13 +133,28 @@ it('enforces configured context limits before any network request', async () => 
   await expect(
     streamCompatibleChat(
       {
-        protocol: 'responses',
-        baseUrl: 'https://fixture.test/v1',
+        endpoint: {
+          id: 1,
+          label: 'Fixture',
+          protocol: 'responses',
+          baseUrl: 'https://fixture.test/v1',
+        },
         apiKey: 'fixture',
-        model: 'fixture',
+        model: {
+          id: 1,
+          endpointId: 1,
+          credentialId: 1,
+          name: 'fixture',
+          label: 'Fixture',
+          customization: {
+            ...defaultCustomization(),
+            systemPrompt: '',
+            contextLimitCharacters: 100,
+          },
+        },
         prompt: 'x'.repeat(101),
         version: '4.0.0',
-        customization: { ...defaultCustomization(), systemPrompt: '', contextLimitCharacters: 100 },
+        timeZone: 'UTC',
       },
       { fetchImpl, onDelta: vi.fn() },
     ),

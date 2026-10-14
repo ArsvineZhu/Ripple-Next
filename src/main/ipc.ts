@@ -25,7 +25,7 @@ import {
 import type { WindowRole } from './windowRoles';
 import type { WeatherSnapshot, WeatherPreferences } from '../shared/weather';
 import { WeatherPreferencesSchema } from '../shared/weather';
-import type { createAIConfigurationService } from './services/aiConfiguration';
+import type { createAIConfigurationService } from './ai/configuration';
 import { AIMutationSchema } from '../shared/aiConfiguration';
 import { listLicenses, readLicense } from './services/licenses';
 import { openSettingsWindow } from './settingsWindow';
@@ -36,7 +36,7 @@ import { getBluetoothStatus } from './services/getBluetoothStatus';
 import { getCameraStatus } from './services/getCameraStatus';
 import { getMicrophoneStatus } from './services/getMicrophoneStatus';
 import { serializeDiagnosticError } from '../shared/diagnostics';
-import type { AssistantEvent } from '../shared/contracts';
+import type { AssistantEvent, AssistantResult } from '../shared/contracts';
 import { RGB_HEX } from '../shared/color';
 import { showNativeColorPicker } from './services/colorPicker';
 
@@ -55,7 +55,7 @@ interface AssistantService {
     requestId: string,
     prompt: string,
     send: (event: AssistantEvent) => void,
-  ): Promise<string | null>;
+  ): Promise<AssistantResult>;
   cancel(requestId: string): void;
 }
 
@@ -306,7 +306,7 @@ export function registerIPC(services: IPCServices) {
     const id = getText(requestId, 'Request ID', 128);
     const userPrompt = getText(prompt, 'Prompt', 30000);
     return services.assistant.start(id, userPrompt, (payload) => {
-      getMainWindow()?.webContents.send('assistant-event', payload);
+      _event.sender.send('assistant-event', payload);
     });
   });
   handle(services, 'cancel-assistant', (_event, requestId) => {

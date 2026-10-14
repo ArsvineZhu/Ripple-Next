@@ -73,16 +73,8 @@ export function useIslandController() {
     largeStandby: largeStandbyEnabled,
     leaveDelayMs,
   });
-  const {
-    asked,
-    setAsked,
-    aiAnswer,
-    assistantError,
-    userText,
-    setUserText,
-    resetAssistant,
-    askAI,
-  } = useAssistant();
+  const { asked, aiAnswer, assistantError, userText, setUserText, resetAssistant, askAI } =
+    useAssistant();
   const { tasks, taskText, setTaskText, addTask, removeTask } = useTasks();
   const { workflows } = useWorkflows();
   const quickApps = appState.quickApps;
@@ -277,7 +269,6 @@ export function useIslandController() {
     asked,
     userText,
     setUserText,
-    setAsked,
     askAI,
     aiAnswer,
     assistantError,

@@ -5,7 +5,6 @@ import {
   RendererDiagnosticContextSchema,
   serializeDiagnosticError,
   type DiagnosticErrorSource,
-  type DiagnosticEvent,
   type RendererDiagnosticContext,
 } from '../../shared/diagnostics';
 
@@ -69,18 +68,6 @@ export function recordIslandContext(
 export function recordRendererAnswerCharacters(answerCharacters: number): void {
   if (!latestContext || !Number.isInteger(answerCharacters) || answerCharacters < 0) return;
   recordRendererContext({ ...latestContext, answerCharacters });
-}
-
-export function recordAssistantRequest(
-  event: Omit<Extract<DiagnosticEvent, { kind: 'assistant-request' }>, 'kind'>,
-): void {
-  log.info(
-    JSON.stringify({
-      timestamp: timestamp(),
-      process: 'renderer',
-      event: { kind: 'assistant-request', ...event },
-    }),
-  );
 }
 
 export function installRendererErrorHandlers(target: Window = window): () => void {

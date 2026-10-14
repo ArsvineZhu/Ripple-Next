@@ -84,6 +84,9 @@ import type { WebContents } from 'electron';
 
 const services = {
   aiConfiguration: {
+    activeModel: async () => {
+      throw new Error('Not configured');
+    },
     status: async () => ({}),
     mutate: async () => ({ state: defaultAppState, credentialStatus: {} }),
     saveCredential: async () => ({ state: defaultAppState, credentialStatus: {} }),
@@ -98,7 +101,7 @@ const services = {
     hasSecret: async () => false,
   },
   assistant: {
-    start: async () => null,
+    start: async () => ({ status: 'cancelled' as const }),
     cancel: () => {},
   },
   notices: {

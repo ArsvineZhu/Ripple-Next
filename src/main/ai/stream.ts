@@ -1,13 +1,13 @@
+import type { createAIConfigurationService } from './configuration';
+import { AIError } from './error';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { defaultCustomization } from '../../shared/aiConfiguration';
-import type { AIProtocol, ModelCustomization } from '../../shared/aiConfiguration';
 import { streamText } from 'ai';
 import { author, bugs, license, productName, repository } from '../../../package.json';
-import defaultAssistantPrompt from '../prompts/default-assistant.md?raw';
-import type { PromptInjectionContext } from '../prompts/injections';
-import { renderPromptTemplate, resolvePromptTimeContext } from '../prompts/injections';
+import defaultAssistantPrompt from './default-assistant.md?raw';
+import type { PromptInjectionContext } from './prompts';
+import { renderPromptTemplate, resolvePromptTimeContext } from './prompts';
 
 const promptMetadata: Omit<PromptInjectionContext, 'version' | 'timezone' | 'current_time'> = {
   product: productName,
@@ -17,19 +17,13 @@ const promptMetadata: Omit<PromptInjectionContext, 'version' | 'timezone' | 'cur
   issues: bugs.url,
 };
 
-export interface CompatibleChatRequest
-  extends
-    Pick<PromptInjectionContext, 'version'>,
-    Partial<Pick<PromptInjectionContext, 'timezone' | 'current_time'>> {
-  baseUrl: string;
-  apiKey: string;
-  model: string;
+export interface CompatibleChatRequest extends Awaited<
+  ReturnType<ReturnType<typeof createAIConfigurationService>['activeModel']>
+> {
+  version: string;
   prompt: string;
   signal?: AbortSignal;
-  protocol?: AIProtocol;
-  customization?: ModelCustomization;
 }
-
 interface StreamDependencies {
   fetchImpl?: typeof fetch;
   onDelta(content: string): void;
@@ -39,35 +33,20 @@ export async function streamCompatibleChat(
   request: CompatibleChatRequest,
   { fetchImpl, onDelta }: StreamDependencies,
 ): Promise<string> {
-  let baseURL: URL;
-  try {
-    baseURL = new URL(request.baseUrl);
-  } catch {
-    throw new TypeError('Base URL is invalid');
-  }
-  if (!['http:', 'https:'].includes(baseURL.protocol)) {
-    throw new TypeError('Base URL must use HTTP or HTTPS');
-  }
-  if (!request.model.trim()) throw new TypeError('Model is required');
-  if (!request.apiKey.trim()) throw new TypeError('API key is required');
-
   const settings = {
-    baseURL: request.baseUrl.replace(/\/+$/, ''),
+    baseURL: request.endpoint.baseUrl.replace(/\/+$/, ''),
     apiKey: request.apiKey,
     ...(fetchImpl ? { fetch: fetchImpl } : {}),
   };
-  const protocol = request.protocol ?? 'completion';
+  const protocol = request.endpoint.protocol;
   const model =
     protocol === 'responses'
-      ? createOpenAI(settings).responses(request.model.trim())
+      ? createOpenAI(settings).responses(request.model.name)
       : protocol === 'anthropic'
-        ? createAnthropic(settings)(request.model.trim())
-        : createOpenAICompatible({ ...settings, name: 'rippleNext' })(request.model.trim());
-  const customization = request.customization ?? defaultCustomization();
-  const timeContext =
-    request.timezone && request.current_time
-      ? { timezone: request.timezone, current_time: request.current_time }
-      : resolvePromptTimeContext(request.timezone ?? 'system');
+        ? createAnthropic(settings)(request.model.name)
+        : createOpenAICompatible({ ...settings, name: 'rippleNext' })(request.model.name);
+  const customization = request.model.customization;
+  const timeContext = resolvePromptTimeContext(request.timeZone);
   let streamError: unknown;
   const context = { ...promptMetadata, version: request.version, ...timeContext };
   const system = [
@@ -82,7 +61,7 @@ export async function streamCompatibleChat(
     customization.contextLimitCharacters &&
     system.length + request.prompt.length > customization.contextLimitCharacters
   )
-    throw new TypeError('Configured context limit exceeded');
+    throw new AIError('invalidAISettings', 'Configured context limit exceeded');
   const effort = customization.reasoningEffort;
   const providerOptions: NonNullable<Parameters<typeof streamText>[0]['providerOptions']> =
     protocol === 'responses'
@@ -122,11 +101,9 @@ export async function streamCompatibleChat(
     },
   });
 
-  let answer = '';
   for await (const text of result.textStream) {
-    answer += text;
     onDelta(text);
   }
   if (streamError) throw streamError;
-  return answer;
+  return result.text;
 }
