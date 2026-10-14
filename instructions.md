@@ -28,7 +28,7 @@ A workflow entry such as `localhost:3000/` or `127.0.0.1:3000/admin?view=usage#t
 
 ## Build a workflow and pin quick apps
 
-In Settings → Shortcuts, choose **Add workflow**, give it a name and enter one application or website per row. Use **+** to add a row and **×** to remove it. A name and at least one target create the workflow automatically; subsequent edits save as you type. Commas remain part of a target. Select a saved entry to edit it. Long names stay inside the list, with two lines in the Island and the full name on hover. Select the workflow on the Workflows page to launch its targets in order. A failed target shows an error on that workflow, and later targets are still attempted. Retrying clears the old message.
+In Settings → Shortcuts, choose **Add workflow**, give it a name and enter one application or website per row. Use **+** to add a row and **×** to remove it. A name and at least one target create the workflow automatically; subsequent edits save as you type. Commas remain part of a target. Quick Apps remain available in the compact Island page when there are no workflows. Use Add a saved quick app to reuse an installed application or a command with its separate arguments and working directory. Select a saved entry to edit it. Long names stay inside the list, with two lines in the Island and the full name on hover. Select the workflow on the Workflows page to launch its targets in order. A failed target shows an error on that workflow, and later targets are still attempted. Retrying clears the old message.
 
 For example, an **API gateway** workflow can contain `localhost:3000/`. A **Reading** workflow can contain two documentation URLs. A workflow is a launch list; it does not execute conditional steps or schedule jobs.
 

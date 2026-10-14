@@ -90,7 +90,7 @@ export function useIslandController() {
     askAI,
   } = useAssistant();
   const { tasks, taskText, setTaskText, addTask, removeTask } = useTasks();
-  const { workflows, openWorkflow } = useWorkflows();
+  const { workflows } = useWorkflows();
   const quickApps = appState.quickApps;
   const { browserSearch, setBrowserSearch, searchBrowser, searchError, setSearchError } =
     useBrowserSearch();
@@ -293,7 +293,6 @@ export function useIslandController() {
     searchError,
     setSearchError,
     workflows,
-    openWorkflow,
     quickApps,
     asked,
     userText,

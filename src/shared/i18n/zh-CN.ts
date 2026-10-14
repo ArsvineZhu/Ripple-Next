@@ -1,5 +1,7 @@
 import type { Messages } from './en';
 export const zhCN: Messages = {
+  findingApplications: '正在查找已安装应用…',
+  workflowQuickApp: '添加已保存的快捷应用',
   guideTypographyStep3:
     '趣味变体改变部分界面措辞。日期与数字仍按标准简体中文格式显示，选择标准中文即可恢复普通表达。',
   guideTypographyStep2:

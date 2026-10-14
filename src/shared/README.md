@@ -2,6 +2,8 @@
 
 # Shared contracts
 
+`launch.ts` owns one `Application` and `LaunchTarget` model for discovery, quick apps and workflows. A workflow persists `targets`, with type resolution at editing time. Installed applications carry an opaque platform identity in `native`; commands keep argv and an optional working directory. `launch-targets` sends the selected target array once and returns indexed failures. Platform adapters own interpretation and activation of native identities.
+
 `MediaSnapshot` describes all sessions, automatic/manual selection, freshness and errors. `MediaSession` includes playback state and nullable control capabilities. `media.ts` owns pure automatic selection and capability rules. The control IPC requires a session ID; selection and control return a refreshed snapshot plus a domain error instead of treating failure as an empty player list.
 
 `pages.ts` owns stable page IDs, default order and built-in layout policies. Persisted page IDs are strings; the state schema accepts additional named pages independently of their navigation position.

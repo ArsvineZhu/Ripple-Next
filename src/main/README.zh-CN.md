@@ -2,6 +2,8 @@
 
 # 主进程
 
+`services/apps.ts` 只负责按序执行目标和逐项返回结果，不分支判断平台。`platform/apps.ts` 选择原生应用能力：Linux 管理 desktop entry 与 gio，macOS 管理应用包与 open，Windows 管理快捷方式、Store 激活和五分钟共享内存发现缓存。发现按需开始，不再提前 build-cache、写读 installed-apps JSON、由 renderer 循环启动或固定等待。
+
 `services/media.ts` 管理媒体会话选择、串行查询／控制及过期／错误快照。自动模式优先正在播放的系统会话，再保持仍在播放或暂停的选择；手动选择在本次运行中保持到会话退出。命令携带界面显示的会话 ID，不回退到其他播放器。Windows 读取 GSMTC 能力并通过缓存的类型化 CLR 桥接读取封面；macOS 分别查询正在运行的 Spotify／Music；Linux 使用随应用打包的 D-Bus 客户端，以 MPRIS 唯一总线名读取能力、控制及本地封面。点击封面通过会话专属接口唤起播放器：Windows 使用主进程缓存的实际启动路径／应用标识，macOS 打开正在运行的对应应用，Linux 优先调用 MPRIS Raise；CanRaise 为 false 或 Raise 失败时，调用同一会话所有者的 StatusNotifierItem Activate，不启动应用进程，也不再同步等待媒体查询。未接入云端音乐 API。
 MPRIS 本地封面文件没有可识别的图片扩展名时，按 PNG／JPEG／GIF／WebP 文件特征识别并转换为 data URL，仍限制在 5 MiB 以内。封面缺失或不支持不影响媒体会话。
 

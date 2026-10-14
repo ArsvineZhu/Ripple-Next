@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { QuickAppSchema, WorkflowSchema } from './contracts';
-import type { QuickApp, Workflow } from './contracts';
+import { QuickAppSchema, WorkflowSchema } from './launch';
+import type { QuickApp, Workflow } from './launch';
 import type { LanguagePreference } from './i18n';
 import { DEFAULT_PAGE_ID, DEFAULT_PAGE_IDS, PageIdSchema } from './pages';
 import { AIConfigurationSchema, defaultAIConfiguration } from './aiConfiguration';

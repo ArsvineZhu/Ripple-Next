@@ -76,3 +76,7 @@ Forge 在启动和打包前清理 `.vite`；`.vite`、`out`、报告和 `node_mo
 共享 fonts.ts 校验 uiFont，AppStateProvider 在每个 renderer 应用字体。原始 WOFF2 与许可见[字体资源](../src/assets/fonts/alibaba-puhuiti/README.md)，不要转换或裁剪。主进程／托盘使用 zh-ms／zh-apple，i18next 使用合法私有 BCP 47 标识，Intl 使用 zh-CN。覆盖表继承未改动的标准中文键。
 
 [指南录像来源](../src/assets/guide/README.md)记录场景与更新方法。在独立演示配置录制真实动作，运镜可裁切／缩放已有画面，不要制作虚假的 UI 帧。同步更新封面、本地化步骤与截图画廊。
+
+## 启动能力归属
+
+`shared/launch.ts` 定义 Application／LaunchTarget／Workflow。核心启动编排只调用 `platform/apps.ts`，IPC 入口校验一次目标数组，按顺序尝试每项并返回带序号的失败。Windows、macOS、Linux 分别管理原生发现、身份解析和激活。五分钟内存缓存只由 Windows 管理，构造函数接受发现缓存时长。不再使用原始名称启动 IPC、缓存准备 IPC、renderer 启动循环或应用目录文件读写。QuickAppEditor 自己管理草稿与搜索生命周期，WorkflowEditor 复用同一保存目标，保留命令 argv 与工作目录。

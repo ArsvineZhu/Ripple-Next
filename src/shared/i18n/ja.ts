@@ -1,5 +1,7 @@
 import type { Messages } from './en';
 export const ja: Messages = {
+  findingApplications: 'インストール済みアプリを検索中…',
+  workflowQuickApp: '保存済みクイックアプリを追加',
   guideTypographyStep3:
     '遊び心のある表現は一部の文言を変えます。日時と数字は標準の簡体字中国語形式です。標準を選ぶと通常の文言に戻ります。',
   guideTypographyStep2:

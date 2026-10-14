@@ -28,7 +28,9 @@ it('persists independent feature and settings edits, including empty lists, acro
   await Promise.all([
     store.update({ tasks: ['Review build'] }),
     store.update({ settings: { uiFont: 'openrunde', language: 'zh-apple', showTray: false } }),
-    store.update({ workflows: [{ name: 'Work', urls: ['https://example.com'] }] }),
+    store.update({
+      workflows: [{ name: 'Work', targets: [{ kind: 'url', url: 'https://example.com' }] }],
+    }),
     store.update({
       quickApps: [
         { id: 'docs', name: 'Docs', target: { kind: 'url', url: 'https://example.com' } },
@@ -40,7 +42,7 @@ it('persists independent feature and settings edits, including empty lists, acro
   expect(await restored.load()).toMatchObject({
     settings: { uiFont: 'openrunde', language: 'zh-apple', showTray: false },
     tasks: ['Review build'],
-    workflows: [{ name: 'Work', urls: ['https://example.com'] }],
+    workflows: [{ name: 'Work', targets: [{ kind: 'url', url: 'https://example.com' }] }],
     quickApps: [{ id: 'docs' }],
   });
   await restored.update({ tasks: [], workflows: [], quickApps: [] });

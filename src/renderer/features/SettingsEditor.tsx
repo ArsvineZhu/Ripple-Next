@@ -10,6 +10,7 @@ import { ThirdPartyLicenses } from './ThirdPartyLicenses';
 import { SettingsFonts } from './SettingsFonts';
 import { Select } from '../components/Select';
 import type { useSettingsWindowController } from '../hooks/useSettingsWindowController';
+import { useQuickApps } from '../hooks/useQuickApps';
 import type { SettingsDetail } from '../lib/settingsDetails';
 import { isValidSearchUrlTemplate } from '../lib/search';
 import { PrefCard, PrefRow } from './SettingsPreferences';
@@ -131,12 +132,17 @@ function ApiKeyEditor({ settings: p }: Pick<Props, 'settings'>) {
   );
 }
 
-function QuickAppEditor({ settings: p, onBack }: Omit<Props, 'detail'>) {
+function QuickAppEditor({ onBack }: Pick<Props, 'onBack'>) {
+  const p = useQuickApps();
   const { t } = useTranslation();
   const reduced = useReducedMotionPreference();
   const inputId = useId();
   const add = (
-    <button type="submit" className={styles.primaryButton}>
+    <button
+      type="submit"
+      className={styles.primaryButton}
+      disabled={p.quickAppMode === 'installed' && !p.selectedApplication}
+    >
       {t('addApp')}
     </button>
   );
@@ -179,6 +185,19 @@ function QuickAppEditor({ settings: p, onBack }: Omit<Props, 'detail'>) {
             {p.quickAppMode === 'installed' && add}
           </div>
           <AnimatePresence initial={false}>
+            {p.appSearchPending && (
+              <motion.p
+                key="search-pending"
+                className={styles.hint}
+                role="status"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: reduced ? 0 : 0.2 }}
+              >
+                {t('findingApplications')}
+              </motion.p>
+            )}
             {p.quickAppMode === 'installed' && p.showSuggestions && p.appSuggestions.length > 0 && (
               <motion.div
                 key="suggestions"
@@ -191,7 +210,7 @@ function QuickAppEditor({ settings: p, onBack }: Omit<Props, 'detail'>) {
                 {p.appSuggestions.map((app) => (
                   <button
                     type="button"
-                    key={`${app.name}-${JSON.stringify(app.target)}`}
+                    key={app.native?.identifier ?? app.name}
                     className={styles.suggestion}
                     onClick={() => p.selectQuickApp(app)}
                   >
@@ -298,7 +317,7 @@ function QuickAppNameEditor({ settings: p, detail }: Props) {
             onChange={(event) => {
               const value = event.target.value;
               setDraft(value);
-              if (index >= 0 && value.trim()) p.handleQaChange(index, value.trim());
+              if (index >= 0 && value.trim()) p.renameQuickApp(index, value.trim());
             }}
             autoFocus
           />
@@ -338,7 +357,7 @@ export function SettingsEditor(props: Props) {
       ) : page === 'weatherApiKey' ? (
         <ApiKeyEditor settings={props.settings} />
       ) : page === 'addQuickApp' ? (
-        <QuickAppEditor settings={props.settings} onBack={props.onBack} />
+        <QuickAppEditor onBack={props.onBack} />
       ) : page === 'addWorkflow' ? (
         <WorkflowEditor />
       ) : page === 'workflow' ? (

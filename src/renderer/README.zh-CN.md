@@ -2,6 +2,8 @@
 
 # Renderer
 
+QuickAppEditor 通过 useQuickApps 自己管理草稿和发现状态；设置控制器只提供保存的列表及列表编辑。应用发现显示等待提示，过期查询结果不会覆盖新输入。WorkflowEditor 保存共享 LaunchTarget，可添加保留参数与工作目录的快捷应用，网址中的逗号保持原样。WorkflowsTab 一次发送目标数组，显示 main 返回的逐项错误，不再判断目标类型或控制启动间隔。
+
 Renderer 负责 Island 展示、交互和各功能反馈，系统访问通过 [preload 桥接](../preload/README.zh-CN.md)。`Island.tsx` 组合功能视图与 QuickView，`useIslandController` 组合功能 hooks。
 
 Island 直接读取保存的快捷应用，不挂载其编辑器或预先重建发现缓存。排序、隐藏和默认页编辑只由设置管理。启动直接显示内置指南，不再延迟打开浏览器。Bootstrap 失败时先显示本地化错误和诊断文件夹入口，不挂载功能 hooks。

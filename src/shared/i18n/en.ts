@@ -1,4 +1,6 @@
 export const en = {
+  findingApplications: 'Finding installed applications…',
+  workflowQuickApp: 'Add a saved quick app',
   guideTypographyStep3:
     'The playful variants change selected interface phrases. Dates and numbers keep standard Simplified Chinese formatting. Choose Standard to return to the ordinary wording.',
   guideTypographyStep2:

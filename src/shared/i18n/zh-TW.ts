@@ -1,5 +1,7 @@
 import type { Messages } from './en';
 export const zhTW: Messages = {
+  findingApplications: '正在尋找已安裝應用程式…',
+  workflowQuickApp: '加入已儲存的快捷應用程式',
   guideTypographyStep3:
     '趣味變體改變部分介面措辭。日期與數字維持標準簡體中文格式，選擇標準中文即可還原。',
   guideTypographyStep2:

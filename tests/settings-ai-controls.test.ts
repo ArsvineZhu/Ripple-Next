@@ -94,15 +94,25 @@ it('keeps commas inside a workflow target and saves each added row independently
   await fill(host.querySelector('input')!, 'Reading');
   await fill(host.querySelectorAll('input')[1], 'https://example.test/a,b');
   expect(fixture.updateState).toHaveBeenLastCalledWith({
-    workflows: [{ name: 'Reading', urls: ['https://example.test/a,b'] }],
+    workflows: [{ name: 'Reading', targets: [{ kind: 'url', url: 'https://example.test/a,b' }] }],
   });
-  fixture.state.workflows = [{ name: 'Reading', urls: ['https://example.test/a,b'] }];
+  fixture.state.workflows = [
+    { name: 'Reading', targets: [{ kind: 'url', url: 'https://example.test/a,b' }] },
+  ];
   await act(async () =>
     host.querySelector<HTMLButtonElement>('button[class*=addRowButton]')!.click(),
   );
-  await fill(host.querySelectorAll('input')[2], 'docs.example.test');
+  await fill(host.querySelectorAll('input')[2], 'docs.google.com');
   expect(fixture.updateState).toHaveBeenLastCalledWith({
-    workflows: [{ name: 'Reading', urls: ['https://example.test/a,b', 'docs.example.test'] }],
+    workflows: [
+      {
+        name: 'Reading',
+        targets: [
+          { kind: 'url', url: 'https://example.test/a,b' },
+          { kind: 'url', url: 'https://docs.google.com' },
+        ],
+      },
+    ],
   });
   expect(host.querySelector('button[type=submit]')).toBeNull();
 });

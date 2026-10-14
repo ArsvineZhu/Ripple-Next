@@ -49,7 +49,7 @@ export function createAppStateStore(userDataPath: string) {
       if (patch.workflows) {
         workflowClear.run();
         for (const [position, workflow] of patch.workflows.entries())
-          workflowInsert.run(position, workflow.name, JSON.stringify(workflow.urls));
+          workflowInsert.run(position, workflow.name, JSON.stringify(workflow.targets));
       }
       if (patch.quickApps) {
         quickAppClear.run();
@@ -83,7 +83,7 @@ export function createAppStateStore(userDataPath: string) {
         name: string;
         urls_json: string;
       }[]
-    ).map((row) => ({ name: row.name, urls: JSON.parse(row.urls_json) as unknown }));
+    ).map((row) => ({ name: row.name, targets: JSON.parse(row.urls_json) as unknown }));
     const quickApps = (
       database.prepare('SELECT id, name, target_json FROM quick_apps ORDER BY position').all() as {
         id: string;

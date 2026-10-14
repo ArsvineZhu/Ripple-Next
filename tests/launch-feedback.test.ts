@@ -38,10 +38,10 @@ it('shows a failed quick launch on its own app item and clears it on retry', asy
   const launch = vi
     .fn()
     .mockRejectedValueOnce(new Error('native failure'))
-    .mockResolvedValue(undefined);
+    .mockResolvedValue({ failures: [] });
   Object.defineProperty(window, 'electronAPI', {
     configurable: true,
-    value: { launchQuickApp: launch },
+    value: { launchTargets: launch },
   });
   const container = document.createElement('div');
   document.body.append(container);
@@ -49,8 +49,7 @@ it('shows a failed quick launch on its own app item and clears it on retry', asy
   await act(async () =>
     root.render(
       createElement(WorkflowsTab, {
-        workflows: [{ name: 'Daily', urls: ['https://example.com'] }],
-        openWorkflow: vi.fn(),
+        workflows: [{ name: 'Daily', targets: [{ kind: 'url', url: 'https://example.com' }] }],
         bgColor: '#000',
         textColor: '#fff',
         quickApps: [

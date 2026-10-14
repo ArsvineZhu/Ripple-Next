@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useAppState } from '../components/AppStateProvider';
 import { useSettingsContext } from '../components/SettingsProvider';
 import { useBackgroundImage } from './useBackgroundImage';
-import { useQuickApps } from './useQuickApps';
 import { useWorkflows } from './useWorkflows';
 import { useAIConfiguration } from './useAIConfiguration';
 import { TABS, islandPages } from '../lib/tabs';
@@ -20,29 +19,6 @@ export function useSettingsWindowController() {
   }, [settings.setDisplays]);
   const backgroundImage = useBackgroundImage(settings.bgImage);
   const { workflows, removeWorkflow } = useWorkflows();
-  const {
-    quickApps,
-    newQuickApp,
-    quickAppMode,
-    setQuickAppMode,
-    executable,
-    setExecutable,
-    argumentLines,
-    setArgumentLines,
-    workingDirectory,
-    setWorkingDirectory,
-    appUrl,
-    setAppUrl,
-    handleQuickAppInput,
-    selectQuickApp,
-    appSuggestions,
-    showSuggestions,
-    setShowSuggestions,
-    handleQaChange,
-    addQuickApp,
-    removeQuickApp,
-  } = useQuickApps();
-
   const { hiddenTabs, defaultTabId } = state.settings;
   const tabOrder = islandPages.orderedIds(state.settings.tabOrder);
   const setDefaultTabId = (defaultTabId: string) => updateState({ settings: { defaultTabId } });
@@ -70,26 +46,13 @@ export function useSettingsWindowController() {
     ...backgroundImage,
     workflows,
     removeWorkflow,
-    quickApps,
-    newQuickApp,
-    quickAppMode,
-    setQuickAppMode,
-    executable,
-    setExecutable,
-    argumentLines,
-    setArgumentLines,
-    workingDirectory,
-    setWorkingDirectory,
-    appUrl,
-    setAppUrl,
-    handleQuickAppInput,
-    selectQuickApp,
-    appSuggestions,
-    showSuggestions,
-    setShowSuggestions,
-    handleQaChange,
-    addQuickApp,
-    removeQuickApp,
+    quickApps: state.quickApps,
+    removeQuickApp: (index: number) =>
+      updateState({ quickApps: state.quickApps.filter((_, i) => i !== index) }),
+    renameQuickApp: (index: number, name: string) =>
+      updateState({
+        quickApps: state.quickApps.map((app, i) => (i === index ? { ...app, name } : app)),
+      }),
     tabOrder,
     hiddenTabs,
     defaultTabId,

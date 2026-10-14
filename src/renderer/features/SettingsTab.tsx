@@ -640,7 +640,7 @@ export function SettingsTab(
                 {entry(
                   { page: 'workflow', index },
                   workflow.name,
-                  t('items', { count: workflow.urls.length }),
+                  t('items', { count: workflow.targets.length }),
                 )}
                 <DangerAction
                   label={t('removeWorkflow', { name: workflow.name })}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { AppEntry, QuickAppTarget } from '../../shared/contracts';
+import type { Application, LaunchTarget } from '../../shared/launch';
 import { useAppState } from '../components/AppStateProvider';
 import { useNotifications } from '../components/NotificationProvider';
 
@@ -15,52 +15,44 @@ export function useQuickApps() {
   const [argumentLines, setArgumentLines] = useState('');
   const [workingDirectory, setWorkingDirectory] = useState('');
   const [appUrl, setAppUrl] = useState('');
-  const [appSuggestions, setAppSuggestions] = useState<AppEntry[]>([]);
+  const [appSuggestions, setAppSuggestions] = useState<Application[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const selectedAppRef = useRef<AppEntry | null>(null);
+  const [appSearchPending, setAppSearchPending] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const appSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestedQuery = useRef('');
 
   useEffect(() => {
-    if (window.electronAPI?.platform === 'win32') {
-      void window.electronAPI.buildAppCache().catch((error: unknown) => {
-        notify({
-          severity: 'error',
-          code: 'unknownError',
-          area: 'quick-apps',
-          detail: error instanceof Error ? error.message : String(error),
-        });
-      });
-    }
     return () => {
+      requestedQuery.current = '';
       if (appSearchTimer.current) clearTimeout(appSearchTimer.current);
     };
-  }, [notify]);
-
-  const handleQaChange = (index: number, value: string) => {
-    const updatedApps = [...quickApps];
-    const existing = updatedApps[index];
-    if (!existing) return;
-    updatedApps[index] = { ...existing, name: value };
-    updateState({ quickApps: updatedApps });
-  };
+  }, []);
 
   const handleQuickAppInput = (value: string) => {
+    requestedQuery.current = value.trim();
     setNewQuickApp(value);
-    selectedAppRef.current = null;
+    setSelectedApplication(null);
     if (appSearchTimer.current) clearTimeout(appSearchTimer.current);
     if (mode !== 'installed' || value.trim().length < 2) {
       setAppSuggestions([]);
       setShowSuggestions(false);
+      setAppSearchPending(false);
       return;
     }
+    setAppSearchPending(true);
     appSearchTimer.current = setTimeout(() => {
       void window.electronAPI
         ?.discoverApps(value.trim())
         .then((results) => {
+          if (requestedQuery.current !== value.trim()) return;
+          setAppSearchPending(false);
           setAppSuggestions(results);
           setShowSuggestions(results.length > 0);
         })
         .catch((error: unknown) => {
+          if (requestedQuery.current !== value.trim()) return;
+          setAppSearchPending(false);
           setAppSuggestions([]);
           setShowSuggestions(false);
           notify({
@@ -73,8 +65,10 @@ export function useQuickApps() {
     }, 180);
   };
 
-  const selectQuickApp = (entry: AppEntry) => {
-    selectedAppRef.current = entry;
+  const selectQuickApp = (entry: Application) => {
+    setAppSearchPending(false);
+    requestedQuery.current = '';
+    setSelectedApplication(entry);
     setNewQuickApp(entry.name);
     setShowSuggestions(false);
   };
@@ -82,7 +76,7 @@ export function useQuickApps() {
   const addQuickApp = () => {
     const name = newQuickApp.trim();
     if (!name) return false;
-    let target: QuickAppTarget | null = selectedAppRef.current?.target || null;
+    let target: LaunchTarget | null = selectedApplication;
     if (!target && mode === 'command' && executable.trim()) {
       target = {
         kind: 'command',
@@ -114,30 +108,27 @@ export function useQuickApps() {
     setArgumentLines('');
     setWorkingDirectory('');
     setAppUrl('');
-    selectedAppRef.current = null;
+    setSelectedApplication(null);
     setShowSuggestions(false);
     return true;
   };
 
-  const removeQuickApp = (index: number) =>
-    updateState({ quickApps: quickApps.filter((_, currentIndex) => currentIndex !== index) });
-
   return {
-    quickApps,
     newQuickApp,
     handleQuickAppInput,
     selectQuickApp,
     appSuggestions,
     showSuggestions,
-    setShowSuggestions,
-    handleQaChange,
     addQuickApp,
-    removeQuickApp,
+    appSearchPending,
+    selectedApplication: Boolean(selectedApplication),
     quickAppMode: mode,
     setQuickAppMode: (value: string) => {
+      requestedQuery.current = '';
+      setAppSearchPending(false);
       const nextMode = value as QuickAppMode;
       setMode(nextMode);
-      selectedAppRef.current = null;
+      setSelectedApplication(null);
       setShowSuggestions(false);
     },
     executable,

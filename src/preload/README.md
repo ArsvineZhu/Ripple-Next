@@ -2,6 +2,8 @@
 
 # Preload bridge
 
+`launchTargets(targets)` handles a single quick-app target or a whole workflow using the same domain array. Main validates it and returns indexed failures after attempting every target in order. `discoverApps(query)` returns the shared Application model. The bridge exposes no app-cache preparation or raw name-launch method.
+
 Media reads return a session snapshot. `selectMediaSession` chooses Automatic or a known session, and `controlSystemMedia` requires that displayed session's ID; both return refreshed state and an operation error. `openMediaSession` uses the known session identity to activate its player without waiting for another metadata read, and returns the current snapshot plus an operation error. The renderer has no raw D-Bus or PowerShell access.
 
 Preload exposes the isolated `electronAPI` through explicit `contextBridge` methods. It maps typed calls and events to named IPC channels from [shared contracts](../shared/README.md); renderer code never receives raw `ipcRenderer` access.

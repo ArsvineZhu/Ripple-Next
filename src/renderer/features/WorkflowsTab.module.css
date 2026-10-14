@@ -124,6 +124,14 @@
   padding: 0 15px;
 }
 
+.quickAppStrip[data-standalone] {
+  margin: auto 0;
+}
+
+.quickAppStrip[data-standalone] .quickAppList {
+  margin: 0 auto;
+}
+
 .appButton {
   width: 100%;
   max-width: 100%;

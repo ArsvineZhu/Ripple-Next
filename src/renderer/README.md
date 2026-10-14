@@ -2,6 +2,8 @@
 
 # Renderer
 
+QuickAppEditor owns its draft and discovery state through useQuickApps; the Settings controller only provides persisted lists and list edits. Discovery displays a pending status and rejects stale results. WorkflowEditor persists shared LaunchTarget objects, can add a saved quick app with its arguments/directory intact, and keeps URL commas. WorkflowsTab sends a target array once and displays indexed errors from main; it does not classify or pace launches.
+
 The renderer owns Island presentation, interaction and feature feedback. OS access stays behind the [preload bridge](../preload/README.md). `Island.tsx` composes feature views and QuickView; `useIslandController` composes the feature hooks.
 
 Island reads saved quick apps without mounting their editor or building a discovery cache. Page ordering, visibility and default-page edits belong to Settings only. Launch opens the built-in Guide without opening a browser after a delay. A failed bootstrap displays a localized error and a diagnostics-folder action before feature hooks mount.

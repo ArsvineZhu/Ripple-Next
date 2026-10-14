@@ -20,9 +20,9 @@ it('finds app bundles in application folders without exposing their internal hel
   const entries = await discoverMacApps('音乐', [root, root, path.join(root, 'Missing')]);
   expect(entries).toEqual([
     {
+      kind: 'application',
       name: '音乐 App',
-      target: {
-        kind: 'platform-app',
+      native: {
         platform: 'darwin',
         identifier: path.join(root, 'Utilities', '音乐 App.app'),
       },

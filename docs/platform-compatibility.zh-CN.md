@@ -53,7 +53,7 @@ Snap 播放器可通过 AppArmor 限制 MPRIS 访问。从 IDE 或编程工具�
 
 ## Windows 与 macOS
 
-Windows 保留原 `.lnk` 启动，延续快捷方式参数和工作目录。Store 目标通过 PowerShell `Start-Process` 原生 Shell 激活；可执行文件等待 spawn 事件。应用发现共享并发重建操作，缓存原子写入。启动反馈显示在被点击的快捷应用或工作流旁。
+Windows 保留原 `.lnk` 启动，延续快捷方式参数和工作目录。Store 目标通过 PowerShell `Start-Process` 原生 Shell 激活；可执行文件等待 spawn 事件。Windows 适配器按需共享发现请求，结果在内存中保留五分钟，不再写入应用发现缓存文件。启动反馈显示在被点击的快捷应用或工作流旁。
 
 Windows 按 DIP 比较光标和 Island 边界，拖动时保留输入捕获，岛外释放。窗口位于工作区内，并为自动隐藏边缘和分数缩放额外留出 2 DIP。首次显示不激活窗口，明确请求焦点时才激活；关闭时统一清理输入监听和轮询。Windows 保持其他应用获得焦点时的可见动画；macOS／Linux 保留隐藏窗口节流。
 

@@ -2,6 +2,8 @@
 
 # Main process
 
+`services/apps.ts` owns ordered target execution and per-target results without platform branches. `platform/apps.ts` selects the native application capability. Linux owns desktop-entry discovery and gio launch; macOS owns bundles and open activation; Windows owns shortcuts, Store activation and a shared five-minute in-memory discovery cache. Discovery starts on demand. There is no advance build-cache IPC, installed-apps JSON file, renderer launch loop or fixed inter-target sleep.
+
 `services/media.ts` owns media-session selection, serialized queries/commands and stale/error snapshots. Automatic mode prefers an actively playing system session, then preserves a playing or paused selection; manual choice lasts for this run until the session disappears. Commands carry the displayed session ID and never fall back to another player. Windows reads GSMTC controls and artwork through a cached typed CLR bridge; macOS queries only running Spotify/Music dictionaries independently; Linux uses the bundled D-Bus client and MPRIS unique owner names, including capabilities and local artwork. Opening a session uses its cached main-owned application identity/path on Windows, the running application on macOS, or MPRIS Raise on Linux, with same-owner StatusNotifierItem Activate when CanRaise is false or Raise fails; it does not wait for another metadata query. No cloud music API is used.
 Local MPRIS artwork with an unrecognized filename extension is identified by PNG/JPEG/GIF/WebP signatures and served as a data URL, subject to the existing 5 MiB limit. Missing or unsupported artwork does not discard the media session.
 

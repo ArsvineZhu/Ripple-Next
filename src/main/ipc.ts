@@ -5,8 +5,8 @@ import type { AppState, AppStatePatch } from '../shared/appState';
 import { noticeAreaForCode, noticeAreaForPatch } from '../shared/contracts';
 import type { AppNotice, InputRect, NoticeArea, NoticeCode } from '../shared/contracts';
 import { isAppStatePatch } from '../shared/appState';
-import type { InvokeMap, QuickAppTarget } from '../shared/contracts';
-import { QuickAppTargetSchema } from '../shared/contracts';
+import type { InvokeMap } from '../shared/contracts';
+import { LaunchTargetsSchema } from '../shared/launch';
 import { setTrayLocale } from './tray';
 import type { DiagnosticsService } from './services/diagnostics';
 import { applyWindowInputRegion, getMainWindow, markRendererReady, showMainWindow } from './window';
@@ -23,7 +23,7 @@ import { AIMutationSchema } from '../shared/aiConfiguration';
 import { listLicenses, readLicense } from './services/licenses';
 import { openSettingsWindow } from './settingsWindow';
 import { getWindowBoundsForDisplay } from './windowBounds';
-import { discoverApps, buildAppCache, launchApp, launchQuickApp } from './services/apps';
+import { createAppService } from './services/apps';
 import { setAutoLaunch } from './services/autostart';
 import { createMediaService } from './services/media';
 import { getBluetoothStatus } from './services/getBluetoothStatus';
@@ -181,6 +181,7 @@ function isInputRect(value: unknown): value is InputRect {
 }
 
 export function registerIPC(services: IPCServices) {
+  const apps = createAppService();
   let previewActive = false;
   let previewOwner: WebContents | null = null;
   const publishPreview = (active: boolean) => {
@@ -280,16 +281,11 @@ export function registerIPC(services: IPCServices) {
     broadcastToRegisteredWindows('app-state-changed', result.state);
     return result.credentialStatus;
   });
-  handle(services, 'launch-quick-app', async (_event, id) => {
-    const quickAppId = getText(id, 'Quick app ID', 128);
-    const state = await services.stateStore.load();
-    const appTarget = state.quickApps.find((quickApp) => quickApp.id === quickAppId)?.target;
-    if (!appTarget) throw new TypeError('Quick app is not configured');
-    const target: QuickAppTarget = QuickAppTargetSchema.parse(appTarget);
-    await launchQuickApp(target);
-  });
+  handle(services, 'launch-targets', (_event, targets) =>
+    apps.launchTargets(LaunchTargetsSchema.parse(targets)),
+  );
   handle(services, 'discover-apps', (_event, query) =>
-    discoverApps(getText(query, 'Application query', 256)),
+    apps.discoverApps(getText(query, 'Application query', 256)),
   );
   handle(services, 'renderer-ready', (event) => {
     const role = getWindowRole(event.sender);
@@ -339,8 +335,6 @@ export function registerIPC(services: IPCServices) {
     const value = getText(url, 'URL', 8192);
     await shell.openExternal(value);
   });
-  handle(services, 'launch-app', (_event, name) => launchApp(getText(name, 'Application name')));
-  handle(services, 'build-app-cache', (_event) => buildAppCache());
   handle(services, 'get-system-media', (_event) => media.getSnapshot());
   handle(services, 'open-media-session', (_event, id) =>
     media.openSession(getText(id, 'Media session', 512)),

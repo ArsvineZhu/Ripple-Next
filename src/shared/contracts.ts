@@ -1,3 +1,4 @@
+import type { Application, LaunchTarget, LaunchResult } from './launch';
 import type { Locale } from './i18n';
 import type { WeatherSnapshot } from './weather';
 import type { AIMutation } from './aiConfiguration';
@@ -44,55 +45,6 @@ export interface MediaOperationResult {
   snapshot: MediaSnapshot;
   error: MediaError | null;
 }
-export const QuickAppTargetSchema = z.discriminatedUnion('kind', [
-  z
-    .object({
-      kind: z.literal('desktop-entry'),
-      desktopFile: z.string().min(1),
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.literal('command'),
-      executable: z.string().min(1),
-      args: z.array(z.string()).max(128),
-      workingDirectory: z.string().min(1).optional(),
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.literal('platform-app'),
-      platform: z.enum(['win32', 'darwin']),
-      identifier: z.string().min(1),
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.literal('url'),
-      url: z.url().refine((value) => ['http:', 'https:'].includes(new URL(value).protocol)),
-    })
-    .strict(),
-]);
-export type QuickAppTarget = z.infer<typeof QuickAppTargetSchema>;
-
-export const QuickAppSchema = z
-  .object({
-    id: z.string().min(1),
-    name: z.string().min(1),
-    target: QuickAppTargetSchema,
-  })
-  .strict();
-export type QuickApp = z.infer<typeof QuickAppSchema>;
-
-export const AppEntrySchema = z
-  .object({ name: z.string().min(1), target: QuickAppTargetSchema })
-  .strict();
-export type AppEntry = z.infer<typeof AppEntrySchema>;
-
-export const WorkflowSchema = z
-  .object({ name: z.string().min(1), urls: z.array(z.string()) })
-  .strict();
-export type Workflow = z.infer<typeof WorkflowSchema>;
 export interface DisplayInfo {
   id: number;
   label: string;
@@ -203,8 +155,8 @@ export interface InvokeMap {
   'update-app-state': { args: [patch: AppStatePatch]; result: AppState };
   'set-island-preview': { args: [active: boolean]; result: void };
   'get-island-preview': { args: []; result: boolean };
-  'launch-quick-app': { args: [id: string]; result: void };
-  'discover-apps': { args: [query: string]; result: AppEntry[] };
+  'launch-targets': { args: [targets: LaunchTarget[]]; result: LaunchResult };
+  'discover-apps': { args: [query: string]; result: Application[] };
   'renderer-ready': { args: []; result: void };
   'start-assistant': {
     args: [requestId: string, prompt: string];
@@ -231,8 +183,6 @@ export interface InvokeMap {
     result: MediaOperationResult;
   };
   'open-external': { args: [url: string]; result: void };
-  'launch-app': { args: [name: string]; result: void };
-  'build-app-cache': { args: []; result: void };
   'get-displays': { args: []; result: DisplayInfo[] };
   'set-display': { args: [id: string | number]; result: void };
   'set-auto-launch': { args: [enable: boolean]; result: void };
@@ -257,8 +207,8 @@ export interface ElectronAPI {
   setIslandPreview(active: boolean): Promise<void>;
   getIslandPreview(): Promise<boolean>;
   onIslandPreviewChanged(callback: (active: boolean) => void): () => void;
-  launchQuickApp(id: string): Promise<void>;
-  discoverApps(query: string): Promise<AppEntry[]>;
+  launchTargets(targets: LaunchTarget[]): Promise<LaunchResult>;
+  discoverApps(query: string): Promise<Application[]>;
   rendererReady(): Promise<void>;
   startAssistant(requestId: string, prompt: string): Promise<string | null>;
   cancelAssistant(requestId: string): Promise<void>;
@@ -279,8 +229,6 @@ export interface ElectronAPI {
   getMicrophoneStatus(): Promise<boolean>;
   controlSystemMedia(command: MediaCommand, sessionId: string): Promise<MediaOperationResult>;
   openExternal(url: string): Promise<void>;
-  launchApp(name: string): Promise<void>;
-  buildAppCache(): Promise<void>;
   getDisplays(): Promise<DisplayInfo[]>;
   setDisplay(id: string | number): Promise<void>;
   setAutoLaunch(enable: boolean): Promise<void>;

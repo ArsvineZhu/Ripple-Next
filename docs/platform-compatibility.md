@@ -53,7 +53,7 @@ Custom commands use executable plus argv without a shell. Workflow local address
 
 ## Windows and macOS behavior
 
-Windows launches shortcuts using their original `.lnk` files to preserve arguments and working directories. Store targets use native Shell activation via PowerShell `Start-Process`. Executables wait for the spawn event. App discovery shares concurrent rebuilds and writes its cache atomically. Operational feedback stays beside the clicked quick app or workflow.
+Windows launches shortcuts using their original `.lnk` files to preserve arguments and working directories. Store targets use native Shell activation via PowerShell `Start-Process`. Executables wait for the spawn event. The Windows adapter shares an on-demand discovery promise and keeps results in memory for five minutes. It does not write an installed-apps cache file. Operational feedback stays beside the clicked quick app or workflow.
 
 Windows input compares cursor and Island bounds in DIP, preserves capture while dragging, and releases it outside. The window stays in the work area with an additional 2 DIP edge inset for auto-hide and fractional scaling. Initial display avoids activation; explicit focus requests activate normally. Input listeners and polling are removed once on closure. Windows keeps visible animation active when another app has focus; macOS/Linux retain hidden-window throttling.
 

@@ -34,7 +34,7 @@ const api: ElectronAPI = {
     ipcRenderer.on('island-preview-changed', listener);
     return () => ipcRenderer.removeListener('island-preview-changed', listener);
   },
-  launchQuickApp: (id) => invoke('launch-quick-app', id),
+  launchTargets: (targets) => invoke('launch-targets', targets),
   discoverApps: (query) => invoke('discover-apps', query),
   rendererReady: () => invoke('renderer-ready'),
   startAssistant: (requestId, prompt) => invoke('start-assistant', requestId, prompt),
@@ -75,8 +75,6 @@ const api: ElectronAPI = {
   getMicrophoneStatus: () => invoke('get-microphone-status'),
   controlSystemMedia: (command, sessionId) => invoke('control-system-media', command, sessionId),
   openExternal: (url) => invoke('open-external', url),
-  launchApp: (appName) => invoke('launch-app', appName),
-  buildAppCache: () => invoke('build-app-cache'),
   getDisplays: () => invoke('get-displays'),
   setDisplay: (displayId) => invoke('set-display', displayId),
   setAutoLaunch: (enable) => invoke('set-auto-launch', enable),

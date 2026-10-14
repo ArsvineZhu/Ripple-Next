@@ -68,6 +68,8 @@ Give a workflow a name, add the apps or addresses you use together, then launch 
 
 Keep individual favorites on the Quick Apps strip. Choose an installed application, an HTTP(S) URL, or a command with one argument per line and an optional working directory. A failed launch appears beside that item; a workflow continues with its remaining targets and reports a failure on its own row.
 
+Quick Apps work on their own without creating a workflow. Add a saved Quick App to a workflow to keep its native application identity, command arguments and working directory. Failures identify the target number while remaining targets continue.
+
 <p align="center">
   <img src="docs/assets/screenshots/workflows.png" width="480" alt="Two named workflows above a strip of Docs, GitHub and Local API quick apps">
 </p>
