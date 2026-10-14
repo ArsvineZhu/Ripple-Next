@@ -1,8 +1,10 @@
+import { DiagnosticError } from '../../../shared/diagnosticError';
 import { powerShellLiteral, runPowerShell, winrtAsync } from './powershell';
 
 async function readStatus(script: string): Promise<boolean> {
   const value = (await runPowerShell(script)).trim().toLowerCase();
-  if (value !== 'true' && value !== 'false') throw new TypeError('Invalid Windows device status');
+  if (value !== 'true' && value !== 'false')
+    throw new DiagnosticError('Invalid Windows device status');
   return value === 'true';
 }
 

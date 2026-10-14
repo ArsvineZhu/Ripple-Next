@@ -6,6 +6,7 @@
 
 ## 使用 Ripple Next
 
+- [诊断](diagnostics.zh-CN.md)：可读错误、trace 与日志分享。
 - 产品介绍：[简体中文](../README.zh-CN.md)、[繁體中文](../README.zh-TW.md)、[English](../README.md)、[日本語](../README.ja.md)。
 - [使用指南](../instructions.zh-CN.md)：导航、七个 Island 页面、设置窗口与数据。
 - [平台支持与排障](platform-compatibility.zh-CN.md)：原生集成、恢复方法与本地诊断。

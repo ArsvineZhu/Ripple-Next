@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../shared/diagnosticError';
 import { type ReactNode, createContext, useContext } from 'react';
 
 import { useSettings } from '../hooks/useSettings';
@@ -15,6 +16,6 @@ export function SettingsProvider({
 }
 export function useSettingsContext() {
   const settings = useContext(SettingsContext);
-  if (!settings) throw new Error('SettingsProvider is missing');
+  if (!settings) throw new DiagnosticError('SettingsProvider is missing');
   return settings;
 }

@@ -49,11 +49,7 @@ Page identity uses stable strings such as `overview` and `tasks`; its position c
 
 ## Local diagnostics
 
-Cross-platform findings, diagnostic fields and native feedback rules are documented in [platform compatibility](platform-compatibility.md). CI checks/tests run on Ubuntu, Windows and macOS. Reinstall dependencies from the lockfile when changing operating systems.
-
-Ripple Next writes `ripple-next.log` under `<userData>/diagnostics/` and stores Electron minidumps in its `crashes/` subdirectory. In Settings, open **Diagnostics** and choose **Open diagnostics folder** to view them. The log transport has a 5 MiB size limit; on startup, crash reports older than 30 days and all but the 10 newest reports are removed.
-
-Crash-report uploads are disabled. IPC diagnostics record operation timing and safe errors. Renderer crash context retains only the answer character count; prompt and answer text are not logged. Error records contain the error type and stack frames, not the free-form error message. Treat minidumps as sensitive local data because they are binary process snapshots.
+[Diagnostics](diagnostics.md) owns log format, severity, operation correlation, source mapping and trace commands. Default output is readable text; `RIPPLE_LOG_LEVEL` or `--ripple-log-level` selects detail for a run. Rotated logs stay under `<userData>/diagnostics/`; local minidumps retain the existing 10-report/30-day limit.
 
 Linux uses a transparent XWayland window sized to the selected display's work area so desktop panels remain visible. Only X11 `ShapeInput` follows the animated Island rectangle; changing `ShapeBounding` can introduce black flashes. The X11 client remains statically imported and bundled. The Island always requests `_NET_WM_STATE_SKIP_TASKBAR` through the existing X11 client. The settings window is a separate normal BrowserWindow. The Island is shown only after renderer readiness and confirmation of the first input region. See [main](../src/main/README.md), [preload](../src/preload/README.md) and [renderer](../src/renderer/README.md).
 

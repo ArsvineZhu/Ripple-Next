@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../../shared/diagnosticError';
 import { execFile } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
@@ -134,7 +135,7 @@ function isWithin(directory: string, candidate: string) {
 
 export async function launchLinuxDesktopEntry(desktopFile: string): Promise<void> {
   if (!path.isAbsolute(desktopFile) || !desktopFile.endsWith('.desktop')) {
-    throw new TypeError('Invalid desktop application entry');
+    throw new DiagnosticError('Invalid desktop application entry');
   }
   const candidate = path.resolve(desktopFile);
   const permittedDirectories = dataDirectories().map((directory) =>
@@ -142,7 +143,7 @@ export async function launchLinuxDesktopEntry(desktopFile: string): Promise<void
   );
   const isPermitted = permittedDirectories.some((directory) => isWithin(directory, candidate));
   if (!isPermitted)
-    throw new TypeError('Desktop application entry is outside the applications directory');
+    throw new DiagnosticError('Desktop application entry is outside the applications directory');
   await fs.access(candidate);
   await new Promise<void>((resolve, reject) => {
     execFile(

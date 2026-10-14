@@ -1,3 +1,4 @@
+import { recordSettingsContext } from './lib/diagnostics';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { LayoutGroup, motion } from 'motion/react';
@@ -18,6 +19,7 @@ export default function SettingsApp() {
   const { setContainer, setOpenId } = useOverlay();
   const [category, setCategory] = useState<SettingsCategoryId>('guide');
   const [detail, setDetail] = useState<SettingsDetail | null>(null);
+  useEffect(() => recordSettingsContext(category, detail?.page ?? null), [category, detail?.page]);
   const history = useRef<{ detail: SettingsDetail | null; scroll: number; entry: string }[]>([]);
   const restore = useRef<{ scroll: number; entry: string | null }>({ scroll: 0, entry: null });
   const reducedMotion = useReducedMotionPreference();

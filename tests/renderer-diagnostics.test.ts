@@ -1,13 +1,7 @@
 /** @vitest-environment happy-dom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mock = vi.hoisted(() => ({
-  info: vi.fn(),
-  warn: vi.fn(),
-  error: vi.fn(),
-}));
-
-vi.mock('electron-log/renderer', () => ({ default: mock }));
+const report = vi.fn();
 
 import {
   installRendererErrorHandlers,
@@ -17,10 +11,15 @@ import {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  Object.defineProperty(window, 'electronAPI', {
+    configurable: true,
+    value: { reportDiagnostic: report },
+  });
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
+  Reflect.deleteProperty(window, 'electronAPI');
 });
 
 describe('renderer diagnostics', () => {
@@ -38,18 +37,18 @@ describe('renderer diagnostics', () => {
     });
     window.dispatchEvent(rejection);
 
-    expect(mock.error).toHaveBeenCalledTimes(2);
-    const lines = mock.error.mock.calls.map(([line]) => String(line));
+    expect(report).toHaveBeenCalledTimes(2);
+    const lines = report.mock.calls.map(([event]) => JSON.stringify(event));
     expect(lines.some((line) => line.includes('PRIVATE_ERROR_MESSAGE'))).toBe(false);
     expect(lines.some((line) => line.includes('PRIVATE_REJECTION_VALUE'))).toBe(false);
-    expect(lines.map((line) => JSON.parse(line).event)).toEqual([
+    expect(lines.map((line) => JSON.parse(line).kind)).toEqual([
       'renderer-error',
       'renderer-error',
     ]);
 
     dispose();
     window.dispatchEvent(new ErrorEvent('error', { message: 'AFTER_DISPOSE' }));
-    expect(mock.error).toHaveBeenCalledTimes(2);
+    expect(report).toHaveBeenCalledTimes(2);
   });
 
   it('records React root failures without free-form error messages', () => {
@@ -58,10 +57,10 @@ describe('renderer diagnostics', () => {
     rendererRootErrorHandlers.onUncaughtError(privateError);
     rendererRootErrorHandlers.onRecoverableError(privateError);
 
-    expect(mock.error).toHaveBeenCalledTimes(3);
-    const lines = mock.error.mock.calls.map(([line]) => String(line));
+    expect(report).toHaveBeenCalledTimes(3);
+    const lines = report.mock.calls.map(([event]) => JSON.stringify(event));
     expect(lines.every((line) => line.includes('PRIVATE_COMPONENT_TEXT') === false)).toBe(true);
-    expect(lines.map((line) => JSON.parse(line).event)).toEqual([
+    expect(lines.map((line) => JSON.parse(line).kind)).toEqual([
       'renderer-error',
       'renderer-error',
       'renderer-error',
@@ -78,9 +77,9 @@ describe('renderer diagnostics', () => {
     now += 60_000;
     recordRendererError('clipboard', error);
 
-    expect(mock.error).toHaveBeenCalledTimes(2);
-    const secondRecord = JSON.parse(String(mock.error.mock.calls[1]?.[0]));
+    expect(report).toHaveBeenCalledTimes(2);
+    const secondRecord = report.mock.calls[1]?.[0];
     expect(secondRecord.repeated).toBe(1);
-    expect(JSON.stringify(mock.error.mock.calls)).not.toContain('PRIVATE_POLLING_ERROR');
+    expect(JSON.stringify(report.mock.calls)).not.toContain('PRIVATE_POLLING_ERROR');
   });
 });

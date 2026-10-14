@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../shared/diagnosticError';
 import { createLinuxInputShape } from './platform/linux/inputShape';
 import { app, BrowserWindow, screen } from 'electron';
 import path from 'node:path';
@@ -78,7 +79,7 @@ export const showMainWindow = (focus = false) => {
 
 export const markRendererReady = () => {
   rendererIsReady = true;
-  if (mainWindow && activeDiagnostics) recordRendererReady(mainWindow, activeDiagnostics);
+  if (mainWindow && activeDiagnostics) recordRendererReady(mainWindow, activeDiagnostics, 'island');
   showMainWindow();
 };
 
@@ -138,13 +139,14 @@ export const createWindow = (
     },
     show: false,
   });
-  attachWindowDiagnostics(mainWindow, diagnostics);
+  attachWindowDiagnostics(mainWindow, diagnostics, 'island');
   registerWindowRole(mainWindow.webContents, 'island');
   if (isMac) mainWindow.setTitle(ISLAND_WINDOW_TITLE);
   const closeScrollGestureBridge = installScrollGestureBridge(mainWindow.webContents);
   diagnostics.record({
     kind: 'window-lifecycle',
     event: 'created',
+    role: 'island',
     windowId: mainWindow.id,
     webContentsId: mainWindow.webContents.id,
   });
@@ -196,8 +198,8 @@ export function moveMainWindowToDisplay(displayId: string | null) {
     displayId === null
       ? screen.getPrimaryDisplay()
       : screen.getAllDisplays().find((display) => String(display.id) === displayId);
-  if (!target) throw new TypeError('The selected display is no longer available');
-  if (!mainWindow) throw new Error('The Island window is not available');
+  if (!target) throw new DiagnosticError('The selected display is no longer available');
+  if (!mainWindow) throw new DiagnosticError('The Island window is not available');
   mainWindow.setBounds(getWindowBoundsForDisplay(target));
   showMainWindow();
 }

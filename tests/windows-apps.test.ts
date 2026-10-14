@@ -28,7 +28,7 @@ describe('Windows app launch', () => {
       );
     });
     const error = await runPowerShell('private-script').catch((value) => value);
-    expect(error.message).toBe('System command failed (ETIMEDOUT)');
+    expect(error.message).toBe('System command failed: powershell.exe (ETIMEDOUT)');
     expect(serializeDiagnosticError(error)).toMatchObject({ code: 'ETIMEDOUT', killed: true });
     expect(JSON.stringify(serializeDiagnosticError(error))).not.toContain('private');
   });

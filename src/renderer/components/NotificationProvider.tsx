@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../shared/diagnosticError';
 import { noticeAreaForCode } from '../../shared/contracts';
 import type { AppNotice, NoticeArea, NoticeCode } from '../../shared/contracts';
 import {
@@ -98,6 +99,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
 export function useNotifications() {
   const context = useContext(NotificationContext);
-  if (!context) throw new Error('NotificationProvider is missing');
+  if (!context) throw new DiagnosticError('NotificationProvider is missing');
   return context;
 }

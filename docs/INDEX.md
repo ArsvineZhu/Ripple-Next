@@ -4,6 +4,7 @@
 
 ## Use Ripple Next
 
+- [Diagnostics](diagnostics.md): readable errors, tracing and log sharing.
 - Product tour: [English](../README.md), [简体中文](../README.zh-CN.md), [繁體中文](../README.zh-TW.md), [日本語](../README.ja.md).
 - [Usage](../instructions.md): navigation, seven Island pages, the settings window and data.
 - [Platform support and troubleshooting](platform-compatibility.md): native integrations, recovery and local diagnostics.

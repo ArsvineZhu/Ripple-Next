@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../../shared/diagnosticError';
 import { z } from 'zod';
 import type { MediaCommand, MediaSession } from '../../../shared/media';
 import { powerShellLiteral, runPowerShell, winrtAsync } from './powershell';
@@ -172,11 +173,12 @@ export async function openMediaSession(target: MediaSession): Promise<void> {
   // Resolve identities during the normal query; opening must not wait for another
   // metadata/thumbnail read or another PowerShell process for desktop players.
   const applicationPath = applicationPaths.get(target.id);
-  if (!applicationPath) throw new Error('Media application path unavailable or ambiguous');
+  if (!applicationPath)
+    throw new DiagnosticError('Media application path unavailable or ambiguous');
   if (applicationPath.startsWith('shell:')) {
     await runPowerShell('Start-Process -FilePath ' + powerShellLiteral(applicationPath));
   } else {
     const error = await shell.openPath(applicationPath);
-    if (error) throw new Error('Media application activation failed');
+    if (error) throw new DiagnosticError('Media application activation failed');
   }
 }

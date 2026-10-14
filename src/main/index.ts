@@ -32,6 +32,7 @@ import {
 
 registerBackgroundImageScheme();
 app.setName('Ripple Next');
+
 const userDataPath = configureApplicationProfile(app);
 if (process.platform === 'win32') app.setAppUserModelId('com.arsvinezhu.ripple-next');
 // LSUIElement agent: start accessory; Settings open switches to regular (LuLu-style).
@@ -134,7 +135,11 @@ async function startApplication() {
       : {}),
   });
   const aiConfiguration = createAIConfigurationService(stateStore, secretStore);
-  const assistant = createAssistantService(aiConfiguration, () => app.getVersion());
+  const assistant = createAssistantService(
+    aiConfiguration,
+    () => app.getVersion(),
+    (error) => diagnosticsService.recordError('assistant', error),
+  );
   // macOS honors showTray; Windows/Linux always keep the tray.
   const applyShowTray = (visible: boolean) => {
     try {

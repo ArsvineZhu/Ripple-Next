@@ -4,7 +4,7 @@ import { isLocale } from '../shared/i18n';
 import type { AppState, AppStatePatch } from '../shared/appState';
 import { noticeAreaForCode, noticeAreaForPatch } from '../shared/contracts';
 import type { AppNotice, InputRect, NoticeArea, NoticeCode } from '../shared/contracts';
-import { isAppStatePatch } from '../shared/appState';
+import { AppStatePatchSchema, isAppStatePatch } from '../shared/appState';
 import type { InvokeMap } from '../shared/contracts';
 import { LaunchTargetsSchema } from '../shared/launch';
 import { setTrayLocale } from './tray';
@@ -33,7 +33,9 @@ import { createAppService } from './services/apps';
 import { setAutoLaunch } from './platform/autostart';
 import { createMediaService } from './services/media';
 import { devices } from './platform/devices';
-import { serializeDiagnosticError } from '../shared/diagnostics';
+import { RendererDiagnosticSchema, serializeDiagnosticError } from '../shared/diagnostics';
+import { DiagnosticError, validationProblems } from '../shared/diagnosticError';
+import { withDiagnosticOperation } from './services/diagnosticScope';
 import type { AssistantEvent, AssistantResult } from '../shared/contracts';
 import { RGB_HEX } from '../shared/color';
 import { showNativeColorPicker } from './services/colorPicker';
@@ -74,13 +76,16 @@ interface IPCServices {
   secretStore: SecretStore;
   assistant: AssistantService;
   notices: NoticeService;
-  diagnostics: Pick<DiagnosticsService, 'openFolder' | 'recordError' | 'record'>;
+  diagnostics: Pick<
+    DiagnosticsService,
+    'openFolder' | 'recordError' | 'record' | 'receiveRenderer'
+  >;
   applyShowTray(visible: boolean): void;
 }
 
 function getText(value: unknown, field: string, maximum = 4096) {
   if (typeof value !== 'string' || value.length > maximum) {
-    throw new TypeError(`${field} must be a string of at most ${maximum} characters`);
+    throw new DiagnosticError(`${field} must be a string of at most ${maximum} characters`);
   }
   return value;
 }
@@ -103,6 +108,7 @@ function channelErrorCode(channel: keyof InvokeMap): NoticeCode | null {
   }
 }
 
+let operationSequence = 0;
 function handle<K extends keyof InvokeMap>(
   services: IPCServices,
   channel: K,
@@ -119,23 +125,102 @@ function handle<K extends keyof InvokeMap>(
     'get-microphone-status',
     'read-clipboard-text',
   ].includes(channel);
-  let observed = false;
   let failure: { signature: string; loggedAt: number; suppressed: number } | undefined;
   ipcMain.handle(channel, async (event, ...args: unknown[]) => {
-    if (!isAllowedIpcSender(event.sender)) throw new Error('Unknown IPC sender');
+    if (!isAllowedIpcSender(event.sender)) throw new DiagnosticError('Unknown IPC sender');
+    const operationId = ++operationSequence;
+    const sender = getWindowRole(event.sender)!;
+    const patch = channel === 'update-app-state' && isAppStatePatch(args[0]) ? args[0] : null;
+    const fields = patch
+      ? [
+          ...Object.keys(patch.settings ?? {}),
+          ...['tasks', 'workflows', 'quickApps'].filter((key) => key in patch),
+        ]
+      : [];
+    const context = { operationId, sender, fields };
     const started = performance.now();
     try {
-      const result = await listener(event, ...(args as InvokeMap[K]['args']));
-      if (!polled || !observed || failure) {
+      services.diagnostics.record({
+        kind: 'ipc-operation',
+        channel,
+        phase: 'started',
+        elapsedMs: 0,
+        ...context,
+      });
+      const result = await withDiagnosticOperation(
+        { id: operationId, channel, sender, fields },
+        () => listener(event, ...(args as InvokeMap[K]['args'])),
+      );
+      const outcome =
+        channel === 'launch-targets'
+          ? (result as InvokeMap['launch-targets']['result']).failures.length
+            ? 'target-failures'
+            : 'launched'
+          : channel === 'start-assistant'
+            ? (result as AssistantResult).status
+            : undefined;
+      const domainError =
+        channel === 'get-weather'
+          ? (result as WeatherSnapshot).error
+          : [
+                'get-system-media',
+                'control-system-media',
+                'select-media-session',
+                'open-media-session',
+              ].includes(channel) &&
+              result &&
+              typeof result === 'object' &&
+              'error' in result
+            ? result.error
+            : channel === 'start-assistant' && (result as AssistantResult).status === 'error'
+              ? (result as Extract<AssistantResult, { status: 'error' }>).code
+              : outcome === 'target-failures'
+                ? 'One or more launch targets failed'
+                : null;
+      if (domainError) {
+        const summary = serializeDiagnosticError(new DiagnosticError(String(domainError)));
+        const signature = JSON.stringify(summary);
+        const now = Date.now();
+        if (
+          !polled ||
+          !failure ||
+          failure.signature !== signature ||
+          now - failure.loggedAt >= 60_000
+        ) {
+          services.diagnostics.record({
+            kind: 'ipc-operation',
+            channel,
+            phase: 'failed',
+            elapsedMs: Math.round(performance.now() - started),
+            ...context,
+            error: summary,
+            ...(failure ? { repeated: failure.suppressed } : {}),
+          });
+          failure = { signature, loggedAt: now, suppressed: 0 };
+        } else {
+          failure.suppressed++;
+          services.diagnostics.record({
+            kind: 'ipc-operation',
+            channel,
+            phase: 'failed-repeat',
+            elapsedMs: Math.round(performance.now() - started),
+            ...context,
+            repeated: failure.suppressed,
+          });
+        }
+        return result;
+      }
+      {
         services.diagnostics.record({
           kind: 'ipc-operation',
           channel,
+          ...context,
+          ...(outcome ? { outcome } : {}),
           phase: failure ? 'recovered' : 'completed',
           elapsedMs: Math.round(performance.now() - started),
           ...(failure ? { repeated: failure.suppressed } : {}),
         });
       }
-      observed = true;
       failure = undefined;
       return result;
     } catch (error) {
@@ -144,10 +229,19 @@ function handle<K extends keyof InvokeMap>(
       const now = Date.now();
       if (polled && failure?.signature === signature && now - failure.loggedAt < 60_000) {
         failure.suppressed += 1;
+        services.diagnostics.record({
+          kind: 'ipc-operation',
+          channel,
+          phase: 'failed-repeat',
+          elapsedMs: Math.round(performance.now() - started),
+          ...context,
+          repeated: failure.suppressed,
+        });
       } else {
         services.diagnostics.record({
           kind: 'ipc-operation',
           channel,
+          ...context,
           phase: 'failed',
           elapsedMs: Math.round(performance.now() - started),
           error: summary,
@@ -164,7 +258,9 @@ function handle<K extends keyof InvokeMap>(
             : noticeAreaForCode(code);
         services.notices.report(code, detail, 'error', area);
       }
-      throw error;
+      throw new Error(
+        summary.message ?? `Operation ${channel} failed (${summary.code ?? summary.type})`,
+      );
     }
   });
 }
@@ -183,7 +279,24 @@ function isInputRect(value: unknown): value is InputRect {
 }
 
 export function registerIPC(services: IPCServices) {
-  const apps = createAppService();
+  ipcMain.on('renderer-diagnostic', (event, payload: unknown) => {
+    if (!isAllowedIpcSender(event.sender)) return;
+    const parsed = RendererDiagnosticSchema.safeParse(payload);
+    if (
+      !parsed.success ||
+      (parsed.data.kind === 'renderer-context' && getWindowRole(event.sender) !== 'island') ||
+      (parsed.data.kind === 'settings-context' && getWindowRole(event.sender) !== 'settings')
+    )
+      return;
+    services.diagnostics.receiveRenderer(parsed.data, getWindowRole(event.sender)!);
+  });
+  const apps = createAppService((error, index, kind) =>
+    services.diagnostics.recordError(
+      'application',
+      new DiagnosticError(`Launch target #${index + 1} (${kind}) failed`, [], { cause: error }),
+    ),
+  );
+
   let previewActive = false;
   let previewOwner: WebContents | null = null;
   const publishPreview = (active: boolean) => {
@@ -210,7 +323,7 @@ export function registerIPC(services: IPCServices) {
       typeof initialColor !== 'string' ||
       !RGB_HEX.test(initialColor)
     )
-      throw new TypeError('Invalid settings color request');
+      throw new DiagnosticError('Invalid settings color request');
     const owner = BrowserWindow.fromWebContents(event.sender);
     if (!owner || owner.isDestroyed()) return null;
     return showNativeColorPicker(owner, initialColor);
@@ -218,7 +331,7 @@ export function registerIPC(services: IPCServices) {
   handle(services, 'get-island-preview', () => previewActive);
   handle(services, 'set-island-preview', (event, active) => {
     if (getWindowRole(event.sender) !== 'settings' || typeof active !== 'boolean')
-      throw new TypeError('Invalid settings preview request');
+      throw new DiagnosticError('Invalid settings preview request');
     if (previewOwner !== event.sender) {
       previewOwner = event.sender;
       event.sender.once('destroyed', () => {
@@ -235,8 +348,14 @@ export function registerIPC(services: IPCServices) {
     clipboard.writeText(getText(text, 'Clipboard text', 1_000_000)),
   );
   handle(services, 'update-app-state', async (_event, patch) => {
-    if (!isAppStatePatch(patch)) throw new TypeError('Invalid app state update');
-    if (patch.settings?.ai) throw new TypeError('AI configuration requires its validated editor');
+    const parsed = AppStatePatchSchema.safeParse(patch);
+    if (!parsed.success)
+      throw new DiagnosticError(
+        'Invalid app state update',
+        validationProblems(parsed.error.issues),
+      );
+    if (patch.settings?.ai)
+      throw new DiagnosticError('AI configuration requires its validated editor');
     if (patch.settings?.autoLaunch !== undefined) await setAutoLaunch(patch.settings.autoLaunch);
     if (patch.settings?.displayId !== undefined) moveMainWindowToDisplay(patch.settings.displayId);
     const state = await services.stateStore.update(patch);
@@ -251,12 +370,12 @@ export function registerIPC(services: IPCServices) {
   );
   handle(services, 'save-weather-api-key', async (event, key) => {
     if (getWindowRole(event.sender) !== 'settings')
-      throw new TypeError('Credentials require Settings');
+      throw new DiagnosticError('Credentials require Settings');
     const value = getText(key, 'Weather API key', 8192).trim();
     try {
       await services.secretStore.setSecret('weather-api-key', value);
     } catch {
-      throw new Error('OS-backed secure storage is unavailable');
+      throw new DiagnosticError('OS-backed secure storage is unavailable');
     }
     const previous = await services.stateStore.load();
     const state = await services.stateStore.update({
@@ -271,15 +390,15 @@ export function registerIPC(services: IPCServices) {
   );
   handle(services, 'mutate-ai-configuration', async (event, mutation) => {
     if (getWindowRole(event.sender) !== 'settings')
-      throw new TypeError('AI configuration requires Settings');
+      throw new DiagnosticError('AI configuration requires Settings');
     const result = await services.aiConfiguration.mutate(AIMutationSchema.parse(mutation));
     broadcastToRegisteredWindows('app-state-changed', result.state);
     return result.state;
   });
   handle(services, 'save-ai-credential', async (event, id, key) => {
     if (getWindowRole(event.sender) !== 'settings')
-      throw new TypeError('Credentials require Settings');
-    if (!Number.isInteger(id) || id < 1) throw new TypeError('Invalid credential ID');
+      throw new DiagnosticError('Credentials require Settings');
+    if (!Number.isInteger(id) || id < 1) throw new DiagnosticError('Invalid credential ID');
     const result = await services.aiConfiguration.saveCredential(id, getText(key, 'API key', 8192));
     broadcastToRegisteredWindows('app-state-changed', result.state);
     return result.credentialStatus;
@@ -312,12 +431,12 @@ export function registerIPC(services: IPCServices) {
   });
   handle(services, 'get-system-locale', (_event) => app.getLocale());
   handle(services, 'set-ui-locale', (_event, locale) => {
-    if (!isLocale(locale)) throw new TypeError('Invalid locale');
+    if (!isLocale(locale)) throw new DiagnosticError('Invalid locale');
     setTrayLocale(locale);
   });
   handle(services, 'set-ignore-mouse-events', (_event, ignore, forward) => {
     if (typeof ignore !== 'boolean' || typeof forward !== 'boolean') {
-      throw new TypeError('Invalid mouse passthrough options');
+      throw new DiagnosticError('Invalid mouse passthrough options');
     }
     const window = getMainWindow();
     if (process.platform === 'darwin' && window) window.setIgnoreMouseEvents(ignore, { forward });
@@ -351,7 +470,7 @@ export function registerIPC(services: IPCServices) {
   handle(services, 'get-microphone-status', (_event) => devices.getMicrophoneStatus());
   handle(services, 'control-system-media', (_event, command, sessionId) => {
     if (!['previous', 'playpause', 'next'].includes(command)) {
-      throw new TypeError('Invalid media command');
+      throw new DiagnosticError('Invalid media command');
     }
     return media.control(command, getText(sessionId, 'Media session', 512));
   });

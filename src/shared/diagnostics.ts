@@ -20,58 +20,9 @@ export const RendererDiagnosticContextSchema = z
     inputRegion: DimensionsSchema,
   })
   .strict();
-export const RENDERER_CONTEXT_PREFIX = 'RIPPLE_NEXT_CONTEXT ';
-
-export interface SerializedDiagnosticError {
-  type: string;
-  frames: string[];
-  code?: string | number;
-  errno?: number;
-  syscall?: string;
-  signal?: string;
-  killed?: boolean;
-  cause?: SerializedDiagnosticError;
-}
-
-export function serializeDiagnosticError(error: unknown, depth = 0): SerializedDiagnosticError {
-  const summary: SerializedDiagnosticError = { type: typeof error, frames: [] };
-  if (error && typeof error === 'object') {
-    // Error objects can have throwing getters. Diagnostics must not throw while handling them.
-    try {
-      const data = error as Error & {
-        code?: unknown;
-        errno?: unknown;
-        syscall?: unknown;
-        signal?: unknown;
-        killed?: unknown;
-      };
-      const name = error instanceof Error ? error.constructor.name : 'object';
-      summary.type = /^[A-Za-z_$][\w$]{0,63}$/.test(name) ? name : 'Error';
-      if (error instanceof Error && typeof data.stack === 'string') {
-        summary.frames = data.stack
-          .split(/\r?\n/)
-          .slice(1)
-          .filter((frame) => /^\s+at .*(?::\d+:\d+\)?|native\)?)$/.test(frame))
-          .slice(0, 24)
-          .map((frame) => frame.slice(0, 512));
-      }
-      if (typeof data.code === 'number' && Number.isFinite(data.code)) summary.code = data.code;
-      else if (typeof data.code === 'string' && /^[A-Z][A-Z0-9_]{0,63}$/.test(data.code))
-        summary.code = data.code;
-      if (typeof data.errno === 'number' && Number.isFinite(data.errno)) summary.errno = data.errno;
-      if (typeof data.syscall === 'string' && /^[a-zA-Z]{1,32}$/.test(data.syscall))
-        summary.syscall = data.syscall;
-      if (typeof data.signal === 'string' && /^SIG[A-Z]{1,16}$/.test(data.signal))
-        summary.signal = data.signal;
-      if (typeof data.killed === 'boolean') summary.killed = data.killed;
-      if (data.cause && depth < 3 && data.cause !== error)
-        summary.cause = serializeDiagnosticError(data.cause, depth + 1);
-    } catch {
-      // Keep the fields already obtained.
-    }
-  }
-  return summary;
-}
+export { serializeDiagnosticError } from './diagnosticError';
+import { DiagnosticErrorSchema, type SerializedDiagnosticError } from './diagnosticError';
+export type { SerializedDiagnosticError } from './diagnosticError';
 
 export type RendererDiagnosticContext = {
   tabId: string;
@@ -82,6 +33,18 @@ export type RendererDiagnosticContext = {
   viewport: { width: number; height: number };
   inputRegion: { width: number; height: number };
 };
+
+const SettingsDiagnosticContextSchema = z
+  .object({
+    category: z.string().regex(/^[a-zA-Z][\w-]{0,32}$/),
+    page: z
+      .string()
+      .regex(/^[a-zA-Z][\w-]{0,32}$/)
+      .nullable(),
+  })
+  .strict();
+export type SettingsDiagnosticContext = z.infer<typeof SettingsDiagnosticContextSchema>;
+export type RendererViewContext = RendererDiagnosticContext | SettingsDiagnosticContext;
 
 export type DiagnosticErrorSource =
   | 'application'
@@ -112,7 +75,11 @@ export type DiagnosticEvent =
   | {
       kind: 'ipc-operation';
       channel: keyof InvokeMap;
-      phase: 'completed' | 'failed' | 'recovered';
+      phase: 'started' | 'completed' | 'failed' | 'failed-repeat' | 'recovered';
+      operationId?: number;
+      sender?: 'island' | 'settings';
+      fields?: string[];
+      outcome?: string;
       elapsedMs: number;
       error?: SerializedDiagnosticError;
       repeated?: number;
@@ -166,18 +133,21 @@ export type DiagnosticEvent =
         | 'closed'
         | 'did-fail-load'
         | 'renderer-ready';
+      role?: 'island' | 'settings';
       windowId: number;
       webContentsId: number;
       errorCode?: number;
+      errorName?: string;
       isMainFrame?: boolean;
     }
   | {
       kind: 'renderer-exit';
       reason: string;
       exitCode: number;
+      role?: 'island' | 'settings';
       windowId: number;
       webContentsId: number;
-      context?: RendererDiagnosticContext;
+      context?: RendererViewContext;
     }
   | {
       kind: 'child-process-exit';
@@ -188,7 +158,7 @@ export type DiagnosticEvent =
   | {
       kind: 'main-exception';
       origin: 'uncaughtException' | 'unhandledRejection';
-      error: { type: string; frames: string[] };
+      error: SerializedDiagnosticError;
     }
   | {
       kind: 'linux-input-shape';
@@ -200,3 +170,22 @@ export type DiagnosticEvent =
       kind: 'renderer-context';
       context: RendererDiagnosticContext;
     };
+
+export const RendererDiagnosticSchema = z.discriminatedUnion('kind', [
+  z
+    .object({ kind: z.literal('settings-context'), context: SettingsDiagnosticContextSchema })
+    .strict(),
+  z
+    .object({ kind: z.literal('renderer-context'), context: RendererDiagnosticContextSchema })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('renderer-error'),
+      source: z.enum(['renderer', 'assistant', 'media', 'device', 'clipboard', 'overview']),
+      error: DiagnosticErrorSchema,
+      repeated: z.number().int().nonnegative().optional(),
+      componentFrames: z.array(z.string().max(512)).max(12).optional(),
+    })
+    .strict(),
+]);
+export type RendererDiagnostic = z.infer<typeof RendererDiagnosticSchema>;

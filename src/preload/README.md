@@ -22,3 +22,5 @@ The bridge also exposes `readClipboardText()` and `writeClipboardText(text)` so 
 
 `setIslandPreview(active)` is restricted to the Settings role. `getIslandPreview()` and `onIslandPreviewChanged()` synchronize transient preview visibility with Island; subscriptions return cleanup functions. Preview is not persisted.
 `updateAppState` is the single preference commit, including display and autostart effects. The separate set-display/set-auto-launch channels are removed. `getWeather` accepts the shared WeatherPreferences object; no tuple, joined query or automatic-location sentinel crosses the bridge.
+
+reportDiagnostic sends only validated view context and safe error metadata over renderer-diagnostic. Main verifies window identity and context role. No generic logger, console proxy or logging preload is exposed.

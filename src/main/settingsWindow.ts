@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../shared/diagnosticError';
 import path from 'node:path';
 import { app, BrowserWindow, nativeTheme } from 'electron';
 import { getIconPath } from './assets';
@@ -82,7 +83,7 @@ export function clearSettingsWindow(): void {
 
 /** One settings window: create on demand, focus if it already exists, destroy on close. */
 export function openSettingsWindow(): BrowserWindow {
-  if (!configured) throw new Error('Settings window is not configured');
+  if (!configured) throw new DiagnosticError('Settings window is not configured');
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     presentSettingsWindow(settingsWindow);
     return settingsWindow;
@@ -117,10 +118,11 @@ export function openSettingsWindow(): BrowserWindow {
     },
   });
   wireSettingsWindow(window);
-  attachWindowDiagnostics(window, diagnostics);
+  attachWindowDiagnostics(window, diagnostics, 'settings');
   diagnostics.record({
     kind: 'window-lifecycle',
     event: 'created',
+    role: 'settings',
     windowId: window.id,
     webContentsId: window.webContents.id,
   });

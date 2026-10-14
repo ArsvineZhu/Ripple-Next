@@ -49,11 +49,7 @@ AI SDK 的 `streamText` 为 Chat Completions 使用现有 OpenAI 兼容适配器
 
 ## 本地诊断
 
-平台适配检查结果、诊断字段和平台验收边界见 [Windows 适配与诊断](platform-compatibility.zh-CN.md)。CI 在 Ubuntu、Windows 和 macOS 上执行检查与测试；更换系统时，从锁文件重新安装依赖。
-
-Ripple Next 将 `ripple-next.log` 写入 `<userData>/diagnostics/`，Electron minidump 保存在其中的 `crashes/` 子目录。可在设置页的“诊断”区域选择“打开诊断文件夹”。日志传输大小上限为 5 MiB；每次启动时会清理超过 30 天的崩溃报告，并只保留最新的 10 份。
-
-崩溃报告不会上传。IPC 诊断记录操作耗时和安全错误。Renderer 崩溃上下文只保留回答字符数，不记录提示词或回答正文。错误记录包含错误类型和堆栈帧，不包含自由格式的错误消息。minidump 是二进制进程快照，应作为敏感的本机诊断数据处理。
+[诊断说明](diagnostics.zh-CN.md)统一说明日志格式、级别、操作关联、源码映射及 trace 启动方式。默认输出可读文本，通过 `RIPPLE_LOG_LEVEL` 或 `--ripple-log-level` 选择本次详细程度。轮转日志保存在 `<userData>/diagnostics/`，本地转储继续保留最新 10 份及 30 天上限。
 
 Linux 使用透明 XWayland 窗口，并限制在所选显示器的工作区内，以保留桌面面板。仅让 X11 `ShapeInput` 跟随动画中的 Island；修改 `ShapeBounding` 可能出现黑边。X11 客户端保持静态导入并打入安装包。Island 始终通过同一 X11 客户端请求 `_NET_WM_STATE_SKIP_TASKBAR`。设置窗口是独立的普通 BrowserWindow。Island 需等 renderer ready 且首次输入区域得到确认后才显示。边界说明见[主进程](../src/main/README.zh-CN.md)、[preload](../src/preload/README.zh-CN.md)和[renderer](../src/renderer/README.zh-CN.md)。
 

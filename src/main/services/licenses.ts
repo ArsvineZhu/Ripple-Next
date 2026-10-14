@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../shared/diagnosticError';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { app } from 'electron';
@@ -18,7 +19,7 @@ export async function listLicenses() {
 }
 export async function readLicense(id: string) {
   const result = (await records()).find((item) => item.id === id);
-  if (!result) throw new TypeError('Unknown license record');
+  if (!result) throw new DiagnosticError('Unknown license record');
   if (result.id === 'Chromium') {
     const location = app.isPackaged
       ? path.join(process.resourcesPath, 'LICENSES.chromium.html')

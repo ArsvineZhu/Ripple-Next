@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../shared/diagnosticError';
 export interface SafeStorageAdapter {
   isAsyncEncryptionAvailable(): Promise<boolean>;
   getSelectedStorageBackend?(): string;
@@ -15,13 +16,13 @@ export interface SecretDatabase {
 export function createSecretStore(database: SecretDatabase, safeStorage: SafeStorageAdapter) {
   const ensureSecureStorage = async () => {
     if (!(await safeStorage.isAsyncEncryptionAvailable())) {
-      throw new Error('OS-backed secure storage is unavailable');
+      throw new DiagnosticError('OS-backed secure storage is unavailable');
     }
     if (
       process.platform === 'linux' &&
       safeStorage.getSelectedStorageBackend?.() === 'basic_text'
     ) {
-      throw new Error('OS-backed secure storage is unavailable');
+      throw new DiagnosticError('OS-backed secure storage is unavailable');
     }
   };
 

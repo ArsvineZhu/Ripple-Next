@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../../shared/diagnosticError';
 import { runCommand } from '../../services/processes';
 
 let captureSnapshot: Promise<string> | undefined;
@@ -27,7 +28,7 @@ export async function getBluetoothStatus(): Promise<boolean> {
     await runCommand('system_profiler', ['SPBluetoothDataType', '-json'], { timeout: 30_000 }),
   );
   const bluetooth = data.SPBluetoothDataType?.[0];
-  if (!bluetooth) throw new TypeError('Invalid macOS Bluetooth response');
+  if (!bluetooth) throw new DiagnosticError('Invalid macOS Bluetooth response');
   return Boolean(bluetooth.device_connected?.length);
 }
 

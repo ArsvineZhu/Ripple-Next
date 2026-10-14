@@ -71,13 +71,7 @@ Launch, media, settings and clipboard-copy errors appear beside their owning fea
 
 ## Local diagnostics
 
-Open **Settings → Diagnostics → Open diagnostics folder**. Files live under `<userData>/diagnostics/`; on Windows this is normally `%APPDATA%\Ripple Next\diagnostics`.
-
-Main and renderer share a session ID. Records include runtime versions, display scales, native backend and secure-storage availability, window/process lifecycle, suspend/resume, display changes, GPU status, and IPC channel/outcome/duration. Healthy polling logs its first result. Repeated identical failures are counted and limited to one record per minute, followed by recovery.
-
-Errors retain stack frames, codes, signals and bounded causes; Windows native errors can include HRESULT. Renderer crash context retains the answer character count; AI lifecycle counters are not logged. Commands/output, IPC arguments/results, app targets, endpoint URLs, keys, clipboard text, prompts and answers are excluded. The main log rotates at 5 MiB.
-
-Crash uploads are disabled. Startup removes dumps older than 30 days and retains the 10 newest `.dmp` files across Crashpad subdirectories while preserving metadata. Minidumps contain process snapshots: inspect them before sharing. For an issue, include Ripple version, OS/desktop, the failing operation, reproduction steps and relevant sanitized records.
+[Diagnostics](diagnostics.md) describes readable logs, error reasons and codes, operation numbers, per-window context, source frames and trace mode. Diagnostics remain local, bounded and exclude sensitive payloads. Include the operation/session block when reporting a native integration failure.
 
 ## Verification
 

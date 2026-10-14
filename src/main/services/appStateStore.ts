@@ -1,7 +1,8 @@
+import { DiagnosticError, validationProblems } from '../../shared/diagnosticError';
 import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
-import { defaultAppState, isAppStatePatch, parseAppState } from '../../shared/appState';
+import { defaultAppState, AppStateSchema, AppStatePatchSchema } from '../../shared/appState';
 import type { AppState, AppStatePatch } from '../../shared/appState';
 import schema from '../database/schema.sql?raw';
 
@@ -95,8 +96,13 @@ export function createAppStateStore(userDataPath: string) {
       name: row.name,
       target: JSON.parse(row.target_json) as unknown,
     }));
-    current = parseAppState({ settings, tasks, workflows, quickApps });
-    if (!current) throw new TypeError('Ripple Next database state does not match its schema');
+    const parsed = AppStateSchema.safeParse({ settings, tasks, workflows, quickApps });
+    if (!parsed.success)
+      throw new DiagnosticError(
+        'Ripple Next database state does not match its schema',
+        validationProblems(parsed.error.issues),
+      );
+    current = parsed.data;
     return current;
   };
 
@@ -106,14 +112,24 @@ export function createAppStateStore(userDataPath: string) {
       patch: AppStatePatch,
       removedSecrets: readonly string[] = [],
     ): Promise<AppState> => {
-      if (!isAppStatePatch(patch)) throw new TypeError('Invalid Ripple Next app state update');
+      const parsedPatch = AppStatePatchSchema.safeParse(patch);
+      if (!parsedPatch.success)
+        throw new DiagnosticError(
+          'Invalid Ripple Next app state update',
+          validationProblems(parsedPatch.error.issues),
+        );
       const previous = snapshot();
-      const next = parseAppState({
+      const result = AppStateSchema.safeParse({
         ...previous,
         ...patch,
         settings: { ...previous.settings, ...patch.settings },
       });
-      if (!next) throw new TypeError('Invalid Ripple Next app state');
+      if (!result.success)
+        throw new DiagnosticError(
+          'Invalid Ripple Next app state',
+          validationProblems(result.error.issues),
+        );
+      const next = result.data;
       persist.immediate(patch, removedSecrets);
       current = next;
       return structuredClone(next);

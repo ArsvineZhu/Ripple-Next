@@ -74,7 +74,7 @@ const AppSettingsSchema = z
   .strict();
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
 
-const AppStateSchema = z
+export const AppStateSchema = z
   .object({
     settings: AppSettingsSchema,
     tasks: z.array(z.string()),
@@ -84,7 +84,7 @@ const AppStateSchema = z
   .strict();
 export type AppState = z.infer<typeof AppStateSchema>;
 
-const AppStatePatchSchema = z
+export const AppStatePatchSchema = z
   .object({
     settings: AppSettingsSchema.partial().optional(),
     tasks: z.array(z.string()).optional(),
@@ -135,11 +135,6 @@ export const defaultAppState: AppState = {
 
 export function isAppState(value: unknown): value is AppState {
   return AppStateSchema.safeParse(value).success;
-}
-
-export function parseAppState(value: unknown): AppState | null {
-  const result = AppStateSchema.safeParse(value);
-  return result.success ? result.data : null;
 }
 
 export function isAppStatePatch(value: unknown): value is AppStatePatch {

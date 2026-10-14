@@ -1,4 +1,6 @@
 import { execFile, spawn } from 'node:child_process';
+import path from 'node:path';
+import { DiagnosticError } from '../../shared/diagnosticError';
 
 export function runCommand(
   executable: string,
@@ -14,8 +16,13 @@ export function runCommand(
         if (error)
           reject(
             Object.assign(
-              new Error(
-                'System command failed (' + (error.code ?? error.signal ?? 'unknown') + ')',
+              new DiagnosticError(
+                'System command failed: ' +
+                  path.basename(executable) +
+                  ' (' +
+                  (error.code ?? error.signal ?? 'unknown') +
+                  ')',
+                [],
                 { cause: error },
               ),
               { code: error.code, signal: error.signal, killed: error.killed, stderr },

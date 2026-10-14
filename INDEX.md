@@ -4,6 +4,7 @@
 
 [Feature and capability map](docs/architecture.md) tracks user flows, internal owners and the active repository-wide refactor.
 
+- [Diagnostics](docs/diagnostics.md): log levels, operation correlation and source maps.
 - [Documentation catalog](docs/INDEX.md): development, release and usage guidance.
 - [Main process](src/main/README.md): lifecycle, tray, window, IPC and platform services.
 - [Preload](src/preload/README.md): isolated renderer bridge.

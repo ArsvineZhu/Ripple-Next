@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../shared/diagnosticError';
 import { windowsApplications } from './windows/apps';
 import { macosApplications } from './macos/apps';
 import { linuxApplications } from './linux/apps';
@@ -15,7 +16,7 @@ export function createPlatformApplications(discoveryCacheMs: number) {
     discover: adapter.discover,
     launch(application: Application) {
       if (application.native && application.native.platform !== process.platform)
-        throw new TypeError('Application belongs to another platform');
+        throw new DiagnosticError('Application belongs to another platform');
       return adapter.launch(application);
     },
   };

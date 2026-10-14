@@ -23,3 +23,5 @@ See the [developer guide](../../docs/development.md) and [repository map](../../
 `ScrollGestureStartSchema` validates the native touchpad boundary's timestamp-only payload. Main produces it, preload validates it, and renderer uses it to separate fresh gestures from older momentum.
 
 `fonts.ts` validates uiFont choices. i18n owns original playful Chinese overlays; localeForFormatting normalizes internal/private language variants before Intl. Font and glass defaults apply to new settings without overwriting saved choices.
+
+diagnosticError.ts owns application-authored DiagnosticError reasons, field constraints and safe system/HTTP classifications. diagnosticFormat.ts owns readable record formatting and severity policy. RendererDiagnosticSchema bounds the explicit preload reports; free-form payloads are excluded. See [diagnostics](../../docs/diagnostics.md).

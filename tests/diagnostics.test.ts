@@ -21,10 +21,12 @@ const mock = vi.hoisted(() => {
     },
     logger: {
       initialize: vi.fn(),
+      debug: vi.fn(),
+      silly: vi.fn(),
       info: vi.fn(),
       warn: vi.fn(),
       error: vi.fn(),
-      transports: { file: fileTransport },
+      transports: { file: fileTransport, console: { level: 'info', format: '{text}' } },
       hooks: [] as Array<(message: unknown) => unknown>,
     },
   };
@@ -43,6 +45,10 @@ import {
   pruneCrashReports,
   serializeDiagnosticError,
 } from '../src/main/services/diagnostics';
+import { DiagnosticError, validationProblems } from '../src/shared/diagnosticError';
+import { AppStatePatchSchema } from '../src/shared/appState';
+import { createDiagnosticSourceMapper } from '../src/main/services/diagnosticSourceMaps';
+import { withDiagnosticOperation } from '../src/main/services/diagnosticScope';
 import type { RendererDiagnosticContext } from '../src/shared/diagnostics';
 
 const temporaryDirectories: string[] = [];
@@ -65,6 +71,7 @@ afterEach(async () => {
     temporaryDirectories.splice(0).map((directory) => rm(directory, { recursive: true })),
   );
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 describe('local diagnostics', () => {
@@ -194,7 +201,7 @@ describe('local diagnostics', () => {
     expect(stderr).toHaveBeenCalled();
   });
 
-  it('caches only valid context events from the renderer logger', async () => {
+  it('keeps only valid renderer context through the explicit typed receiver', async () => {
     const diagnostics = await initializeDiagnostics(await makeTemporaryDirectory());
     const context: RendererDiagnosticContext = {
       tabId: 'assistant',
@@ -205,21 +212,124 @@ describe('local diagnostics', () => {
       viewport: { width: 1920, height: 1080 },
       inputRegion: { width: 500, height: 160 },
     };
-    const contextHook = mock.logger.hooks[0] as (message: unknown) => unknown;
-    const sendContext = (value: unknown, processType = 'renderer') =>
-      contextHook({
-        data: [`RIPPLE_NEXT_CONTEXT ${JSON.stringify({ context: value })}`],
-        variables: { processType },
-      });
+    diagnostics.receiveRenderer({ kind: 'renderer-context', context }, 'island');
+    expect(diagnostics.getRendererContext('island')).toEqual(context);
 
-    sendContext(context);
-    expect(diagnostics.getRendererContext()).toEqual(context);
+    diagnostics.setRendererContext({
+      ...context,
+      tabId: 99,
+    } as unknown as RendererDiagnosticContext);
+    diagnostics.setRendererContext({ ...context, viewport: { width: Number.NaN, height: 1080 } });
+    diagnostics.setRendererContext({ ...context, extra: 'private' } as RendererDiagnosticContext);
 
-    sendContext({ ...context, tabId: 99 });
-    sendContext({ ...context, viewport: { width: Number.NaN, height: 1080 } });
-    sendContext({ ...context, extra: 'private' });
-    sendContext({ ...context, tabId: 'tasks' }, 'main');
-
-    expect(diagnostics.getRendererContext()).toEqual(context);
+    expect(diagnostics.getRendererContext('island')).toEqual(context);
   });
+});
+
+it('renders invalid preferences as a readable field diagnosis with the correct Settings context and no payload', async () => {
+  const diagnostics = await initializeDiagnostics(await makeTemporaryDirectory());
+  diagnostics.receiveRenderer(
+    { kind: 'settings-context', context: { category: 'appearance', page: null } },
+    'settings',
+  );
+  const result = AppStatePatchSchema.safeParse({
+    settings: { theme: 'none', textColor: 'PRIVATE_INPUT' },
+  });
+  if (result.success) throw Error('Fixture must be rejected');
+  diagnostics.record({
+    kind: 'ipc-operation',
+    operationId: 41,
+    sender: 'settings',
+    channel: 'update-app-state',
+    phase: 'failed',
+    elapsedMs: 0,
+    error: serializeDiagnosticError(
+      new DiagnosticError('Invalid app state update', validationProblems(result.error.issues)),
+    ),
+  });
+  const line = String(mock.logger.error.mock.calls.at(-1)![0]);
+  expect(line).toContain('[main/settings]');
+  expect(line).toContain('#41 update-app-state failed (0 ms)');
+  expect(line).toContain('settings.theme: expected default | sleek-black | win95');
+  expect(line).toContain('Settings category=appearance');
+  expect(line).not.toContain('PRIVATE_INPUT');
+  expect(line).not.toContain('"kind"');
+});
+it('keeps default logs quiet, enables complete traces explicitly, and carries asynchronous operation correlation into HTTP errors', async () => {
+  vi.stubEnv('RIPPLE_LOG_LEVEL', 'info');
+  const normal = await initializeDiagnostics(await makeTemporaryDirectory());
+  normal.record({
+    kind: 'window-lifecycle',
+    event: 'focus',
+    role: 'settings',
+    windowId: 2,
+    webContentsId: 2,
+  });
+  normal.record({
+    kind: 'ipc-operation',
+    channel: 'get-system-media',
+    phase: 'completed',
+    elapsedMs: 20,
+  });
+  normal.record({ kind: 'windows-input-region', state: 'capturing', width: 170, height: 40 });
+  expect(mock.logger.info).not.toHaveBeenCalled();
+  expect(mock.logger.debug).not.toHaveBeenCalled();
+  expect(mock.logger.silly).not.toHaveBeenCalled();
+  vi.stubEnv('RIPPLE_LOG_LEVEL', 'trace');
+  const trace = await initializeDiagnostics(await makeTemporaryDirectory());
+  trace.record({
+    kind: 'ipc-operation',
+    operationId: 71,
+    sender: 'island',
+    channel: 'start-assistant',
+    phase: 'started',
+    elapsedMs: 0,
+  });
+  await withDiagnosticOperation(
+    { id: 71, channel: 'start-assistant', sender: 'island', fields: [] },
+    async () => {
+      await Promise.resolve();
+      trace.recordError(
+        'assistant',
+        Object.assign(new Error('Authorization: PRIVATE_TOKEN; PRIVATE_PROMPT'), {
+          statusCode: 401,
+          responseBody: 'PRIVATE_RESPONSE',
+        }),
+      );
+    },
+  );
+  expect(String(mock.logger.silly.mock.calls.at(-1)![0])).toContain('#71 start-assistant started');
+  const error = String(mock.logger.error.mock.calls.at(-1)![0]);
+  expect(error).toContain('Operation #71: start-assistant');
+  expect(error).toContain('HTTP 401');
+  expect(error).not.toMatch(/PRIVATE_TOKEN|PRIVATE_PROMPT|PRIVATE_RESPONSE/);
+});
+
+it('maps bundled main and renderer frames to original sources and keeps map reads inside the build root', async () => {
+  const directory = await makeTemporaryDirectory();
+  const build = path.join(directory, 'build');
+  await mkdir(build);
+  const file = path.join(build, 'main.cjs');
+  await writeFile(
+    file + '.map',
+    JSON.stringify({
+      version: 3,
+      file: 'main.cjs',
+      sources: ['../../src/main/ipc.ts'],
+      sourcesContent: ['PRIVATE_SOURCE_CONTENT'],
+      names: [],
+      mappings: 'AAAA',
+    }),
+  );
+  const map = createDiagnosticSourceMapper(build);
+  expect(map(`    at commit (${file}:1:1)`)).toBe('    at commit (src/main/ipc.ts:1:1)');
+  const outside = path.join(directory, 'outside.cjs');
+  await writeFile(
+    outside + '.map',
+    JSON.stringify({ version: 3, sources: ['private.ts'], names: [], mappings: 'AAAA' }),
+  );
+  expect(map(`    at run (${outside}:1:1)`)).toBe(`    at run (${outside}:1:1)`);
+  expect(map(`    at missing (${path.join(build, 'missing.cjs')}:1:1)`)).toContain(
+    'missing.cjs:1:1',
+  );
 });

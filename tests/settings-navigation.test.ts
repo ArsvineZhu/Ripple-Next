@@ -52,6 +52,7 @@ beforeEach(async () => {
   snapshots = [];
   window.electronAPI = {
     setIslandPreview: vi.fn().mockResolvedValue(undefined),
+    reportDiagnostic: vi.fn(),
   } as unknown as ElectronAPI;
   Object.defineProperty(document, 'startViewTransition', {
     configurable: true,

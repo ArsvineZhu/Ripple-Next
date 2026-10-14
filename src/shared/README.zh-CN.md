@@ -23,3 +23,5 @@ Shared 定义可序列化的 IPC 与领域契约、用于持久化状态和快�
 `color.ts` 解析保存的 RGB／hex CSS 颜色，在应用原生 RGB 选色时保留透明度。`show-color-picker` 返回 hex 或 null，`colorPickerFailed` 的反馈属于设置窗口。
 
 `fonts.ts` 校验 uiFont；i18n 保存原创趣味中文覆盖表，localeForFormatting 在 Intl 前将内部／私有语言映射为标准语言。字体与玻璃默认值应用于新设置，保留已有用户选择。
+
+diagnosticError.ts 管理应用编写的 DiagnosticError 原因、字段约束及安全的系统／HTTP 分类；diagnosticFormat.ts 管理可读格式与级别策略；RendererDiagnosticSchema 限制正式 preload 上报，不包含自由正文。见[诊断说明](../../docs/diagnostics.zh-CN.md)。

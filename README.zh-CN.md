@@ -162,6 +162,8 @@ pnpm start
 
 Ripple Next 使用独立配置。把配置移到另一操作系统时，已安装应用的启动目标仍有平台限制。
 
+本地诊断使用可读错误、操作编号和源码位置；debug／trace 的开启方式见[诊断说明](docs/diagnostics.zh-CN.md)。
+
 ## 继续了解与参与
 
 - [使用指南](instructions.zh-CN.md)：模式、导航、页面与常见排查。

@@ -1,3 +1,4 @@
+import type { RendererDiagnostic } from './diagnostics';
 import type { MediaCommand, MediaSnapshot, MediaOperationResult } from './media';
 import type { Application, LaunchTarget, LaunchResult } from './launch';
 import type { Locale } from './i18n';
@@ -153,6 +154,7 @@ export interface InvokeMap {
   'quit-app': { args: []; result: void };
 }
 export interface ElectronAPI {
+  reportDiagnostic(event: RendererDiagnostic): void;
   listThirdPartyLicenses(): Promise<LicenseMetadata[]>;
   readThirdPartyLicense(id: string): Promise<LicenseRecord>;
   aiConfigurationStatus(): Promise<Record<number, boolean>>;

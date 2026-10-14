@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../../shared/diagnosticError';
 import type { Application } from '../../../shared/launch';
 import fs from 'node:fs/promises';
 import { shell } from 'electron';
@@ -32,12 +33,13 @@ ConvertTo-Json -InputObject @($results.ToArray()) -Compress
     { timeout: 30_000, maxBuffer: 5 * 1024 * 1024 },
   );
   const items: unknown = JSON.parse(output);
-  if (!Array.isArray(items)) throw new TypeError('Invalid Windows application discovery response');
+  if (!Array.isArray(items))
+    throw new DiagnosticError('Invalid Windows application discovery response');
   const seen = new Set<string>();
   return items
     .flatMap((item): Application[] => {
       if (!item || typeof item.name !== 'string' || typeof item.identifier !== 'string') {
-        throw new TypeError('Invalid Windows application entry');
+        throw new DiagnosticError('Invalid Windows application entry');
       }
       const key = item.identifier.toLowerCase();
       if (seen.has(key)) return [];

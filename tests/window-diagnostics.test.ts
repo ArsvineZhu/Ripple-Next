@@ -33,10 +33,11 @@ describe('window diagnostics', () => {
     const window = makeWindow();
     const record = vi.fn();
 
-    recordRendererReady(window, { record } as unknown as DiagnosticsService);
+    recordRendererReady(window, { record } as unknown as DiagnosticsService, 'island');
 
     expect(record).toHaveBeenCalledWith({
       kind: 'window-lifecycle',
+      role: 'island',
       event: 'renderer-ready',
       windowId: 31,
       webContentsId: 47,
@@ -48,7 +49,7 @@ describe('window diagnostics', () => {
     const record = vi.fn();
     const diagnostics = { record } as unknown as DiagnosticsService;
 
-    attachWindowDiagnostics(window, diagnostics);
+    attachWindowDiagnostics(window, diagnostics, 'island');
 
     for (const event of ['ready-to-show', 'show', 'hide', 'focus', 'blur', 'closed']) {
       window.emit(event);
@@ -77,6 +78,7 @@ describe('window diagnostics', () => {
     ]);
     expect(record).toHaveBeenCalledWith({
       kind: 'window-lifecycle',
+      role: 'island',
       event: 'did-fail-load',
       errorCode: -105,
       isMainFrame: true,
@@ -95,11 +97,12 @@ describe('window diagnostics', () => {
       getRendererContext: vi.fn(() => context),
     } as unknown as DiagnosticsService;
 
-    attachWindowDiagnostics(window, diagnostics);
+    attachWindowDiagnostics(window, diagnostics, 'island');
     window.webContents.emit('render-process-gone', {}, { reason: 'crashed', exitCode: 9 });
 
     expect(record).toHaveBeenCalledWith({
       kind: 'renderer-exit',
+      role: 'island',
       reason: 'crashed',
       exitCode: 9,
       windowId: 31,
@@ -116,7 +119,7 @@ describe('window diagnostics', () => {
       record,
       getRendererContext: vi.fn(() => undefined),
     } as unknown as DiagnosticsService;
-    attachWindowDiagnostics(window, diagnostics);
+    attachWindowDiagnostics(window, diagnostics, 'island');
     window.webContents.emit('render-process-gone', {}, { reason: 'sensitive-value', exitCode: -1 });
 
     expect(record).toHaveBeenCalledWith(

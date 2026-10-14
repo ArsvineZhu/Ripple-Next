@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../shared/diagnosticError';
 import type { AppState, AppStatePatch } from '../../shared/appState';
 import { noticeAreaForPatch } from '../../shared/contracts';
 import {
@@ -100,6 +101,6 @@ export function AppStateProvider({
 
 export function useAppState() {
   const context = useContext(AppStateContext);
-  if (!context) throw new Error('AppStateProvider is missing');
+  if (!context) throw new DiagnosticError('AppStateProvider is missing');
   return context;
 }

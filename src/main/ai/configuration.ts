@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../shared/diagnosticError';
 import {
   AIConfigurationSchema,
   AIMutationSchema,
@@ -45,9 +46,9 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
       !config.endpoints.some((item) => item.id === endpointId) ||
       !config.credentials.some((item) => item.id === credentialId && item.endpointId === endpointId)
     )
-      throw new TypeError('Select an endpoint and its credential first');
+      throw new DiagnosticError('Select an endpoint and its credential first');
     if (!(await secrets.hasSecret(aiSecretName(credentialId))))
-      throw new TypeError('Save the credential first');
+      throw new DiagnosticError('Save the credential first');
   };
   return {
     async activeModel() {
@@ -73,17 +74,17 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
         const removed: number[] = [];
         const endpoint = (id: number) => {
           const item = config.endpoints.find((value) => value.id === id);
-          if (!item) throw new TypeError('Endpoint is missing');
+          if (!item) throw new DiagnosticError('Endpoint is missing');
           return item;
         };
         const credential = (id: number) => {
           const item = config.credentials.find((value) => value.id === id);
-          if (!item) throw new TypeError('Credential is missing');
+          if (!item) throw new DiagnosticError('Credential is missing');
           return item;
         };
         const model = (id: number) => {
           const item = config.models.find((value) => value.id === id);
-          if (!item) throw new TypeError('Model is missing');
+          if (!item) throw new DiagnosticError('Model is missing');
           return item;
         };
         switch (command.kind) {
@@ -181,7 +182,7 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
             const item = model(command.id).customization.injections.find(
               (value) => value.id === command.injectionId,
             );
-            if (!item) throw new TypeError('Injection is missing');
+            if (!item) throw new DiagnosticError('Injection is missing');
             if (command.name !== undefined) item.name = command.name;
             if (command.text !== undefined) item.text = command.text;
             if (command.enabled !== undefined) item.enabled = command.enabled;
@@ -198,7 +199,7 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
             const list = model(command.id).customization.injections;
             const index = list.findIndex((item) => item.id === command.injectionId),
               next = index + command.direction;
-            if (index < 0) throw new TypeError('Injection is missing');
+            if (index < 0) throw new DiagnosticError('Injection is missing');
             if (next >= 0 && next < list.length)
               [list[index], list[next]] = [list[next], list[index]];
             break;
@@ -211,7 +212,7 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
             if (command.id !== null) {
               const selected = model(command.id);
               if (!selected.name.trim() || selected.credentialId === null)
-                throw new TypeError('Model is not configured');
+                throw new DiagnosticError('Model is not configured');
               await verifyBinding(config, selected.endpointId, selected.credentialId);
             }
             config.activeModelId = command.id;
@@ -232,11 +233,11 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
       return schedule(async () => {
         const previous = await stateStore.load();
         if (!previous.settings.ai.credentials.some((item) => item.id === id))
-          throw new TypeError('Credential is missing');
+          throw new DiagnosticError('Credential is missing');
         try {
           await secrets.setSecret(aiSecretName(id), value);
         } catch {
-          throw new Error('OS-backed secure storage is unavailable');
+          throw new DiagnosticError('OS-backed secure storage is unavailable');
         }
         const state = await stateStore.update({
           settings: { secretRevision: previous.settings.secretRevision + 1 },

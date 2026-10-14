@@ -86,3 +86,5 @@ SettingsTab 只挂载选中的分类或编辑页。常规页管理显示器发�
 LaunchButton 统一管理工作流与快捷应用的等待、防重复触发及逐项失败。MediaControl 统一展开音乐页与 QuickView 的能力检查、当前会话标识、播放图标和焦点／禁用状态。MarkdownContent 管理回答排版、代码容器和原生复制。WeatherIcon、MediaArtwork、ElasticScrollArea 与页面注册表继续管理各自已有契约。
 
 Select 将选项值类型贯穿当前值、选项与回调。主题菜单直接使用持久化的 default／sleek-black／win95，选择默认时以一个 patch 提交 default 和对应颜色。
+
+裸 TextEntry 聚焦时继续透明且无边框／轮廓，普通字段自行管理焦点样式。操作使用 PreferenceButton，不将其仅负责布局的样式类挂到原生 button 上。玻璃预览用不透明吸顶背景覆盖滚动区 padding，标题和控件保持在参数上方。设置与 Island 分别通过正式诊断桥上报页面及 React 组件栈。

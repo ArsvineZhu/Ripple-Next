@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../shared/diagnosticError';
 import type { PageSize } from '../../shared/pages';
 
 interface PageDefinition<Context> {
@@ -13,9 +14,9 @@ export function createPageRegistry<Context, Definition extends PageDefinition<Co
   fallbackId: string,
 ) {
   const byId = new Map(definitions.map((page) => [page.id, page]));
-  if (byId.size !== definitions.length) throw new TypeError('Duplicate page ID');
+  if (byId.size !== definitions.length) throw new DiagnosticError('Duplicate page ID');
   const fallback = byId.get(fallbackId);
-  if (!fallback) throw new TypeError('Missing fallback page');
+  if (!fallback) throw new DiagnosticError('Missing fallback page');
   const orderedIds = (order: readonly string[]) =>
     [...new Set([...order, ...byId.keys()])].filter((id) => byId.has(id));
   return {
@@ -26,7 +27,7 @@ export function createPageRegistry<Context, Definition extends PageDefinition<Co
       const page = byId.get(id) ?? fallback;
       const size = typeof page.layout === 'function' ? page.layout(context) : page.layout;
       if (![size.width, size.height].every((value) => Number.isFinite(value) && value > 0))
-        throw new TypeError('Invalid page size');
+        throw new DiagnosticError('Invalid page size');
       return size;
     },
     radius: (id: string) => (byId.get(id) ?? fallback).radius ?? 30,

@@ -162,6 +162,8 @@ pnpm start
 
 Ripple Next 使用獨立設定。將設定移至另一作業系統時，已安裝程式的啟動目標仍有平台限制。
 
+本機診斷使用可讀錯誤、操作編號及原始碼位置；debug／trace 開啟方式見[診斷說明](docs/diagnostics.zh-CN.md)。
+
 ## 繼續了解與參與
 
 - [使用指南（簡體中文）](instructions.zh-CN.md)：模式、導覽、七個 Island 頁面、設定與常見排查。

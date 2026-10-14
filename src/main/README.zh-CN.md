@@ -41,3 +41,5 @@ AI 配置、执行、协议流和提示词集中在 `ai/`。配置服务每次�
 设备检测通过 `platform/devices.ts` 选择原生实现，各系统适配器拥有查询与缓存。`services/colorPicker.ts` 只管理对话框生命周期与所属窗口状态；`platform/colorPicker.ts` 校验和统一 RGB 结果，具体系统命令归各自适配器。Windows 使用支持取消的统一 PowerShell 入口。数据库初始化失败时，退出前显示本地化原生错误与数据位置，不重置数据库。
 
 `shared/media.ts` 管理唯一的 MediaSession／MediaSnapshot 契约，包含 artworkUrl 和控制能力。`platform/media.ts` 选择原生后端，核心服务没有系统分支。选择已显示的会话会立即更新快照，不再查询；控制携带该会话身份，由适配器校验实际播放器，之后只读取一次元数据。不支持／不存在／过期目标直接返回，已删除无人消费的读取时间戳。
+
+诊断统一输出可读记录，包含级别、会话／操作编号、分窗口页面上下文及有界源码映射。IPC 使用 AsyncLocalStorage 让原生／AI 错误关联上层操作；受限渲染上报替代 electron-log 的 preload 注入与 JSON 前缀截获。见[诊断说明](../../docs/diagnostics.zh-CN.md)。

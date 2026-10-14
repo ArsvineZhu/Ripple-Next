@@ -38,7 +38,9 @@ it('opens the Windows chooser in STA, with the correct owner and no user-input s
   expect(script).toContain('([long]1234)');
   expect(script).toContain('ShowDialog($owner)');
   expect(options).toMatchObject({ timeout: 0, maxBuffer: 4096, signal });
-  await expect(chooseNativeColor("#000000';exit", '1234', signal)).rejects.toThrow(TypeError);
+  await expect(chooseNativeColor("#000000';exit", '1234', signal)).rejects.toThrow(
+    'Invalid native color request',
+  );
   expect(command).toHaveBeenCalledOnce();
 });
 it('normalizes macOS 16-bit RGB and treats native Cancel as no change', async () => {

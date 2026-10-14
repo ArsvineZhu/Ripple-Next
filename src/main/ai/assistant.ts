@@ -6,6 +6,7 @@ import { AIError } from './error';
 export function createAssistantService(
   configuration: Pick<ReturnType<typeof createAIConfigurationService>, 'activeModel'>,
   getAppVersion: () => string,
+  reportFailure: (error: unknown) => void,
 ) {
   const requests = new Map<string, AbortController>();
   const cancel = (id: string) => {
@@ -39,6 +40,7 @@ export function createAssistantService(
         return text ? { status: 'complete', text } : { status: 'error', code: 'noAiResponse' };
       } catch (error) {
         if (controller.signal.aborted) return { status: 'cancelled' };
+        reportFailure(error);
         const message = error instanceof Error ? error.message : String(error);
         const detail = (apiKey ? message.replaceAll(apiKey, '[redacted]') : message).slice(0, 320);
         return {

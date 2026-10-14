@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../src/shared/diagnosticError';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mock = vi.hoisted(() => ({
   sender: { id: 99, isDestroyed: () => false, send: vi.fn(), once: vi.fn() },
@@ -110,6 +111,7 @@ const services = {
   },
   diagnostics: {
     record: mock.recordDiagnostic,
+    receiveRenderer: vi.fn(),
     openFolder: mock.openDiagnosticsFolder,
     recordError: mock.recordApplicationError,
   },
@@ -164,7 +166,7 @@ describe('IPC boundary', () => {
     expect(mock.showColorPicker).toHaveBeenCalledWith(mock.colorOwner, '#123456');
     mock.showColorPicker.mockResolvedValue('#ABCDEF');
     await expect(choose({ sender: mock.settings }, '#123456')).resolves.toBe('#ABCDEF');
-    mock.showColorPicker.mockRejectedValue(new Error('Picker unavailable'));
+    mock.showColorPicker.mockRejectedValue(new DiagnosticError('Picker unavailable'));
     await expect(choose({ sender: mock.settings }, '#123456')).rejects.toThrow(
       'Picker unavailable',
     );
@@ -279,14 +281,17 @@ describe('IPC boundary', () => {
       })
       .mockReturnValue('recovered private text');
     const read = mock.handlers.get('read-clipboard-text')!;
-    await expect(read(event)).rejects.toBe(error);
-    await expect(read(event)).rejects.toBe(error);
+    await expect(read(event)).rejects.toThrow();
+    await expect(read(event)).rejects.toThrow();
     await expect(read(event)).resolves.toBe('recovered private text');
-    expect(mock.recordDiagnostic.mock.calls.map(([entry]) => entry.phase)).toEqual([
-      'failed',
-      'recovered',
-    ]);
-    expect(mock.recordDiagnostic.mock.calls[1][0].repeated).toBe(1);
+    expect(
+      mock.recordDiagnostic.mock.calls
+        .map(([entry]) => entry.phase)
+        .filter((phase) => !['started', 'failed-repeat'].includes(phase)),
+    ).toEqual(['failed', 'recovered']);
+    expect(
+      mock.recordDiagnostic.mock.calls.find(([entry]) => entry.phase === 'recovered')![0].repeated,
+    ).toBe(1);
     expect(JSON.stringify(mock.recordDiagnostic.mock.calls)).not.toContain('private');
   });
   it('records IPC failure channel and system code without recording arguments', async () => {
@@ -297,7 +302,7 @@ describe('IPC boundary', () => {
     mock.openDiagnosticsFolder.mockRejectedValueOnce(error);
     await expect(
       mock.handlers.get('open-diagnostics-folder')!({ sender: mock.island }),
-    ).rejects.toBe(error);
+    ).rejects.toThrow();
     expect(mock.recordDiagnostic).toHaveBeenCalledWith(
       expect.objectContaining({
         kind: 'ipc-operation',
@@ -308,19 +313,45 @@ describe('IPC boundary', () => {
     );
     expect(JSON.stringify(mock.recordDiagnostic.mock.calls)).not.toContain('private arguments');
   });
+  it('reports the rejected settings field and expected theme choices without serializing user values', async () => {
+    await expect(
+      mock.handlers.get('update-app-state')!(
+        { sender: mock.settings },
+        { settings: { theme: 'none', textColor: 'PRIVATE_THEME_INPUT' } },
+      ),
+    ).rejects.toThrow('Invalid app state update');
+    const event = mock.recordDiagnostic.mock.calls.find(([entry]) => entry.phase === 'failed')![0];
+    expect(event.sender).toBe('settings');
+    expect(event.operationId).toBeTypeOf('number');
+    expect(event.error.problems).toContainEqual({
+      path: 'settings.theme',
+      reason: 'expected default | sleek-black | win95',
+    });
+    expect(JSON.stringify(mock.recordDiagnostic.mock.calls)).not.toContain('PRIVATE_THEME_INPUT');
+  });
+  it('accepts typed renderer diagnostics only from their owning window role', () => {
+    const receive = mock.events.get('renderer-diagnostic')!;
+    const message = { kind: 'settings-context', context: { category: 'appearance', page: null } };
+    receive({ sender: mock.island }, message);
+    receive({ sender: mock.sender }, message);
+    receive({ sender: mock.settings }, { ...message, payload: 'PRIVATE_INPUT' });
+    expect(services.diagnostics.receiveRenderer).not.toHaveBeenCalled();
+    receive({ sender: mock.settings }, message);
+    expect(services.diagnostics.receiveRenderer).toHaveBeenCalledWith(message, 'settings');
+  });
   it('opens the settings window through the dedicated channel', async () => {
     const { openSettingsWindow } = await import('../src/main/settingsWindow');
     await mock.handlers.get('open-settings')!({ sender: mock.island });
     expect(openSettingsWindow).toHaveBeenCalledOnce();
   });
   it('reports diagnostics folder failures in Settings and preserves the IPC rejection', async () => {
-    const error = new Error('Could not open diagnostics directory');
+    const error = new DiagnosticError('Could not open diagnostics directory');
     mock.openDiagnosticsFolder.mockRejectedValueOnce(error);
     await expect(
       mock.handlers.get('open-diagnostics-folder')!({
         sender: mock.island,
       }),
-    ).rejects.toBe(error);
+    ).rejects.toThrow();
     expect(services.notices.report).toHaveBeenCalledWith(
       'diagnosticsFolderOpenFailed',
       'Could not open diagnostics directory',

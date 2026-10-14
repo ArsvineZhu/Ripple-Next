@@ -162,6 +162,8 @@ Searches and webpages open in the system browser. Weather uses the configured lo
 
 Ripple Next uses its own profile. Installed-app targets remain platform-specific when you move a profile to another OS.
 
+Local diagnostics now use readable errors with operation numbers and source locations. See [diagnostics](docs/diagnostics.md) for debug/trace commands.
+
 ## Explore, contribute, report
 
 - [User guide](instructions.md) — modes, navigation, seven Island pages, Settings and troubleshooting.

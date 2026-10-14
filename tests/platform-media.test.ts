@@ -19,7 +19,7 @@ const info = (state: string) =>
   JSON.stringify({ name: 'Song || "quoted"', artist: 'Artist', album: '', artwork: '', state });
 it('avoids Automation queries without supported players', async () => {
   command.mockResolvedValueOnce('/System/Applications/Notes.app/Contents/MacOS/Notes\n');
-  await expect(getMediaSessions()).resolves.toEqual({ sessions: [], failedIds: [] });
+  await expect(getMediaSessions()).resolves.toEqual({ sessions: [], failedIds: [], errors: [] });
   expect(command).toHaveBeenCalledTimes(1);
 });
 it('reads both running players and isolates a failed dictionary response', async () => {

@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../../shared/diagnosticError';
 import { runCommand } from '../../services/processes';
 
 export async function chooseColor(hex: string, handle: string, signal: AbortSignal) {
@@ -21,5 +22,5 @@ export async function chooseColor(hex: string, handle: string, signal: AbortSign
       if (code !== 'ENOENT') throw error;
     }
   }
-  throw new Error('Install zenity or kdialog to open the system color picker');
+  throw new DiagnosticError('Install zenity or kdialog to open the system color picker');
 }

@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../../shared/diagnosticError';
 import { runCommand } from '../../services/processes';
 
 export async function chooseColor(hex: string, _handle: string, signal: AbortSignal) {
@@ -21,7 +22,7 @@ end try`,
   if (!output.trim()) return null;
   const channels = output.trim().split(/,\s*/).map(Number);
   if (channels.length !== 3 || !channels.every((n) => Number.isInteger(n) && n >= 0 && n <= 65535))
-    throw new Error('Invalid macOS color response');
+    throw new DiagnosticError('Invalid macOS color response');
   return `#${channels
     .map((n) =>
       Math.round(n / 257)

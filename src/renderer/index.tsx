@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../shared/diagnosticError';
 import { OverlayProvider } from './components/OverlayProvider';
 import { initializeI18n } from './i18n';
 import { SettingsProvider } from './components/SettingsProvider';
@@ -14,7 +15,7 @@ import './styles/fonts.css';
 import startupStyles from './styles/StartupError.module.css';
 installRendererErrorHandlers(window);
 const container = document.getElementById('root');
-if (!container) throw new Error('Root element not found');
+if (!container) throw new DiagnosticError('Root element not found');
 const root = createRoot(container, rendererRootErrorHandlers);
 function StartupError({ detail }: { detail: string }) {
   const { t } = useTranslation();

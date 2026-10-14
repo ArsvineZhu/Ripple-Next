@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../../shared/diagnosticError';
 import dbus from 'dbus-native';
 import { z } from 'zod';
 import type { MediaCommand, MediaSession } from '../../../shared/media';
@@ -104,8 +105,14 @@ export async function getMediaSessions() {
           };
           if (typeof identity.CanRaise === 'boolean') raiseCapabilities.set(id, identity.CanRaise);
           return { session, id };
-        } catch {
-          return { session: null, id };
+        } catch (error) {
+          return {
+            session: null,
+            id,
+            error: new DiagnosticError('MPRIS player properties query failed', [], {
+              cause: error,
+            }),
+          };
         }
       }),
   );
@@ -123,6 +130,13 @@ export async function getMediaSessions() {
     sessions: results.flatMap((result) =>
       result.status === 'fulfilled' && result.value.session ? [result.value.session] : [],
     ),
+    errors: results.flatMap((result) =>
+      result.status === 'rejected'
+        ? [result.reason]
+        : result.value.error
+          ? [result.value.error]
+          : [],
+    ),
     failedIds: results.flatMap((result) =>
       result.status === 'fulfilled' && !result.value.session ? [result.value.id] : [],
     ),
@@ -133,7 +147,7 @@ export async function controlSystemMedia(
   session: MediaSession,
 ): Promise<void> {
   const destination = session.id.split('|')[0];
-  if (!/^:\d+\.\d+$/.test(destination)) throw new TypeError('Invalid MPRIS session');
+  if (!/^:\d+\.\d+$/.test(destination)) throw new DiagnosticError('Invalid MPRIS session');
   await connection().invoke({
     destination,
     path: playerPath,
@@ -147,7 +161,7 @@ export async function controlSystemMedia(
 }
 export async function openMediaSession(session: MediaSession): Promise<void> {
   const destination = session.id.split('|')[0];
-  if (!/^:\d+\.\d+$/.test(destination)) throw new TypeError('Invalid MPRIS session');
+  if (!/^:\d+\.\d+$/.test(destination)) throw new DiagnosticError('Invalid MPRIS session');
   if (raiseCapabilities.get(session.id) !== false) {
     try {
       await connection().invoke({

@@ -22,3 +22,5 @@ Preload 通过明确的 `contextBridge` 方法暴露隔离的 `electronAPI`，�
 
 `showColorPicker(initialColor)` 打开设置窗口所属的原生 RGB 选择器，返回六位 hex，取消时返回 null；发送方及参数由 main 校验。
 `updateAppState` 统一提交偏好，包含显示器及自启动效果；独立 set-display／set-auto-launch 通道已删除。`getWeather` 接收共享 WeatherPreferences，不再传输位置元组、拼接查询或自动定位哨兵字符串。
+
+reportDiagnostic 通过 renderer-diagnostic 仅发送校验后的页面上下文和安全错误元信息；main 核验窗口身份与上下文角色，不开放通用 logger、控制台代理或额外日志 preload。

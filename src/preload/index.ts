@@ -1,3 +1,4 @@
+import { RendererDiagnosticSchema } from '../shared/diagnostics';
 import type { AppNotice, AssistantEvent, ElectronAPI, InvokeMap } from '../shared/contracts';
 import type { AppState } from '../shared/appState';
 import { ScrollGestureStartSchema } from '../shared/contracts';
@@ -10,6 +11,10 @@ function invoke<K extends keyof InvokeMap>(
   return ipcRenderer.invoke(channel, ...args);
 }
 const api: ElectronAPI = {
+  reportDiagnostic: (event) => {
+    const parsed = RendererDiagnosticSchema.safeParse(event);
+    if (parsed.success) ipcRenderer.send('renderer-diagnostic', parsed.data);
+  },
   listThirdPartyLicenses: () => invoke('list-third-party-licenses'),
   readThirdPartyLicense: (id) => invoke('read-third-party-license', id),
   aiConfigurationStatus: () => invoke('ai-configuration-status'),
