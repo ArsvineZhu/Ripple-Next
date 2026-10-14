@@ -53,7 +53,11 @@ const renderers: Record<BuiltinPageId, Pick<IslandPageDefinition, 'icon' | 'rend
   playing: {
     icon: (color) => <Music size={16} color={color} />,
     render: ({ controller }) => (
-      <NowPlayingTab {...controller.media} textColor={controller.textColor} />
+      <NowPlayingTab
+        {...controller.media}
+        textColor={controller.textColor}
+        music={controller.music}
+      />
     ),
   },
   assistant: {

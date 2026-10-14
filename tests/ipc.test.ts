@@ -25,6 +25,7 @@ const mock = vi.hoisted(() => ({
   writeClipboard: vi.fn(),
   recordDiagnostic: vi.fn(),
   markRendererReady: vi.fn(),
+  mediaListener: null as ((snapshot: unknown) => void) | null,
   showMainWindow: vi.fn(),
   showColorPicker: vi.fn(),
   colorOwner: { isDestroyed: () => false },
@@ -65,12 +66,24 @@ vi.mock('../src/main/window', () => ({
 }));
 vi.mock('../src/main/services/media', () => ({
   createMediaService: () => ({
+    subscribe: (callback: (snapshot: unknown) => void) => {
+      mock.mediaListener = callback;
+      return () => {};
+    },
+    start: vi.fn(),
     getSnapshot: vi.fn(),
     selectSession: vi.fn(),
     openSession: vi.fn(),
     control: vi.fn(),
     close: vi.fn(),
   }),
+}));
+vi.mock('../src/main/platform/devices', () => ({
+  devices: {
+    getBluetoothStatus: vi.fn(async () => false),
+    getCameraStatus: vi.fn(async () => false),
+    getMicrophoneStatus: vi.fn(async () => false),
+  },
 }));
 vi.mock('../src/main/tray', () => ({ setTrayLocale: vi.fn() }));
 vi.mock('../src/main/settingsWindow', () => ({ openSettingsWindow: vi.fn() }));
@@ -119,6 +132,19 @@ const services = {
 };
 
 describe('IPC boundary', () => {
+  it('publishes the same media selection snapshot to Island and Settings', () => {
+    const snapshot = {
+      sessions: [],
+      manualSessionId: null,
+      activeSessionId: null,
+      status: 'idle',
+      error: null,
+    };
+    mock.mediaListener!(snapshot);
+    expect(mock.island.send).toHaveBeenCalledWith('media-snapshot-changed', snapshot);
+    expect(mock.settings.send).toHaveBeenCalledWith('media-snapshot-changed', snapshot);
+    expect(mock.sender.send).not.toHaveBeenCalledWith('media-snapshot-changed', snapshot);
+  });
   beforeEach(() => {
     mock.handlers.clear();
     mock.events.clear();

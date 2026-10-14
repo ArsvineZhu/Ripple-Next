@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
 import { useReducedMotionPreference } from '../../hooks/useReducedMotionPreference';
 import styles from './Preferences.module.css';
+import { Music } from 'lucide-react';
 import { ActionButton, TextEntry } from '../content';
 
 export function PreferenceGroup({ caption, children }: { caption?: string; children: ReactNode }) {
@@ -338,6 +339,7 @@ export function PreferenceNumberField({
 }
 
 const detailIcons: Partial<Record<SettingsDetail['page'], LucideIcon>> = {
+  music: Music,
   fonts: Type,
   weatherLocation: MapPin,
   weatherApiKey: CloudSun,

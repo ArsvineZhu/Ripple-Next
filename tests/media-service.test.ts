@@ -2,6 +2,54 @@ import { expect, it, vi } from 'vitest';
 import { createMediaService } from '../src/main/services/media';
 import type { MediaSession } from '../src/shared/media';
 import { mediaCommandSupported } from '../src/shared/media';
+it('owns one fallback sampler for multiple renderers and stops it on closure', async () => {
+  vi.useFakeTimers();
+  const x = setup([session('one', 'playing')]);
+  try {
+    x.media.start();
+    x.media.start();
+    await x.media.getSnapshot();
+    expect(x.backend.getMediaSessions).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(x.backend.getMediaSessions).toHaveBeenCalledTimes(2);
+    x.media.close();
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(x.backend.getMediaSessions).toHaveBeenCalledTimes(2);
+  } finally {
+    x.media.close();
+    vi.useRealTimers();
+  }
+});
+it('broadcasts native changes and manual selection to every consumer and removes its native subscription', async () => {
+  let notify!: () => void;
+  let items = [session('one', 'playing'), session('two', 'paused')];
+  const stop = vi.fn();
+  const media = createMediaService({
+    getMediaSessions: async () => ({ sessions: items, failedIds: [] }),
+    controlSystemMedia: async () => {},
+    openMediaSession: async () => {},
+    subscribe: (callback) => {
+      notify = callback;
+      return stop;
+    },
+  });
+  const island = vi.fn(),
+    settings = vi.fn();
+  media.subscribe(island);
+  media.subscribe(settings);
+  await media.getSnapshot();
+  media.selectSession('two');
+  expect(island).toHaveBeenLastCalledWith(expect.objectContaining({ manualSessionId: 'two' }));
+  expect(settings).toHaveBeenLastCalledWith(expect.objectContaining({ manualSessionId: 'two' }));
+  items = [{ ...items[1], name: 'new track' }];
+  notify();
+  await media.getSnapshot();
+  expect(island).toHaveBeenLastCalledWith(
+    expect.objectContaining({ sessions: [expect.objectContaining({ name: 'new track' })] }),
+  );
+  media.close();
+  expect(stop).toHaveBeenCalledOnce();
+});
 const session = (id: string, state: MediaSession['state']): MediaSession => ({
   id,
   playerName: id,

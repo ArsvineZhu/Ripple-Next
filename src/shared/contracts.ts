@@ -154,7 +154,10 @@ export interface InvokeMap {
   'quit-app': { args: []; result: void };
 }
 export interface ElectronAPI {
+  systemEventCapabilities: { media: boolean; devices: boolean };
   reportDiagnostic(event: RendererDiagnostic): void;
+  onMediaSnapshotChanged(callback: (snapshot: MediaSnapshot) => void): () => void;
+  onDevicesChanged(callback: () => void): () => void;
   listThirdPartyLicenses(): Promise<LicenseMetadata[]>;
   readThirdPartyLicense(id: string): Promise<LicenseRecord>;
   aiConfigurationStatus(): Promise<Record<number, boolean>>;

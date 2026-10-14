@@ -19,3 +19,5 @@
 产品入口：[简体中文](README.zh-CN.md)、[繁體中文](README.zh-TW.md)、[English](README.md)、[日本語](README.ja.md)。[发布说明](docs/releases/4.0.0.zh-CN.md)汇集 4.0.0 更新；[截图说明（英语）](docs/assets/screenshots/README.md)记录界面素材与更新方法。
 
 [未发布的 4.1.0-beta.1](docs/releases/4.1.0-beta.1.zh-CN.md) 汇总当前 PR；[字体](src/assets/fonts/alibaba-puhuiti/README.md)与[指南录像](src/assets/guide/README.md)说明内置资源。
+
+- [系统监听与执行](docs/native-observation.zh-CN.md): 媒体／设备事件、执行器生命周期及延迟测量。

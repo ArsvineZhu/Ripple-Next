@@ -8,10 +8,15 @@ import type { MediaSession } from '../../shared/media';
 import { selectAutomaticSession } from '../../shared/media';
 import { measureTextWidth } from '../lib/text';
 import { MediaArtwork } from '../components/MediaArtwork';
+import { MediaTransition } from '../components/MediaTransition';
 import { MediaSessionCarousel } from '../components/MediaSessionCarousel';
 import styles from './NowPlayingTab.module.css';
+import { defaultMusicPreferences, type MusicPreferences } from '../../shared/musicPreferences';
 
-type Props = Omit<ReturnType<typeof useMedia>, 'showPausedQuickView'> & { textColor: string };
+type Props = Omit<ReturnType<typeof useMedia>, 'showPausedQuickView'> & {
+  textColor: string;
+  music?: MusicPreferences;
+};
 function useClipWidth() {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(150);
@@ -32,27 +37,31 @@ function TrackText({
   text,
   artist = false,
   active,
+  marquee,
 }: {
   text: string;
   artist?: boolean;
   active: boolean;
+  marquee: boolean;
 }) {
   const { ref, width } = useClipWidth();
   const reduced = useReducedMotion();
   const distance = measureTextWidth(text, artist ? 13 : 18);
-  const scroll = distance > width && !reduced;
+  const scroll = marquee && distance > width && !reduced;
   return (
     <div ref={ref} className={styles.textClip} data-marquee={scroll}>
-      <motion.div
-        className={artist ? styles.artist : styles.title}
-        animate={scroll && active ? { x: [0, -(distance + 30)] } : { x: 0 }}
-        transition={
-          scroll && active ? { duration: 10, repeat: Infinity, ease: 'linear' } : { duration: 0 }
-        }
-      >
-        <span>{text}</span>
-        {scroll && <span aria-hidden="true">{text}</span>}
-      </motion.div>
+      <MediaTransition identity={text}>
+        <motion.div
+          className={artist ? styles.artist : styles.title}
+          animate={scroll && active ? { x: [0, -(distance + 30)] } : { x: 0 }}
+          transition={
+            scroll && active ? { duration: 10, repeat: Infinity, ease: 'linear' } : { duration: 0 }
+          }
+        >
+          <span>{text}</span>
+          {scroll && <span aria-hidden="true">{text}</span>}
+        </motion.div>
+      </MediaTransition>
     </div>
   );
 }
@@ -90,6 +99,7 @@ function TrackCard({
         disabled={disabled}
         textColor={props.textColor}
         onOpen={(id) => void props.openMediaSession(id)}
+        preferences={props.music}
       />
       <div className={styles.details}>
         {showPlayer && (
@@ -97,8 +107,17 @@ function TrackCard({
             {session.playerName}
           </p>
         )}
-        <TrackText text={session.name || t('unknownSong')} active={active} />
-        <TrackText text={session.artist || t('unknownArtist')} artist active={active} />
+        <TrackText
+          text={session.name || t('unknownSong')}
+          active={active}
+          marquee={(props.music ?? defaultMusicPreferences).marquee}
+        />
+        <TrackText
+          text={session.artist || t('unknownArtist')}
+          artist
+          active={active}
+          marquee={(props.music ?? defaultMusicPreferences).marquee}
+        />
         <div className={styles.controls}>
           {(['previous', 'playpause', 'next'] as const).map((command) => (
             <MediaControl

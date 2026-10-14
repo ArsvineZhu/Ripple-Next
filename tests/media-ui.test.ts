@@ -11,6 +11,9 @@ import type { ScrollGestureStart } from '../src/shared/contracts';
 import type { MediaSession, MediaSnapshot } from '../src/shared/media';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('../src/renderer/hooks/useReducedMotionPreference', () => ({
+  useReducedMotionPreference: () => true,
+}));
 vi.mock('../src/renderer/lib/text', () => ({
   measureTextWidth: (text: string) => text.length * 9,
 }));

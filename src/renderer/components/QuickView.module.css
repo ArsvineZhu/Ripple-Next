@@ -26,6 +26,8 @@
 }
 
 .trackClip {
+  display: flex;
+  align-items: center;
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -34,7 +36,8 @@
 }
 
 .trackText {
-  display: inline-block;
+  display: block;
+  line-height: 1.35;
   white-space: nowrap;
   font-size: 13px;
   font-weight: 600;
@@ -44,6 +47,11 @@
 .artist {
   opacity: 0.7;
   font-weight: 400;
+}
+.trackText[data-marquee='false'] {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .trackRepeat {
@@ -56,11 +64,14 @@
 }
 
 .playButton {
+  width: 30px;
+  display: flex;
+  align-items: center;
   margin-left: 1px;
   flex-shrink: 0;
   overflow: hidden;
   z-index: 100;
-  will-change: opacity, width;
+  will-change: opacity;
 }
 
 .status {

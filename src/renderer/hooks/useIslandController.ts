@@ -120,9 +120,12 @@ export function useIslandController() {
   let isPlaying = mediaTrack?.state === 'playing';
   const trackTitle = mediaTrack ? mediaTrack.name || t('unknownSong') : '';
   const trackArtist = mediaTrack ? mediaTrack.artist || t('unknownArtist') : '';
-  const nowPlayingText = mediaTrack ? `${trackTitle} • ${trackArtist}` : '';
+  const music = appState.settings.music;
+  const nowPlayingText = mediaTrack
+    ? trackTitle + (mode === 'still' && !music.idleArtist ? '' : ` • ${trackArtist}`)
+    : '';
   const textWidth = measureTextWidth(nowPlayingText) || nowPlayingText.length * 7;
-  const nowPlayingWidth = Math.min(300, Math.max(122, Math.ceil(textWidth + 24 + 6 + 20)));
+  const nowPlayingWidth = Math.min(300, Math.max(122, Math.ceil(textWidth + 82)));
   const hasMediaFeedback = Boolean(mediaActionError || (mediaTrack && mediaSnapshot.error));
   const getExpandedTabSize = (id: string, answerHeight = 0) => {
     const size = islandPages.size(id, {
@@ -202,6 +205,7 @@ export function useIslandController() {
   };
   const sideStyles = getSideStyles();
   return {
+    music,
     isPreview,
     leave,
     finishPositionChange,

@@ -7,6 +7,7 @@ import { AIConfigurationSchema, defaultAIConfiguration } from './aiConfiguration
 import { GlassPreferencesSchema, defaultGlassPreferences } from './glassPreferences';
 import { UiFontSchema } from './fonts';
 import { WeatherPreferencesSchema, defaultWeatherPreferences } from './weather';
+import { MusicPreferencesSchema, defaultMusicPreferences } from './musicPreferences';
 
 const HourFormatSchema = z.enum(['12-hr', '24-hr']);
 const IslandThemeSchema = z.enum(['default', 'sleek-black', 'win95']);
@@ -35,6 +36,7 @@ const AppSettingsSchema = z
     ...GlassPreferencesSchema.shape,
     language: z.enum(['system', 'en', 'zh-CN', 'zh-TW', 'ja', 'zh-ms', 'zh-apple']),
     uiFont: UiFontSchema.default('default'),
+    music: MusicPreferencesSchema.default(() => ({ ...defaultMusicPreferences })),
     searchUrlTemplate: z.string().max(2048).default('https://www.google.com/search?q={query}'),
     ai: AIConfigurationSchema.default(defaultAIConfiguration),
     autoLaunch: z.boolean(),
@@ -99,6 +101,7 @@ export const defaultAppState: AppState = {
     ...defaultGlassPreferences,
     language: 'system' satisfies LanguagePreference,
     uiFont: 'default',
+    music: { ...defaultMusicPreferences },
     searchUrlTemplate: 'https://www.google.com/search?q={query}',
     ai: defaultAIConfiguration(),
     autoLaunch: false,

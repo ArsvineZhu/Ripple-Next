@@ -1,5 +1,21 @@
 import type { Messages } from './en';
 export const zhCN: Messages = {
+  musicSettings: '音乐设置',
+  musicSettingsHint: '封面、文字滚动与播放器选择',
+  musicAppearance: '显示效果',
+  musicArtwork3D: '3D 封面',
+  musicArtwork3DHint: '在展开与紧凑视图中，封面随鼠标倾斜。',
+  musicArtworkStrength: '3D 程度',
+  musicStrengthLow: '轻微',
+  musicStrengthHigh: '强烈',
+  musicMarquee: '滚动长文本',
+  musicMarqueeHint: '歌名或歌手超出宽度时滚动；关闭后静止显示。',
+  musicIdleArtist: 'idle 时显示歌手',
+  musicIdleArtistHint: 'Island 收起时，在歌名旁显示歌手信息。',
+  musicPlayer: '播放来源',
+  musicPlayerHint: '选择自动或正在运行的播放器，与 Island 同步。选择保持到播放器退出。',
+  musicPlayerEmpty: '先在播放器中播放音乐，即可在此选择。',
+
   clipboardReadFailed: '无法读取剪贴板。仍可复制已有的历史内容。',
   findingApplications: '正在查找已安装应用…',
   workflowQuickApp: '添加已保存的快捷应用',

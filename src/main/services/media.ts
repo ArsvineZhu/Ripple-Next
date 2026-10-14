@@ -22,6 +22,24 @@ export function createMediaService(
   let closed = false;
   let queue = Promise.resolve();
   const reported = new Map<string, number>();
+  const listeners = new Set<(snapshot: MediaSnapshot) => void>();
+  const publish = () => {
+    if (!closed) listeners.forEach((listener) => listener(snapshot));
+  };
+  let dirty = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let watching = false;
+  const poll = async () => {
+    await getSnapshot();
+    if (!closed && watching) {
+      timer = setTimeout(() => void poll(), backend.subscribe ? 30_000 : 5000);
+      timer.unref();
+    }
+  };
+  const unsubscribe = backend.subscribe?.(() => {
+    dirty = true;
+    void getSnapshot();
+  });
   function reportOnce(error: unknown) {
     const signature = JSON.stringify(serializeDiagnosticError(error));
     const now = Date.now();
@@ -83,13 +101,21 @@ export function createMediaService(
         error: 'mediaReadFailed',
       };
     }
+    publish();
     return snapshot;
   }
   function getSnapshot() {
     if (closed) return Promise.resolve(snapshot);
     if (!pending)
-      pending = enqueue(read).finally(() => {
+      pending = enqueue(async () => {
+        do {
+          dirty = false;
+          await read();
+        } while (dirty && !closed);
+        return snapshot;
+      }).finally(() => {
         pending = undefined;
+        if (dirty && !closed) void getSnapshot();
       });
     return pending;
   }
@@ -107,6 +133,7 @@ export function createMediaService(
       status: selectedSession?.stale ? 'error' : selectedSession ? 'ready' : 'idle',
       error: selectedSession?.stale ? 'mediaReadFailed' : selectedSession ? null : snapshot.error,
     };
+    publish();
     return { snapshot, error: null };
   }
   async function control(command: MediaCommand, id: string): Promise<MediaOperationResult> {
@@ -130,6 +157,17 @@ export function createMediaService(
     return { snapshot, error };
   }
   return {
+    start() {
+      if (watching || closed) return;
+      watching = true;
+      void poll();
+    },
+    subscribe(listener: (snapshot: MediaSnapshot) => void) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
     getSnapshot,
     openSession: async (id: string): Promise<MediaOperationResult> => {
       if (closed) return { snapshot, error: 'mediaReadFailed' };
@@ -148,6 +186,9 @@ export function createMediaService(
     control: (command: MediaCommand, id: string) => enqueue(() => control(command, id)),
     close: () => {
       closed = true;
+      if (timer) clearTimeout(timer);
+      unsubscribe?.();
+      listeners.clear();
       backend.close?.();
     },
   };

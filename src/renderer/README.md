@@ -40,7 +40,7 @@ A continuous stream selects at most one circular neighbor. Additional distance g
 
 ## Media ownership
 
-`useMedia` reads immediately and every five seconds without overlapping polls. It refreshes after controls and ignores polls superseded by an action. Read errors retain stale metadata with disabled controls; operation failures stay in the media page. Capabilities distinguish true, false and unknown: unknown controls can be attempted; false/stale controls are disabled.
+`useMedia` subscribes before its initial read. Main owns the shared native observation and fallback sampler. It refreshes after controls and ignores polls superseded by an action. Read errors retain stale metadata with disabled controls; operation failures stay in the media page. Capabilities distinguish true, false and unknown: unknown controls can be attempted; false/stale controls are disabled.
 
 `useMediaPaging` and `MediaSessionCarousel` own finite vertical source pages identified by Automatic or session ID. Track changes update the card without rebuilding its page identity. Session order remains stable while the carousel is mounted; new sessions append and closed sessions disappear. A + player dots sit inside the right edge. Single automatic sessions hide the indicators; a manual single session retains A and its dot.
 
@@ -90,3 +90,7 @@ Select carries the option value type through its value, options and callback. Th
 Bare TextEntry controls keep transparent backgrounds and no border/outline during focus; surface fields own their focus treatment. Use PreferenceButton for actions instead of attaching its layout-only stylesheet classes to raw buttons. The glass preview bleeds across the scrollport padding with an opaque sticky background, keeping its caption and controls above scrolling parameters. Settings and Island report their own view context and React component frames through the typed diagnostic bridge.
 
 MediaFeedback owns the animated music error band. Expanded cards retain a 150px track region; compact cards retain their 40px row. Feedback extends the shell downward by 24px instead of shrinking or recentering the track. Bottom anchors compensate for the added band, keeping the original content in place.
+
+SettingsMusic composes shared preference switches, slider and player selector. MediaArtwork applies the same persisted 3D preference in both card sizes; long-text scrolling and idle artist visibility follow MusicPreferences. Compact hover keeps the text origin, clip width and shell scale stable, with a reserved play/pause slot and opacity transition.
+
+MediaTransition shares the 200ms fade/blur swap for artwork and track text. Outgoing layers overlap the current layer without resizing the card and are hidden from accessibility; reduced motion replaces the layer immediately. Compact text uses a block line box aligned to the same vertical centre as artwork and controls.

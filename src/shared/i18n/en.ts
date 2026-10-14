@@ -1,4 +1,21 @@
 export const en = {
+  musicSettings: 'Music settings',
+  musicSettingsHint: 'Artwork, scrolling text and player selection',
+  musicAppearance: 'Presentation',
+  musicArtwork3D: '3D artwork',
+  musicArtwork3DHint: 'Tilt artwork with the pointer in expanded and compact views.',
+  musicArtworkStrength: '3D intensity',
+  musicStrengthLow: 'Subtle',
+  musicStrengthHigh: 'Strong',
+  musicMarquee: 'Scroll long text',
+  musicMarqueeHint: 'Scroll overflowing titles and artist names; turn off for static text.',
+  musicIdleArtist: 'Show artist while idle',
+  musicIdleArtistHint: 'Include the artist beside the title while the Island is collapsed.',
+  musicPlayer: 'Playback source',
+  musicPlayerHint:
+    'Choose Automatic or a running player. The choice also updates the Island and lasts until the player closes.',
+  musicPlayerEmpty: 'Start playback in a player to make it available here.',
+
   clipboardReadFailed: 'Could not read the clipboard. Existing history is still available.',
   findingApplications: 'Finding installed applications…',
   workflowQuickApp: 'Add a saved quick app',

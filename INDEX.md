@@ -19,3 +19,5 @@
 Product entry points: [English](README.md), [简体中文](README.zh-CN.md), [繁體中文](README.zh-TW.md), [日本語](README.ja.md). [Release notes](docs/releases/4.0.0.en.md) summarize 4.0.0; [screenshots](docs/assets/screenshots/README.md) document the captured UI and refresh process.
 
 [Unreleased 4.1.0-beta.1](docs/releases/4.1.0-beta.1.en.md) covers the current PR. [Fonts](src/assets/fonts/alibaba-puhuiti/README.md) and [guide recordings](src/assets/guide/README.md) document bundled resources.
+
+- [Native observation](docs/native-observation.md): media, device events, executor lifecycle and measured latency.

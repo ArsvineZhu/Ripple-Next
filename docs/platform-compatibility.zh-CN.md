@@ -90,3 +90,5 @@ CI 在 Ubuntu、Windows、macOS 上执行静态检查和测试；发布打包覆
 - [Electron app、GPU 与登录项](https://www.electronjs.org/docs/latest/api/app)
 
 Windows 通过系统开始菜单注册项识别 Folia 等播放器的自定义桌面 AUMID。读取时缓存身份，点击封面时激活对应 AppsFolder 入口；身份不明确时不会唤起其他播放器。展开和紧凑音乐视图均在原内容下方独立展示提示。
+
+当前 Windows 媒体与设备通过常驻 WinRT／注册表执行器观察变化，主进程将同一媒体快照和来源同步到两个窗口。封面随每次属性事件刷新，并用会话代次淘汰旧结果。测得的延迟、生命周期与各平台验收见[系统监听与执行](native-observation.zh-CN.md)。

@@ -5,6 +5,7 @@ import {
   PreferenceTextField,
 } from '../components/preferences';
 import { useState } from 'react';
+import { SettingsMusic } from './SettingsMusic';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { ElasticScrollArea } from '../components/ElasticScrollArea';
@@ -295,7 +296,9 @@ export function SettingsEditor(input: Omit<Props, 'settings'>) {
   const page = props.detail.page;
   return (
     <ElasticScrollArea id="settings-detail-container" className={styles.container}>
-      {page === 'liquidGlass' ? (
+      {page === 'music' ? (
+        <SettingsMusic />
+      ) : page === 'liquidGlass' ? (
         <SettingsLiquidGlass settings={props.settings} />
       ) : page === 'fonts' ? (
         <SettingsFonts settings={props.settings} />

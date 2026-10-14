@@ -312,6 +312,20 @@ export function registerIPC(services: IPCServices) {
   const media = createMediaService(undefined, (error) =>
     services.diagnostics.recordError('media', error),
   );
+  const unsubscribeMedia = media.subscribe((snapshot) => {
+    for (const role of ['island', 'settings'] as const) {
+      const target = getWebContentsForRole(role);
+      if (target && !target.isDestroyed()) target.send('media-snapshot-changed', snapshot);
+    }
+  });
+  media.start();
+  const unsubscribeDevices =
+    'subscribe' in devices
+      ? devices.subscribe?.(() => {
+          const target = getWebContentsForRole('island');
+          if (target && !target.isDestroyed()) target.send('devices-changed');
+        })
+      : undefined;
   handle(services, 'get-app-bootstrap', async (_event) => ({
     state: await services.stateStore.load(),
     hasWeatherApiKey: await services.secretStore.hasSecret('weather-api-key'),
@@ -491,5 +505,7 @@ export function registerIPC(services: IPCServices) {
     previewOwner = null;
     publishPreview(false);
     media.close();
+    unsubscribeMedia();
+    unsubscribeDevices?.();
   };
 }

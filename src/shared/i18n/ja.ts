@@ -1,5 +1,23 @@
 import type { Messages } from './en';
 export const ja: Messages = {
+  musicSettings: '音楽設定',
+  musicSettingsHint: 'アートワーク、文字スクロール、プレーヤー選択',
+  musicAppearance: '表示',
+  musicArtwork3D: '3D アートワーク',
+  musicArtwork3DHint: '展開時とコンパクト表示で、ポインターに合わせて傾けます。',
+  musicArtworkStrength: '3D の強さ',
+  musicStrengthLow: '控えめ',
+  musicStrengthHigh: '強め',
+  musicMarquee: '長い文字をスクロール',
+  musicMarqueeHint:
+    '幅に収まらない曲名とアーティスト名をスクロールします。オフでは静止表示します。',
+  musicIdleArtist: 'idle 時にアーティストを表示',
+  musicIdleArtistHint: 'Island を閉じているとき、曲名の横にアーティストを表示します。',
+  musicPlayer: '再生元',
+  musicPlayerHint:
+    '自動または実行中のプレーヤーを選択します。Island と同期し、プレーヤー終了まで維持します。',
+  musicPlayerEmpty: 'プレーヤーで音楽を再生すると、ここに表示されます。',
+
   clipboardReadFailed: 'クリップボードを読み取れません。既存の履歴は引き続きコピーできます。',
   findingApplications: 'インストール済みアプリを検索中…',
   workflowQuickApp: '保存済みクイックアプリを追加',

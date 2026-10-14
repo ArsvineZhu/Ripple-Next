@@ -51,6 +51,14 @@ export function SettingsPages({ onOpenDetail }: { onOpenDetail(detail: SettingsD
   };
   return (
     <>
+      <PreferenceGroup caption={t('tabPlaying')}>
+        <SettingLink
+          detail={{ page: 'music' }}
+          label={t('musicSettings')}
+          hint={t('musicSettingsHint')}
+          navigate={onOpenDetail}
+        />
+      </PreferenceGroup>
       <PreferenceCard caption={t('tabManagement')}>
         <p className={styles.prefCardHint}>{t('tabInstructions')}</p>
         <div className={styles.tabList}>

@@ -3,10 +3,28 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import Database from 'better-sqlite3';
 import { afterEach, expect, it } from 'vitest';
-import { defaultAppState } from '../src/shared/appState';
+import { defaultAppState, AppStateSchema } from '../src/shared/appState';
 import { createAppStateStore } from '../src/main/services/appStateStore';
 
 const directories: string[] = [];
+it('defaults missing music preferences and persists all music controls across restart', async () => {
+  const { music: _music, ...oldSettings } = defaultAppState.settings;
+  expect(
+    AppStateSchema.parse({ ...defaultAppState, settings: oldSettings }).settings.music,
+  ).toEqual({ artwork3D: true, artworkStrength: 1, marquee: true, idleArtist: true });
+  const { directory, store } = await openStore();
+  const music = { artwork3D: false, artworkStrength: 1.75, marquee: false, idleArtist: false };
+  await store.update({ settings: { music } });
+  await store.update({ settings: { language: 'ja' } });
+  store.close();
+  expect((await (await openStore(directory)).store.load()).settings.music).toEqual(music);
+  expect(
+    AppStateSchema.safeParse({
+      ...defaultAppState,
+      settings: { ...defaultAppState.settings, music: { ...music, artworkStrength: Infinity } },
+    }).success,
+  ).toBe(false);
+});
 const stores: ReturnType<typeof createAppStateStore>[] = [];
 async function openStore(directory?: string) {
   if (!directory) {

@@ -25,3 +25,5 @@ See the [developer guide](../../docs/development.md) and [repository map](../../
 `fonts.ts` validates uiFont choices. i18n owns original playful Chinese overlays; localeForFormatting normalizes internal/private language variants before Intl. Font and glass defaults apply to new settings without overwriting saved choices.
 
 diagnosticError.ts owns application-authored DiagnosticError reasons, field constraints and safe system/HTTP classifications. diagnosticFormat.ts owns readable record formatting and severity policy. RendererDiagnosticSchema bounds the explicit preload reports; free-form payloads are excluded. See [diagnostics](../../docs/diagnostics.md).
+
+MusicPreferences owns enabled 3D artwork, strength 0–2 (default 1), marquee and idle artist flags. Existing saved state defaults missing music preferences without altering other settings. Manual player selection remains a media-service session choice, not a persisted application ID.

@@ -31,3 +31,5 @@
 - [4.1.0-beta.1](releases/4.1.0-beta.1.en.md): all PR #14 changes since 4.0.0.
 - [Unreleased overview](releases/unreleased.md).
 - [Recorded guide assets](../src/assets/guide/README.md): source, scenes and refresh rules.
+
+- [Native observation](native-observation.md): media, device events, executor lifecycle and measured latency.

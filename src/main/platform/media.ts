@@ -12,6 +12,7 @@ export interface MediaBackend {
   controlSystemMedia(command: MediaCommand, session: MediaSession): Promise<void>;
   openMediaSession(session: MediaSession): Promise<void>;
   close?(): void;
+  subscribe?(listener: () => void): () => void;
 }
 export const nativeMedia: MediaBackend =
   process.platform === 'win32'
@@ -19,6 +20,8 @@ export const nativeMedia: MediaBackend =
         getMediaSessions: windows.getMediaSessions,
         controlSystemMedia: windows.controlSystemMedia,
         openMediaSession: windows.openMediaSession,
+        subscribe: windows.subscribe,
+        close: windows.close,
       }
     : process.platform === 'darwin'
       ? {

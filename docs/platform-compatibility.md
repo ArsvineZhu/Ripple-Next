@@ -90,3 +90,5 @@ The October 2026 Linux changes were validated with the full checks/tests, Linux 
 - [Electron app, GPU status and login items](https://www.electronjs.org/docs/latest/api/app)
 
 Windows also recognizes registered custom desktop AUMIDs, including Folia, through Start applications. The selected identity is cached during reads and activated through its exact AppsFolder entry; ambiguous identities never activate a different player. Music feedback has a separate band below the original content in both expanded and compact modes.
+
+Current Windows media and device observation uses a persistent WinRT/registry executor with change events. Main broadcasts one media snapshot and selection to both renderer windows. Artwork is refreshed on every properties event and guarded by per-session generation. See [native observation](native-observation.md) for measured latency, lifecycle and per-platform acceptance.

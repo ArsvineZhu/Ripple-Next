@@ -171,7 +171,7 @@ export default function Island() {
         bottom: sideStyles.bottom ?? 'auto',
         backgroundColor: hideNotActiveIslandEnabled && mode === 'still' ? 'rgba(0,0,0,0)' : bgColor,
         color: hideNotActiveIslandEnabled && mode === 'still' ? 'rgba(0,0,0,0)' : textColor,
-        scale: isHovered ? 1.05 : 1,
+        scale: isHovered && mode === 'large' ? 1.05 : 1,
         x: sideStyles.x,
       }}
       onUpdate={syncWindowInputRegion}

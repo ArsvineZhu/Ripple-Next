@@ -9,6 +9,7 @@ export const devices =
         getBluetoothStatus: windows.getBluetoothStatus,
         getCameraStatus: windows.getCameraStatus,
         getMicrophoneStatus: windows.getMicrophoneStatus,
+        subscribe: windows.subscribe,
       }
     : process.platform === 'darwin'
       ? {

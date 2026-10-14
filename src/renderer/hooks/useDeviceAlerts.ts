@@ -34,7 +34,12 @@ export function useDeviceAlerts(setMode: Dispatch<SetStateAction<IslandMode>>) {
     let active = true;
     let bluetoothTimer: ReturnType<typeof setTimeout> | undefined;
     let captureTimer: ReturnType<typeof setTimeout> | undefined;
+    let bluetoothPending = false,
+      capturePending = false;
     const pollBluetooth = async () => {
+      if (bluetoothPending) return;
+      bluetoothPending = true;
+      clearTimeout(bluetoothTimer);
       const api = window.electronAPI;
       try {
         const connected = await api.getBluetoothStatus();
@@ -42,11 +47,20 @@ export function useDeviceAlerts(setMode: Dispatch<SetStateAction<IslandMode>>) {
       } catch (error) {
         recordRendererError('device', error);
       } finally {
+        bluetoothPending = false;
         if (active)
-          bluetoothTimer = setTimeout(() => void pollBluetooth(), BLUETOOTH_POLL_INTERVAL_MS);
+          bluetoothTimer = setTimeout(
+            () => void pollBluetooth(),
+            window.electronAPI.systemEventCapabilities?.devices
+              ? 30_000
+              : BLUETOOTH_POLL_INTERVAL_MS,
+          );
       }
     };
     const pollCaptureDevices = async () => {
+      if (capturePending) return;
+      capturePending = true;
+      clearTimeout(captureTimer);
       const api = window.electronAPI;
       try {
         const results = await Promise.allSettled([
@@ -60,18 +74,26 @@ export function useDeviceAlerts(setMode: Dispatch<SetStateAction<IslandMode>>) {
             else recordRendererError('device', result.reason);
           });
       } finally {
+        capturePending = false;
         if (active)
           captureTimer = setTimeout(
             () => void pollCaptureDevices(),
-            CAPTURE_DEVICE_POLL_INTERVAL_MS,
+            window.electronAPI.systemEventCapabilities?.devices
+              ? 30_000
+              : CAPTURE_DEVICE_POLL_INTERVAL_MS,
           );
       }
     };
 
     void pollCaptureDevices();
+    const unsubscribe = window.electronAPI.onDevicesChanged?.(() => {
+      void pollBluetooth();
+      void pollCaptureDevices();
+    });
     bluetoothTimer = setTimeout(() => void pollBluetooth(), CAPTURE_DEVICE_POLL_INTERVAL_MS);
     return () => {
       active = false;
+      unsubscribe?.();
       if (bluetoothTimer) clearTimeout(bluetoothTimer);
       if (captureTimer) clearTimeout(captureTimer);
       if (captureAlertTimer.current) clearTimeout(captureAlertTimer.current);

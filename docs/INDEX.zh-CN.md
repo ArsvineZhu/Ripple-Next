@@ -31,3 +31,5 @@
 - [4.1.0-beta.1](releases/4.1.0-beta.1.zh-CN.md)：PR #14 自 4.0.0 以来的全部改动。
 - [未发布概览](releases/unreleased.md)。
 - [指南录像素材（英语）](../src/assets/guide/README.md)：来源、流程与更新规范。
+
+- [系统监听与执行](native-observation.zh-CN.md): 媒体／设备事件、执行器生命周期及延迟测量。

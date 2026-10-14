@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { localeForFormatting } from '../../shared/i18n';
 import { AnimatePresence } from 'motion/react';
 import { motion } from 'motion/react';
+import { useReducedMotion } from 'motion/react';
 import { MediaArtwork } from './MediaArtwork';
+import { MediaTransition } from './MediaTransition';
 import { MediaControl } from './MediaControl';
 import { MediaFeedback } from './MediaFeedback';
 import { Zap } from 'lucide-react';
@@ -20,6 +22,7 @@ import type { useBattery } from '../hooks/useBattery';
 type Props = Pick<
   IslandController,
   | 'mode'
+  | 'music'
   | 'showInfoWhenIdleEnabled'
   | 'isPlaying'
   | 'alert'
@@ -50,6 +53,7 @@ type Props = Pick<
   Pick<ReturnType<typeof useBattery>, 'percent'>;
 export function QuickView({
   mode,
+  music,
   showInfoWhenIdleEnabled,
   isPlaying,
   showPausedQuickView,
@@ -77,6 +81,9 @@ export function QuickView({
   weather,
 }: Props) {
   const { t, i18n } = useTranslation();
+  const reduced = useReducedMotion();
+  const scroll = music.marquee && !reduced && textWidth > nowPlayingWidth - 82;
+  const showArtist = mode !== 'still' || music.idleArtist;
   const number = (value: number | string | null) =>
     value === null || value === ''
       ? '??'
@@ -118,69 +125,77 @@ export function QuickView({
                   disabled={mediaBusy}
                   textColor={textColor}
                   onOpen={(id) => void openMediaSession(id)}
+                  preferences={music}
                 />
                 <div
                   className={styles['trackClip']}
                   style={{
-                    WebkitMaskImage:
-                      textWidth > nowPlayingWidth - (isHovered ? 80 : 45)
-                        ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)'
-                        : 'none',
-                    maskImage:
-                      textWidth > nowPlayingWidth - (isHovered ? 80 : 45)
-                        ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)'
-                        : 'none',
+                    WebkitMaskImage: scroll
+                      ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)'
+                      : 'none',
+                    maskImage: scroll
+                      ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)'
+                      : 'none',
                   }}
                 >
-                  <motion.div
-                    className={styles['trackText']}
-                    animate={
-                      textWidth > nowPlayingWidth - (isHovered ? 80 : 45)
-                        ? { x: [0, -(textWidth + 30)] }
-                        : { x: 0 }
-                    }
-                    transition={
-                      textWidth > nowPlayingWidth - (isHovered ? 80 : 45)
-                        ? { duration: 12, repeat: Infinity, ease: 'linear' }
-                        : { duration: 0.3, ease: 'easeInOut' }
-                    }
-                    style={{ color: textColor }}
+                  <MediaTransition
+                    identity={JSON.stringify([
+                      mediaTrack?.id,
+                      trackTitle,
+                      showArtist ? trackArtist : '',
+                    ])}
                   >
-                    <span
-                      style={{
-                        paddingRight: textWidth > nowPlayingWidth - (isHovered ? 80 : 45) ? 30 : 0,
-                      }}
-                    >
-                      {trackTitle} <span className={styles['artist']}> • {trackArtist}</span>
-                    </span>
-                    {textWidth > nowPlayingWidth - (isHovered ? 80 : 45) && (
-                      <span className={styles['trackRepeat']}>
-                        {trackTitle}{' '}
-                        <span className={styles['artistRepeat']}> • {trackArtist}</span>
-                      </span>
-                    )}
-                  </motion.div>
-                </div>
-                <AnimatePresence>
-                  {isHovered && (
                     <motion.div
-                      className={styles.playButton}
-                      key="play-pause-hover"
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 30 }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      className={styles['trackText']}
+                      data-marquee={scroll}
+                      animate={scroll ? { x: [0, -(textWidth + 30)] } : { x: 0 }}
+                      transition={
+                        scroll
+                          ? { duration: 12, repeat: Infinity, ease: 'linear' }
+                          : { duration: 0.3, ease: 'easeInOut' }
+                      }
+                      style={{ color: textColor }}
                     >
-                      <MediaControl
-                        session={mediaTrack}
-                        compact
-                        command="playpause"
-                        disabled={mediaBusy || mediaSnapshot.status === 'error'}
-                        onCommand={controlMedia}
-                      />
+                      <span
+                        style={{
+                          paddingRight: scroll ? 30 : 0,
+                        }}
+                      >
+                        {trackTitle}{' '}
+                        {showArtist && <span className={styles['artist']}> • {trackArtist}</span>}
+                      </span>
+                      {scroll && (
+                        <span className={styles['trackRepeat']}>
+                          {trackTitle}{' '}
+                          {showArtist && (
+                            <span className={styles['artistRepeat']}> • {trackArtist}</span>
+                          )}
+                        </span>
+                      )}
                     </motion.div>
-                  )}
-                </AnimatePresence>
+                  </MediaTransition>
+                </div>
+                <div className={styles.playButton}>
+                  <AnimatePresence>
+                    {isHovered && (
+                      <motion.div
+                        key="play-pause-hover"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      >
+                        <MediaControl
+                          session={mediaTrack}
+                          compact
+                          command="playpause"
+                          disabled={mediaBusy || mediaSnapshot.status === 'error'}
+                          onCommand={controlMedia}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
               <MediaFeedback error={mediaActionError ?? mediaSnapshot.error} compact />
             </motion.div>

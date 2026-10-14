@@ -25,3 +25,5 @@ Shared 定义可序列化的 IPC 与领域契约、用于持久化状态和快�
 `fonts.ts` 校验 uiFont；i18n 保存原创趣味中文覆盖表，localeForFormatting 在 Intl 前将内部／私有语言映射为标准语言。字体与玻璃默认值应用于新设置，保留已有用户选择。
 
 diagnosticError.ts 管理应用编写的 DiagnosticError 原因、字段约束及安全的系统／HTTP 分类；diagnosticFormat.ts 管理可读格式与级别策略；RendererDiagnosticSchema 限制正式 preload 上报，不包含自由正文。见[诊断说明](../../docs/diagnostics.zh-CN.md)。
+
+MusicPreferences 管理 3D 封面、0–2 程度（默认 1）、跑马灯与 idle 歌手开关。旧状态缺少音乐偏好时补全默认值，不改动其他设置。手动播放器选择仍由媒体服务按会话管理，不持久化应用 ID。

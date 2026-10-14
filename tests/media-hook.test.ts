@@ -51,28 +51,67 @@ async function mount(api: unknown) {
   }
   await act(async () => root!.render(createElement(Test)));
 }
-it('updates a changed artwork URL and distinguishes failed reading from no session', async () => {
-  const read = vi
-    .fn()
-    .mockResolvedValueOnce(snapshot('first'))
-    .mockResolvedValueOnce(snapshot('second'))
-    .mockRejectedValueOnce(new Error('read failed'))
-    .mockResolvedValueOnce({
-      ...snapshot(''),
-      sessions: [],
-      activeSessionId: null,
-      status: 'idle',
-    });
-  await mount({ getSystemMedia: read });
+it('publishes native events immediately and prevents a delayed command response from restoring old metadata', async () => {
+  let receive!: (value: MediaSnapshot) => void;
+  let complete!: (value: { snapshot: MediaSnapshot; error: null }) => void;
+  const unsubscribe = vi.fn();
+  await mount({
+    getSystemMedia: vi.fn().mockResolvedValue(snapshot('old')),
+    systemEventCapabilities: { media: true },
+    onMediaSnapshotChanged: (callback: typeof receive) => {
+      receive = callback;
+      return unsubscribe;
+    },
+    controlSystemMedia: () =>
+      new Promise((resolve) => {
+        complete = resolve;
+      }),
+  });
+  let operation!: Promise<void>;
+  await act(async () => {
+    operation = hook.controlMedia('next', 'one');
+  });
+  await act(async () => receive(snapshot('new')));
+  expect(hook.mediaTrack?.artworkUrl).toBe('new');
+  await act(async () => {
+    complete({ snapshot: snapshot('old'), error: null });
+    await operation;
+  });
+  expect(hook.mediaTrack?.artworkUrl).toBe('new');
+  await act(async () => root!.unmount());
+  root = undefined;
+  expect(unsubscribe).toHaveBeenCalledOnce();
+});
+it('updates artwork from pushed snapshots and distinguishes a failed read from no session', async () => {
+  let receive!: (snapshot: MediaSnapshot) => void;
+  const read = vi.fn().mockResolvedValue(snapshot('first'));
+  await mount({
+    getSystemMedia: read,
+    onMediaSnapshotChanged: (callback: typeof receive) => {
+      receive = callback;
+      return () => {};
+    },
+  });
   expect(hook.mediaTrack?.artworkUrl).toBe('first');
-  await act(async () => vi.advanceTimersByTimeAsync(5000));
+  await act(async () => receive(snapshot('second')));
   expect(hook.mediaTrack?.artworkUrl).toBe('second');
-  await act(async () => vi.advanceTimersByTimeAsync(5000));
+  await act(async () =>
+    receive({
+      ...snapshot('second'),
+      status: 'error',
+      error: 'mediaReadFailed',
+      sessions: [{ ...snapshot('second').sessions[0], stale: true }],
+    }),
+  );
   expect(hook.mediaSnapshot.error).toBe('mediaReadFailed');
   expect(hook.mediaTrack?.stale).toBe(true);
-  await act(async () => vi.advanceTimersByTimeAsync(5000));
+  await act(async () =>
+    receive({ ...snapshot(''), sessions: [], activeSessionId: null, status: 'idle' }),
+  );
   expect(hook.mediaTrack).toBeNull();
   expect(hook.mediaSnapshot.error).toBeNull();
+  await act(async () => vi.advanceTimersByTimeAsync(30_000));
+  expect(read).toHaveBeenCalledOnce();
 });
 it('ignores an old pending poll after manual selection and refreshes control results immediately', async () => {
   let complete: (snapshot: MediaSnapshot) => void = () => {};

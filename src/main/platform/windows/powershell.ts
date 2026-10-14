@@ -1,19 +1,6 @@
 import path from 'node:path';
 import { runCommand } from '../../services/processes';
 
-export const winrtAsync = String.raw`
-Add-Type -AssemblyName System.Runtime.WindowsRuntime
-$asTask = [System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object {
-  $_.Name -eq 'AsTask' -and $_.IsGenericMethod -and
-  $_.GetGenericArguments().Count -eq 1 -and $_.GetParameters().Count -eq 1 -and
-  $_.GetParameters()[0].ParameterType.Name -eq ('IAsyncOperation'+[char]96+'1')
-} | Select-Object -First 1
-function Await-WinRT($operation, [Type]$resultType) {
-  $task = $asTask.MakeGenericMethod($resultType).Invoke($null, @($operation))
-  return $task.GetAwaiter().GetResult()
-}
-`;
-
 export function powerShellLiteral(value: string): string {
   return "'" + value.replace(/'/g, "''") + "'";
 }

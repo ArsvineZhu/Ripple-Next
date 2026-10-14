@@ -74,6 +74,12 @@
 .artist span + span {
   margin-left: 30px;
 }
+.textClip[data-marquee='false'] .title,
+.textClip[data-marquee='false'] .artist {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .controls {
   display: flex;
   gap: 15px;

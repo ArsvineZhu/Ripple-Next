@@ -11,6 +11,23 @@ function invoke<K extends keyof InvokeMap>(
   return ipcRenderer.invoke(channel, ...args);
 }
 const api: ElectronAPI = {
+  systemEventCapabilities: {
+    media: process.platform === 'win32',
+    devices: process.platform === 'win32',
+  },
+  onMediaSnapshotChanged: (callback) => {
+    const listener = (
+      _event: Electron.IpcRendererEvent,
+      snapshot: import('../shared/media').MediaSnapshot,
+    ) => callback(snapshot);
+    ipcRenderer.on('media-snapshot-changed', listener);
+    return () => ipcRenderer.removeListener('media-snapshot-changed', listener);
+  },
+  onDevicesChanged: (callback) => {
+    const listener = () => callback();
+    ipcRenderer.on('devices-changed', listener);
+    return () => ipcRenderer.removeListener('devices-changed', listener);
+  },
   reportDiagnostic: (event) => {
     const parsed = RendererDiagnosticSchema.safeParse(event);
     if (parsed.success) ipcRenderer.send('renderer-diagnostic', parsed.data);

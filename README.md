@@ -54,6 +54,8 @@ When more than one player is open, the music page becomes a vertical stack of ca
 - Selecting a player keeps it selected for this run until it disappears. Controls always address the player on that card.
 - One continuous wheel/trackpad stroke moves one page. The first and last music pages are boundaries; horizontal gestures still navigate the Island's feature pages.
 
+In Settings → Feature pages → Music, choose 3D artwork and its intensity, scrolling text, and artist visibility while collapsed. All three effects start enabled; 3D intensity starts at the existing effect. The playback-source selector shares Automatic/manual selection with the Island. Windows now uses event-driven media and device observation; see [native observation](docs/native-observation.md).
+
 Artwork comes from the player's media metadata. Local Linux covers also work when a browser supplies a temporary filename without an image extension. A missing or failed cover gets a clean music placeholder.
 
 <p align="center">
