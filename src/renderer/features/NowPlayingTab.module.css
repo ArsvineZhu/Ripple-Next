@@ -43,19 +43,6 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.textClip {
-  width: 100%;
-  overflow: hidden;
-}
-.textClip[data-marquee='true'] {
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 8px,
-    black calc(100% - 8px),
-    transparent
-  );
-}
 .title,
 .artist {
   font-weight: 400;
@@ -70,16 +57,6 @@
   margin-top: 4px;
   font-size: 13px;
   opacity: 0.8;
-}
-.title span + span,
-.artist span + span {
-  margin-left: 30px;
-}
-.textClip[data-marquee='false'] .title,
-.textClip[data-marquee='false'] .artist {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .controls {
   display: flex;

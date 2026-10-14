@@ -10,20 +10,20 @@ Color fields open the operating system's picker through Settings-only IPC: Windo
 
 API references: [Windows ColorDialog](https://learn.microsoft.com/dotnet/api/system.windows.forms.colordialog), [macOS color prompt](https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/PromptforaColor.html), [KDE dialogs](https://develop.kde.org/docs/administration/kdialog/).
 
-| Feature              | Windows                                                | macOS                                                          | Linux                                                       |
-| -------------------- | ------------------------------------------------------ | -------------------------------------------------------------- | ----------------------------------------------------------- |
-| Music                | GSMTC sessions, capabilities and artwork               | Running Spotify and Music through AppleScript; Spotify artwork | MPRIS over session D-Bus, capabilities and artwork          |
-| Open a player        | Cached app identity/path                               | Activate the running application                               | MPRIS Raise or same-owner tray Activate                     |
-| Installed quick apps | Start Menu `.lnk` files and Store identifiers          | System/shared/user Applications, including Utilities           | XDG desktop entries launched with `gio launch`              |
-| Launch at login      | Native login settings for packaged apps                | Native login items for packaged apps                           | `ripple-next.desktop` in the active XDG autostart directory |
-| Transparent input    | Native cursor/bounds with click-through outside Island | Electron click-through outside Island                          | X11 `ShapeInput` through XWayland                           |
-| Device status        | WinRT Bluetooth; camera/microphone registry probes     | Bluetooth and capture-device registry probes                   | `bluetoothctl`, `fuser`, and `pactl` or PipeWire `pw-dump`  |
+| Feature              | Windows                                                | macOS                                                          | Linux                                                        |
+| -------------------- | ------------------------------------------------------ | -------------------------------------------------------------- | ------------------------------------------------------------ |
+| Music                | GSMTC sessions, capabilities and artwork               | Running Spotify and Music through AppleScript; Spotify artwork | MPRIS over session D-Bus, capabilities and artwork           |
+| Open a player        | Cached app identity/path                               | Activate the running application                               | MPRIS Raise or same-owner tray Activate                      |
+| Installed quick apps | Start Menu `.lnk` files and Store identifiers          | System/shared/user Applications, including Utilities           | XDG desktop entries launched with `gio launch`               |
+| Launch at login      | Native login settings for packaged apps                | Native login items for packaged apps                           | `ripple-next.desktop` in the active XDG autostart directory  |
+| Transparent input    | Native cursor/bounds with click-through outside Island | Electron click-through outside Island                          | X11 `ShapeInput` through XWayland                            |
+| Device status        | WinRT Bluetooth; camera/microphone registry probes     | Bluetooth and capture-device registry probes                   | BlueZ D-Bus, inotify + `fuser`, PipeWire / PulseAudio events |
 
 A player must publish a supported session to appear. Controls follow its reported capabilities. macOS does not discover arbitrary system media sessions, and its Music adapter currently retrieves metadata and controls without artwork. Camera/microphone indicators reflect the available OS or driver probes.
 
 ## Music covers and multiple players
 
-Linux artwork comes from `mpris:artUrl`. Local files are read within a 5 MiB limit. Recognized filename formats retain their existing support; when the extension is unknown, PNG/JPEG/GIF/WebP signatures determine the data-URL MIME type. Missing, oversized or unreadable files leave the song and controls available. Renderer decode failures show the music placeholder; a different session or artwork URL resets that failure.
+Linux artwork comes from `mpris:artUrl`. Local files are read within a 5 MiB limit. Recognized filename extensions determine the format; when the extension is unknown, PNG/JPEG/GIF/WebP signatures determine the data-URL MIME type. Missing, oversized or unreadable files leave the song and controls available. Renderer decode failures show the music placeholder; a different session or artwork URL resets that failure.
 
 Linux caches the MPRIS `CanRaise` capability. When it is false, as reported by Folia, or `Raise` fails, Ripple calls `org.kde.StatusNotifierItem.Activate` at `/StatusNotifierItem` on the same D-Bus unique owner. This activates the existing tray-backed instance without starting an application process. If neither activation interface is available, the music page shows an opening error. An expired session cannot redirect activation to a replacement owner.
 
@@ -39,15 +39,15 @@ Ripple runs its transparent window on X11/XWayland. The window occupies the sele
 
 Snap players can restrict MPRIS access through AppArmor. A Ripple process launched from an IDE or coding tool can inherit its AppArmor label, causing a player such as Snap Spotify to reject reads while other players remain visible. When D-Bus reports `AccessDenied` with an AppArmor sender label, launch Ripple from the desktop or the normal user session and check the player again.
 
-| Symptom                                | Check or action                                                                                                                                                                                 |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `spawn pactl ENOENT` in an older build | Use the updated build. Current code switches to `pw-dump --no-colors` when `pactl` is missing. On PipeWire, install the distribution's tools providing `pw-dump` if neither command is present. |
-| Microphone status is unavailable       | Confirm the chosen audio backend can connect to your user session. PipeWire detection looks for running `Stream/Input/Audio` nodes. The backend choice is retained until Ripple restarts.       |
-| Bluetooth/camera probe fails           | Check that `bluetoothctl` / `fuser` exists and can inspect the corresponding device. A connection or permission error appears in diagnostics.                                                   |
-| Installed app cannot start             | Verify its desktop entry and that `gio launch` is available. Re-select an entry after moving/removing an application.                                                                           |
-| AI key cannot be saved                 | Unlock/configure your OS credential service and restart Ripple. The Linux plaintext fallback is rejected.                                                                                       |
-| Development sandbox error              | Use a matching Chromium sandbox helper with root ownership and mode `4755`; see [development](development.md).                                                                                  |
-| Outside clicks are intercepted         | Check XWayland availability and the first ShapeInput confirmation in local diagnostics. Restart after changing main/preload input code.                                                         |
+| Symptom                                | Check or action                                                                                                                                                                                                                      |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `spawn pactl ENOENT` in an older build | Use the updated build. Current code prefers `pw-dump --monitor --no-colors`, then `pactl subscribe` if the PipeWire tool is absent. On PipeWire, install the distribution's tools providing `pw-dump` if neither command is present. |
+| Microphone status is unavailable       | Confirm the chosen audio backend can connect to your user session. PipeWire detection looks for running `Stream/Input/Audio` nodes. The backend choice is retained until Ripple restarts.                                            |
+| Bluetooth/camera probe fails           | Check BlueZ system-bus access and that `fuser` can inspect video devices. A connection or permission error appears in diagnostics.                                                                                                   |
+| Installed app cannot start             | Verify its desktop entry and that `gio launch` is available. Re-select an entry after moving/removing an application.                                                                                                                |
+| AI key cannot be saved                 | Unlock/configure your OS credential service and restart Ripple. The Linux plaintext fallback is rejected.                                                                                                                            |
+| Development sandbox error              | Use a matching Chromium sandbox helper with root ownership and mode `4755`; see [development](development.md).                                                                                                                       |
+| Outside clicks are intercepted         | Check XWayland availability and the first ShapeInput confirmation in local diagnostics. Restart after changing main/preload input code.                                                                                              |
 
 Custom commands use executable plus argv without a shell. Workflow local addresses such as `localhost:3000/` are classified as URLs before filesystem paths and open in the default browser. Check the browser association and the service listening on port 3000 if the browser opens but the page fails.
 
@@ -67,7 +67,7 @@ Long panels use native vertical scrolling. Horizontal feature navigation advance
 
 Main forwards coalesced Chromium `gestureScrollBegin` / `gestureFlingCancel` boundaries through a timestamp-only preload event. A 150 ms quiet gap and sustained-tail/rising-input rules handle sources without native boundaries. A renderer hot update cannot install a changed main/preload listener: restart the application to test those paths.
 
-Launch, media, settings and clipboard-copy errors appear beside their owning feature. Battery/device notices preserve a page the user has expanded. The minute clock updates at minute boundaries, and native scrolling avoids a continuous animation loop. Clipboard/device polling continues while the Island is collapsed.
+Launch, media, settings and clipboard-copy errors appear beside their owning feature. Battery/device notices preserve a page the user has expanded. The minute clock updates at minute boundaries, and native scrolling avoids a continuous animation loop. Clipboard sampling and native device observation continue while the Island is collapsed.
 
 ## Local diagnostics
 
@@ -76,8 +76,6 @@ Launch, media, settings and clipboard-copy errors appear beside their owning fea
 ## Verification
 
 CI runs static checks and tests on Ubuntu, Windows and macOS. Release packaging covers Linux x64, Windows x64 and macOS x64/arm64. Package creation checks build integration; [release acceptance](release.md) specifies the native behavior to exercise on each host.
-
-The October 2026 Linux changes were validated with the full checks/tests, Linux packaging, extensionless artwork, a real default-browser workflow launch, and PipeWire capture activity returning to idle. Product screenshots use the actual Linux renderer with a separate demo profile. Earlier Windows adaptation included native Shell/WinRT probes and packaged-renderer launch/clipboard checks. New Windows/macOS releases still run the matching-host checklist.
 
 ## Protocol and API references
 
@@ -91,4 +89,4 @@ The October 2026 Linux changes were validated with the full checks/tests, Linux 
 
 Windows also recognizes registered custom desktop AUMIDs, including Folia, through Start applications. The selected identity is cached during reads and activated through its exact AppsFolder entry; ambiguous identities never activate a different player. Music feedback has a separate band below the original content in both expanded and compact modes.
 
-Current Windows media and device observation uses a persistent WinRT/registry executor with change events. Main broadcasts one media snapshot and selection to both renderer windows. Artwork is refreshed on every properties event and guarded by per-session generation. See [native observation](native-observation.md) for measured latency, lifecycle and per-platform acceptance.
+Current Windows media and device observation uses a persistent WinRT/registry executor with change events. Main broadcasts one media snapshot and selection to both renderer windows. Artwork is refreshed on every properties event and guarded by per-session generation. See [native observation](native-observation.md) for event sources, lifecycle and validation.

@@ -1,179 +1,96 @@
-<p align="center">
-  <img src="src/assets/icons/icon.png" width="80" alt="Ripple Next icon">
-</p>
-
+<p align="center"><img src="src/assets/icons/icon.png" width="80" alt="Ripple Next"></p>
 <h1 align="center">Ripple Next</h1>
 
 <p align="center"><strong>Your next action, close at hand.</strong></p>
-<p align="center">A Dynamic Island desktop companion for Windows, macOS and Linux.</p>
+[简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · **English** · [日本語](README.ja.md)
 
-<p align="center">
-  <a href="README.zh-CN.md">简体中文</a> ·
-  <a href="README.zh-TW.md">繁體中文</a> ·
-  <strong>English</strong> ·
-  <a href="README.ja.md">日本語</a>
-</p>
+Music is playing. A link needs opening. A copied command is waiting in the clipboard. Ripple Next keeps these everyday actions in one floating Island for Windows, macOS and Linux.
 
-<p align="center">
-  <a href="https://github.com/ArsvineZhu/Ripple-Next/releases">Download</a> ·
-  <a href="instructions.md">User guide</a> ·
-  <a href="https://github.com/ArsvineZhu/Ripple-Next/issues">Feedback</a>
-</p>
+Glance while idle, hover for more, click to open a full page. Configure everything in a dedicated Settings window. Your drafts stay with you when the Island folds.
 
-Music is playing. A link needs opening. A copied command is somewhere in your clipboard. You remember one more thing to do. Ripple Next brings these small actions into one floating Island, so you can reach them without turning each one into another window.
+[4.1.0-beta.1 release preparation](docs/releases/4.1.0-beta.1.en.md) awaits approval of PR #14. [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
-Start with a compact glance, hover for quick information, and click to open a full feature page. The Island changes size with its content, moves between pages with animated transitions, and lets the surrounding desktop keep receiving your clicks.
+> Screenshots and recordings show the actual application with isolated demo content. The assistant example uses a local fixture response, and the media sessions use demonstration players. Chinese images demonstrate the corresponding language feature.
 
-<p align="center">
-  <img src="docs/assets/screenshots/media.png" width="440" alt="Ripple Next music card with album artwork, playback controls, and an internal A and player-dot column">
-</p>
+## Seven pages, one place to reach them
 
-> Island screenshots show the published Linux 4.0.0 app with sample data; current Settings screenshots show Windows 4.1.0-beta.1. Read the [unreleased beta notes](docs/releases/4.1.0-beta.1.en.md) and [capture provenance](docs/assets/screenshots/README.md).
+| Page                   | Your next action                                                    |
+| ---------------------- | ------------------------------------------------------------------- |
+| Browser Search         | Search or open an HTTP(S) address in your default browser.          |
+| Workflows & Quick Apps | Open a group of apps/addresses in order, or one favorite.           |
+| Overview               | See the time, date, battery and configured weather.                 |
+| Now Playing            | Choose a player, control playback and bring it forward.             |
+| AI Assistant           | Use your chosen service/model with streamed Markdown and code copy. |
+| Clipboard              | Reuse recent text from this session.                                |
+| Tasks                  | Write the next few things to do; complete them when ready.          |
 
-## Seven Island pages and a settings window
+## Music, within reach
 
-| Page                       | What you can do                                                                                                                                            |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Browser Search**         | Send a search or a direct HTTP(S) address to your default browser. Choose your own search URL template.                                                    |
-| **Workflows & Quick Apps** | Open a group of apps and webpages in order, or launch one favorite directly. Quick apps support installed apps, URLs and commands with separate arguments. |
-| **Overview**               | Check the time, date, weather and battery together. Choose 12/24-hour time, a time zone, a weather location and Celsius/Fahrenheit.                        |
-| **Now Playing**            | See the song and artwork, pause or resume, skip tracks, and bring the player forward. Scroll vertically to choose among multiple players.                  |
-| **AI Assistant**           | Use your own Chat Completions, Responses or Anthropic endpoints and numbered model configurations. Read streamed Markdown answers and copy code blocks.    |
-| **Clipboard**              | Reuse recently copied text with a copy button beside each entry. History stays in the current session.                                                     |
-| **Tasks**                  | Add a quick to-do and check it off when finished. Your remaining tasks survive a restart.                                                                  |
-| **Settings window**        | Opens when you launch Ripple. Adjust appearance, placement, visible pages, startup behavior and language in a dedicated window.                            |
+The cover, the artist and the controls stay nearby. Idle is a shorter capsule; hovering grows the quick view, adds play/pause and always shows the artist. Open the full card for previous/next and click the cover to activate its player.
 
-## Music without the window hunt
+Automatic selection and player indicators make multiple sources easy to browse. Controls belong to the displayed player. Long titles resume scrolling when you return; 3D artwork and intensity are yours to choose. Windows and Linux use native event observation, with metadata and artwork updated independently.
 
-Keep the album cover and playback controls nearby while you work. Compact mode shows the track; hovering reveals a play/pause control. The expanded card gives you artwork, artist, previous/next controls and a way to bring the player forward.
+![Now Playing](docs/assets/screenshots/media.png)
 
-When more than one player is open, the music page becomes a vertical stack of cards:
+![Compact music](docs/assets/screenshots/media-compact.png)
 
-- **A** is the first page and restores Automatic selection.
-- Each **dot** represents a player. Scroll, click a dot, or use Up/Down after focusing the music area.
-- Selecting a player keeps it selected for this run until it disappears. Controls always address the player on that card.
-- One continuous wheel/trackpad stroke moves one page. The first and last music pages are boundaries; horizontal gestures still navigate the Island's feature pages.
+## Open your working context
 
-In Settings → Feature pages → Music, choose 3D artwork and its intensity, scrolling text, and artist visibility while collapsed. All three effects start enabled; 3D intensity starts at the existing effect. The playback-source selector shares Automatic/manual selection with the Island. Windows now uses event-driven media and device observation; see [native observation](docs/native-observation.md).
+Give a workflow a name and one app or address per row. Launch once to open the group in order; a failed target reports its own result while later targets continue. Quick apps also launch on their own and can be reused in a workflow.
 
-Artwork comes from the player's media metadata. Local Linux covers also work when a browser supplies a temporary filename without an image extension. A missing or failed cover gets a clean music placeholder.
+![Workflows and quick apps](docs/assets/screenshots/workflows.png)
 
-<p align="center">
-  <img src="docs/assets/screenshots/media-compact.png" width="300" alt="Compact music view showing the track and artist">
-</p>
+## An assistant with your choice of service
 
-Media integration uses Windows system media sessions, Linux MPRIS, and running Spotify/Music applications on macOS. Available controls and artwork depend on the player; see [platform compatibility](docs/platform-compatibility.md).
+Configure Chat Completions, OpenAI Responses or Anthropic Messages, save an encrypted key and bind a model. Each model has its own system prompt, parameters and ordered injections. Answers stream as Markdown; code blocks have native-copy actions. Requests go to the endpoint you configure.
 
-## Open your work together
+![Assistant sample response](docs/assets/screenshots/assistant.png)
 
-Give a workflow a name, add the apps or addresses you use together, then launch that group from one button. A development workflow can open documentation and `localhost:3000/`; local addresses are sent to the default browser with HTTP, including their paths and query strings.
+## Make it yours
 
-Keep individual favorites on the Quick Apps strip. Choose an installed application, an HTTP(S) URL, or a command with one argument per line and an optional working directory. A failed launch appears beside that item; a workflow continues with its remaining targets and reports a failure on its own row.
+Choose a font, theme, colors/background, display, placement, corners and page behavior. Shared controls keep edits consistent, ordinary changes save automatically, and credential changes/destructive actions ask for an explicit commit. Settings Liquid Glass adds clear pressed lenses, stop attraction and a live preview.
 
-Quick Apps work on their own without creating a workflow. Add a saved Quick App to a workflow to keep its native application identity, command arguments and working directory. Failures identify the target number while remaining targets continue.
+![General settings](docs/assets/screenshots/settings.png)
 
-<p align="center">
-  <img src="docs/assets/screenshots/workflows.png" width="480" alt="Two named workflows above a strip of Docs, GitHub and Local API quick apps">
-</p>
+Simplified Chinese has Standard, Microsoft Chinese and Apple Chinese expressions. Contextual hints, empty states and guide prose have different voices; technical labels, important actions, errors and date/number formats retain their meaning.
 
-## An assistant with your choice of provider
+![Microsoft Chinese expression](docs/assets/screenshots/chinese-microsoft.png)
 
-Configure numbered Base URLs for OpenAI-compatible Chat Completions, OpenAI Responses or Anthropic, save a key for each endpoint, and bind models to them. Each model can have its own system prompt, ordered injections, temperature and reasoning settings. Answers stream into the Island as Markdown, with copy buttons for code and scrolling when they reach the available screen height.
+![Apple Chinese expression](docs/assets/screenshots/chinese-apple.png)
 
-Use **Ask another** to clear the current exchange and start a new question. Ripple Next provides the interface; you bring the endpoint and model. Questions use the service you configure.
+## Watch the actual steps
 
-The API key is protected with the operating system's encryption . On Linux, key saving requires an available OS-backed encryption service. Prompts and answers go to the endpoint you configure.
+The in-app guide starts with keyboard controls and contains real recordings of font, Chinese expression, glass, workflow and AI editing. English is the capture language except for the Chinese-specific demonstration. Prose stays selectable; videos play only when you choose and pause offscreen.
 
-<p align="center">
-  <img src="docs/assets/screenshots/assistant.png" width="380" alt="A sample streamed Markdown answer with a code block and Copy button">
-</p>
+- [Font](src/assets/guide/typography.webm)
+- [Chinese expression](src/assets/guide/expression.webm)
+- [Glass](src/assets/guide/appearance.webm)
+- [Workflow](src/assets/guide/workflow.webm)
+- [AI configuration](src/assets/guide/ai.webm)
 
-## Keep everyday details within reach
+![Recorded user guide](docs/assets/screenshots/guide.png)
 
-Search and task drafts remain available when you switch pages or fold the Island. Enter submits; confirming an IME candidate keeps you in the input.
+## Start using Ripple Next
 
-The overview puts a readable clock beside weather and battery information. The clock follows your chosen time zone; weather follows the location you set. The battery badge fills to its percentage and turns green while charging. Charging and device activity can also surface as brief status alerts.
+Download the package for your platform, install it or extract the portable ZIP, then launch Ripple Next. Settings opens first; closing it leaves the Island running. Launch again or use the tray to reopen Settings.
 
-<p align="center">
-  <img src="docs/assets/screenshots/overview.png" width="380" alt="Overview with time, date, sunny weather and a charging battery badge">
-</p>
+| Platform | Architecture | Packages                 |
+| -------- | ------------ | ------------------------ |
+| Windows  | x64          | MSI / portable ZIP       |
+| Linux    | x64          | DEB / RPM / portable ZIP |
+| macOS    | x64 / arm64  | DMG / portable ZIP       |
 
-Clipboard history and tasks take care of two different kinds of loose ends: text you may need again, and things you still need to finish. Copy a clipboard entry with one click; add a task and check it off when done. Text history keeps up to 100 recent entries and one million characters in memory; repeated text moves to the front. Tasks are saved locally.
+macOS packages use an ad-hoc signature. Linux needs X11/XWayland and OS-backed encryption for keys; optional native integrations use the tools listed in [platform support](docs/platform-compatibility.md). Island Liquid Glass and AI context awareness are unavailable. Windows/Linux keep the tray visible.
 
-<table>
-  <tr>
-    <td><img src="docs/assets/screenshots/clipboard.png" width="380" alt="Recent text entries with individual Copy buttons"></td>
-    <td><img src="docs/assets/screenshots/tasks.png" width="380" alt="A saved task list with checkboxes and an Add field"></td>
-  </tr>
-</table>
+Preferences, workflows, quick apps and tasks persist in Ripple Next’s user-data directory; credentials are OS-encrypted. Clipboard history belongs to this run. See [usage and data](instructions.md), [diagnostics](docs/diagnostics.md) and [capture provenance](docs/assets/screenshots/README.md).
 
-## Make the Island yours
+## Develop and contribute
 
-- **Place it where it belongs.** Select a display, use a snap position, or adjust its free position with immediate slider feedback. Appearance settings keeps a live Island preview visible. Sliders have endpoint labels and gentle snap markers, with free adjustment between them.
-- **Choose the appearance.** Default, Sleek Black and Windows 95 themes; custom colors, an image URL or a local background file; an optional border and adjustable expanded corners (0–60px).
-- **Adjust settings directly.** Start with the keyboard-first guide with actual recordings and clear settings icons. Compact sliders and switches reveal larger clear glass handles immediately on press. Sliders attract nearby stops during dragging; switches can be dragged left or right. Handles stay still on approach; drag deformation starts enabled and can be adjusted in the experiment. Menu highlights move continuously. Appearance & Position has Liquid Glass (Exp) parameters and a switch to restore ordinary controls. Island glass remains unavailable. Red destructive actions ask for confirmation. About starts with the app icon, brand and version before feedback and licenses.
-- **Keep the pages you use.** Reorder or hide seven Island feature pages and choose the default. Launch Ripple or use the tray menu to open Settings.
-- **Control when it stays visible.** Compact, hover and expanded modes; inactive hiding, Quick Standby, Large Standby and a configurable 0–2000 ms pointer-leave delay.
-- **Fit your desktop routine.** Startup control and, on macOS, a menu bar icon toggle; Windows and Linux always keep the tray. Platform specifics are in the guides.
-- **Use your language.** 简体中文, 繁體中文, English and 日本語. The interface follows the system by default; a manual choice applies immediately and is remembered.
-
-Display and login-startup changes are saved after the system accepts them. Login-item registration requires a packaged app on Windows and macOS; failed changes keep the previous preference.
-
-<p align="center">
-  <img src="docs/assets/screenshots/settings.png" width="440" alt="Settings for language, hour format, time zone, startup, menu bar icon and display">
-</p>
-
-- **Choose your typography.** General → Font uses Alibaba PuHuiTi 3 by default and compares it with System and OpenRunde using real text samples. Simplified Chinese exposes Standard, Microsoft Chinese and Apple Chinese expressions. The guide puts keyboard controls first, followed by real recordings of typography, glass, AI and workflow editing.
-
-![Font specimens and selection](docs/assets/screenshots/font-settings.png)
-
-![About brand and version](docs/assets/screenshots/about.png)
-
-## Try Ripple Next
-
-This branch prepares **Ripple Next 4.1.0-beta.1**; it is not published yet. Read the [beta change list](docs/releases/4.1.0-beta.1.en.md). The latest published stable version is [4.0.0](docs/releases/4.0.0.en.md); download its platform package from [Releases](https://github.com/ArsvineZhu/Ripple-Next/releases).
-
-| Platform | Published build targets         | Packages                      |
-| -------- | ------------------------------- | ----------------------------- |
-| Windows  | x64                             | MSI installer or portable ZIP |
-| macOS    | Intel x64 / Apple Silicon arm64 | DMG or portable ZIP           |
-| Linux    | x64                             | DEB, RPM or portable ZIP      |
-
-Install the package for your platform, or extract its portable ZIP and launch Ripple Next. Each launch opens Settings; launching again focuses the existing instance's settings window. Hover over the Island for a quick view and click its background to expand. Local features can be used before AI is configured. See the [user guide](instructions.md) for your first workflow and detailed controls, and [platform compatibility](docs/platform-compatibility.md) for native permissions and limitations.
-
-### Run the current source
-
-Use Node **22.23.3** from [.node-version](.node-version) and the pinned pnpm **12.9.1** from [package.json](package.json):
+Use Node from `.node-version` and pnpm from `package.json`. [Development](docs/development.md), [architecture](docs/architecture.md), [tests](tests/README.md) and the [repository map](INDEX.md) describe the current owners and workflows.
 
 ```sh
-git clone https://github.com/ArsvineZhu/Ripple-Next.git
-cd Ripple-Next
 pnpm install --frozen-lockfile
 pnpm start
+pnpm check
+pnpm test
 ```
-
-The [developer guide](docs/development.md) owns setup prerequisites, checks, packaging and platform troubleshooting. Main/preload changes require restarting the application; a renderer hot update alone does not load them.
-
-## Local data and external services
-
-Settings, tasks, workflows and quick apps are saved in Ripple Next's own local database. API-key ciphertext is protected through the OS encryption service. Clipboard history lasts for the session; AI exchanges remain in the current session.
-
-If saved data cannot be read, the app shows an error with a diagnostics-folder action and leaves your data unchanged.
-
-Searches and webpages open in the system browser. Weather uses the configured location with an external weather service. AI uses your configured endpoint. Local diagnostics omit API keys, clipboard text, prompts and answers; crash-report uploads are disabled. Minidumps are process snapshots and should be reviewed before sharing.
-
-Ripple Next uses its own profile. Installed-app targets remain platform-specific when you move a profile to another OS.
-
-Local diagnostics now use readable errors with operation numbers and source locations. See [diagnostics](docs/diagnostics.md) for debug/trace commands.
-
-## Explore, contribute, report
-
-- [User guide](instructions.md) — modes, navigation, seven Island pages, Settings and troubleshooting.
-- [Documentation catalog](docs/INDEX.md) — development, release validation and current platform behavior.
-- [Repository map](INDEX.md) — source ownership and configuration boundaries.
-- [Contributing](CONTRIBUTING.md) — checks, documentation and localization expectations.
-- [Issues](https://github.com/ArsvineZhu/Ripple-Next/issues) — report the version, OS and steps needed to reproduce a problem.
-
-## License and credit
-
-Ripple Next is developed by [Arsvine Zhu](https://github.com/ArsvineZhu) from [TopMyster's original Ripple](https://github.com/TopMyster/Ripple). It continues the Dynamic Island idea with its own product identity, persistence and cross-platform work. Released under the [MIT license](LICENSE); original attribution is retained.

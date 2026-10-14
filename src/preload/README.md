@@ -1,28 +1,11 @@
-[简体中文](README.zh-CN.md)
+[简体中文](README.zh-CN.md) · [Shared contracts](../shared/README.md)
 
 # Preload bridge
 
-`launchTargets(targets)` handles a single quick-app target or a whole workflow using the same domain array. Main validates it and returns indexed failures after attempting every target in order. `discoverApps(query)` returns the shared Application model. The bridge exposes no app-cache preparation or raw name-launch method.
+The sandbox-compatible CommonJS bundle exposes a typed electronAPI through contextBridge. Every operation uses a named method; renderer code receives neither raw ipcRenderer nor arbitrary channel access.
 
-Media reads return a session snapshot. `selectMediaSession` chooses Automatic or a known session, and `controlSystemMedia` requires that displayed session's ID; both return refreshed state and an operation error. `openMediaSession` uses the known session identity to activate its player without waiting for another metadata read, and returns the current snapshot plus an operation error. The renderer has no raw D-Bus or PowerShell access.
+The bridge covers application bootstrap/committed updates, feature patches, validated AI graph/credential operations, assistant stream events, weather, native launch/media/device operations, clipboard, color picker, window input/preview and diagnostics. Main validates window identity and operation payloads.
 
-Preload exposes the isolated `electronAPI` through explicit `contextBridge` methods. It maps typed calls and events to named IPC channels from [shared contracts](../shared/README.md); renderer code never receives raw `ipcRenderer` access.
+Media events deliver the same snapshot/selection to both windows. Device events wake one observer; capability flags describe the selected native backend. Every event method returns an unsubscribe function. Scroll gesture events and renderer diagnostic payloads are bounded schemas.
 
-The bridge covers state snapshots and patches, typed AI graph commands, named credential writes, credential-presence flags, main-owned weather snapshots, license listing/reading, AI streams and native controls. Only Settings can mutate AI configuration or write credentials; plaintext keys never return through bootstrap or status. Preload validates request and event shapes and exposes no raw invoke API.
-
-Keep this bundle sandbox-compatible and keep each bridge method aligned with its shared request, response and event contract.
-
-`showColorPicker(initialColor)` opens the Settings-owned native RGB chooser and returns a six-digit hex color or null on Cancel. Main validates the sender and payload.
-
-See the [developer guide](../../docs/development.md) and [repository map](../../INDEX.md).
-
-The bridge also exposes `readClipboardText()` and `writeClipboardText(text)` so desktop clipboard operations use Electron's native API without browser focus/permission assumptions.
-
-`onScrollGestureStart(callback)` delivers validated native touchpad start timestamps through `scroll-gesture-start` and returns an unsubscribe function. It exposes no raw input events or pointer/key data.
-
-`setIslandPreview(active)` is restricted to the Settings role. `getIslandPreview()` and `onIslandPreviewChanged()` synchronize transient preview visibility with Island; subscriptions return cleanup functions. Preview is not persisted.
-`updateAppState` is the single preference commit, including display and autostart effects. The separate set-display/set-auto-launch channels are removed. `getWeather` accepts the shared WeatherPreferences object; no tuple, joined query or automatic-location sentinel crosses the bridge.
-
-reportDiagnostic sends only validated view context and safe error metadata over renderer-diagnostic. Main verifies window identity and context role. No generic logger, console proxy or logging preload is exposed.
-
-onMediaSnapshotChanged synchronizes media snapshots and selection into both windows. onDevicesChanged wakes device refresh without sending native objects. systemEventCapabilities describes the selected backend; every event method returns a cleanup function.
+Settings alone edits AI configuration/credentials, requests the native color dialog and controls the transient Island preview. Credential plaintext never returns through bootstrap/status. See [architecture](../../docs/architecture.md) and [development](../../docs/development.md).

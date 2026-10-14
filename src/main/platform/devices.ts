@@ -21,4 +21,5 @@ export const devices =
           getBluetoothStatus: linux.getBluetoothStatus,
           getCameraStatus: linux.getCameraStatus,
           getMicrophoneStatus: linux.getMicrophoneStatus,
+          subscribe: linux.subscribe,
         };

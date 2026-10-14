@@ -12,7 +12,8 @@ export const ja: Messages = {
   musicMarqueeHint:
     '幅に収まらない曲名とアーティスト名をスクロールします。オフでは静止表示します。',
   musicIdleArtist: 'idle 時にアーティストを表示',
-  musicIdleArtistHint: 'Island を閉じているとき、曲名の横にアーティストを表示します。',
+  musicIdleArtistHint:
+    'idle 時にアーティストを表示します。ホバーのクイックビューは常にアーティストと再生ボタンを表示します。',
   musicPlayer: '再生元',
   musicPlayerHint:
     '自動または実行中のプレーヤーを選択します。Island と同期し、プレーヤー終了まで維持します。',
@@ -22,17 +23,16 @@ export const ja: Messages = {
   findingApplications: 'インストール済みアプリを検索中…',
   workflowQuickApp: '保存済みクイックアプリを追加',
   guideTypographyStep3:
-    '遊び心のある表現は一部の文言を変えます。日時と数字は標準の簡体字中国語形式です。標準を選ぶと通常の文言に戻ります。',
-  guideTypographyStep2:
-    '簡体字中国語を選ぶと、中国語の表現が選べます。標準、Microsoft Chinese、Apple Chinese で操作と技術用語は共通です。',
+    '設定と Island に同じ書体が適用され、内蔵書体は選択時にローカルから読み込まれます。',
+  guideTypographyStep2: 'System と OpenRunde を同じ例文で比べ、使いたい書体を選びます。',
   guideTypographyStep1:
     '「一般」の「フォント」で、既定の Alibaba PuHuiTi 3、システム、OpenRunde の見本を比較して選択します。',
   guideTypographyBody: '同じ文章と数字でフォントを比較します。選択は Island と設定に反映されます。',
-  guideTypographyTitle: 'フォントと中国語の表現',
+  guideTypographyTitle: '書体：読みやすさを選ぶ',
   guideEditorHelp:
     '矢印のある項目は編集画面を開きます。戻るボタンで前の画面とスクロール位置に戻ります。削除や消去には確認が必要です。',
   guideRecordingNote:
-    'Windows の Ripple Next を専用デモ設定で録画しています。再生、一時停止、シークができます。パンとズームを含み、画面は簡体字中国語です。',
+    '実際の Ripple Next と独立したデモ設定で録画しています。基本は英語、中国語の表現は対応する言語で紹介します。動画の操作で再生、一時停止、シークできます。',
   fontSettings: 'フォント',
   fontSettingsRowHint: 'インターフェイスの書体を選択',
   fontSettingsHint: '見本を比較し、設定と Island に使うフォントを選びます。',
@@ -50,6 +50,14 @@ export const ja: Messages = {
   chineseApple: 'Apple 中国語 · パロディ',
   chineseMicrosoftHint: '直訳調、真面目な気遣い、ときどき詩。',
   chineseAppleHint: '言葉遊び、反復、凝った短い表現。',
+  guideExpressionTitle: '中国語の表現：同じ機能、違う語り口',
+  guideExpressionBody:
+    'この言語固有の動画では標準簡体字から Microsoft Chinese、Apple Chinese に切り替え、About で表現を比べます。他の動画は英語です。',
+  guideExpressionStep1: 'General で簡体字中国語を選ぶと、Language の下に表現の選択肢が現れます。',
+  guideExpressionStep2:
+    'Microsoft Chinese または Apple Chinese を選び、ガイド、ヒント、空の画面で語り口を比べます。',
+  guideExpressionStep3:
+    '技術項目、重要な操作、エラーと日時・数値の意味は変わりません。Standard や別の言語で通常の表現に戻ります。',
   guideOpenSection: '関連する設定を開く',
   guideAITitle: 'AI：エンドポイント、キー、モデルを接続',
   guideAIBody:
@@ -393,7 +401,7 @@ export const ja: Messages = {
     '検索語を入れる場所に {query} を指定します。例：https://www.google.com/search?q={query}',
   clipboardEmpty: 'クリップボードは空です',
   nothingPlaying: '再生中のメディアはありません',
-  playMusicHint: 'SpotifyまたはApple Musicで音楽を再生してください',
+  playMusicHint: '対応するプレイヤーで再生を開始してください。',
   tasksEmpty: 'タスクがありません。下から追加できます。',
   newTask: '新しいタスク…',
   add: '追加',

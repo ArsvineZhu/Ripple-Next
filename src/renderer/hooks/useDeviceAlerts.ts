@@ -36,61 +36,65 @@ export function useDeviceAlerts(setMode: Dispatch<SetStateAction<IslandMode>>) {
     let captureTimer: ReturnType<typeof setTimeout> | undefined;
     let bluetoothPending = false,
       capturePending = false;
+    let bluetoothDirty = false,
+      captureDirty = false;
+    const events = window.electronAPI.systemEventCapabilities?.devices;
     const pollBluetooth = async () => {
+      bluetoothDirty = true;
       if (bluetoothPending) return;
       bluetoothPending = true;
       clearTimeout(bluetoothTimer);
-      const api = window.electronAPI;
       try {
-        const connected = await api.getBluetoothStatus();
-        if (active) setBluetooth(connected);
-      } catch (error) {
-        recordRendererError('device', error);
+        do {
+          bluetoothDirty = false;
+          try {
+            const connected = await window.electronAPI.getBluetoothStatus();
+            if (active) setBluetooth(connected);
+          } catch (error) {
+            recordRendererError('device', error);
+          }
+        } while (bluetoothDirty && active);
       } finally {
         bluetoothPending = false;
-        if (active)
-          bluetoothTimer = setTimeout(
-            () => void pollBluetooth(),
-            window.electronAPI.systemEventCapabilities?.devices
-              ? 30_000
-              : BLUETOOTH_POLL_INTERVAL_MS,
-          );
+        if (active && !events)
+          bluetoothTimer = setTimeout(() => void pollBluetooth(), BLUETOOTH_POLL_INTERVAL_MS);
       }
     };
     const pollCaptureDevices = async () => {
+      captureDirty = true;
       if (capturePending) return;
       capturePending = true;
       clearTimeout(captureTimer);
-      const api = window.electronAPI;
       try {
-        const results = await Promise.allSettled([
-          api.getCameraStatus(),
-          api.getMicrophoneStatus(),
-        ]);
-        if (active)
-          results.forEach((result, index) => {
-            if (result.status === 'fulfilled')
-              [setCameraInUse, setMicrophoneInUse][index]!(result.value);
-            else recordRendererError('device', result.reason);
-          });
+        do {
+          captureDirty = false;
+          const results = await Promise.allSettled([
+            window.electronAPI.getCameraStatus(),
+            window.electronAPI.getMicrophoneStatus(),
+          ]);
+          if (active)
+            results.forEach((result, index) => {
+              if (result.status === 'fulfilled')
+                [setCameraInUse, setMicrophoneInUse][index]!(result.value);
+              else recordRendererError('device', result.reason);
+            });
+        } while (captureDirty && active);
       } finally {
         capturePending = false;
-        if (active)
+        if (active && !events)
           captureTimer = setTimeout(
             () => void pollCaptureDevices(),
-            window.electronAPI.systemEventCapabilities?.devices
-              ? 30_000
-              : CAPTURE_DEVICE_POLL_INTERVAL_MS,
+            CAPTURE_DEVICE_POLL_INTERVAL_MS,
           );
       }
     };
-
-    void pollCaptureDevices();
     const unsubscribe = window.electronAPI.onDevicesChanged?.(() => {
       void pollBluetooth();
       void pollCaptureDevices();
     });
-    bluetoothTimer = setTimeout(() => void pollBluetooth(), CAPTURE_DEVICE_POLL_INTERVAL_MS);
+    void pollCaptureDevices();
+    if (events) void pollBluetooth();
+    else bluetoothTimer = setTimeout(() => void pollBluetooth(), CAPTURE_DEVICE_POLL_INTERVAL_MS);
     return () => {
       active = false;
       unsubscribe?.();

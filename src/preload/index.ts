@@ -12,8 +12,8 @@ function invoke<K extends keyof InvokeMap>(
 }
 const api: ElectronAPI = {
   systemEventCapabilities: {
-    media: process.platform === 'win32',
-    devices: process.platform === 'win32',
+    media: process.platform === 'win32' || process.platform === 'linux',
+    devices: process.platform === 'win32' || process.platform === 'linux',
   },
   onMediaSnapshotChanged: (callback) => {
     const listener = (

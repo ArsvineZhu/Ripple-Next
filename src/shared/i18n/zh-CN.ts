@@ -11,7 +11,7 @@ export const zhCN: Messages = {
   musicMarquee: '滚动长文本',
   musicMarqueeHint: '歌名或歌手超出宽度时滚动；关闭后静止显示。',
   musicIdleArtist: 'idle 时显示歌手',
-  musicIdleArtistHint: 'Island 收起时，在歌名旁显示歌手信息。',
+  musicIdleArtistHint: 'idle 时显示歌手。悬停快览始终显示歌手和播放按钮。',
   musicPlayer: '播放来源',
   musicPlayerHint: '选择自动或正在运行的播放器，与 Island 同步。选择保持到播放器退出。',
   musicPlayerEmpty: '先在播放器中播放音乐，即可在此选择。',
@@ -19,18 +19,16 @@ export const zhCN: Messages = {
   clipboardReadFailed: '无法读取剪贴板。仍可复制已有的历史内容。',
   findingApplications: '正在查找已安装应用…',
   workflowQuickApp: '添加已保存的快捷应用',
-  guideTypographyStep3:
-    '趣味变体改变部分界面措辞。日期与数字仍按标准简体中文格式显示，选择标准中文即可恢复普通表达。',
-  guideTypographyStep2:
-    '选择简体中文后，会出现“中文表达”。标准、微软中文和苹果中文使用相同的操作与技术字段。',
+  guideTypographyStep3: '字体同时应用于设置和 Island；内置字体在选用时从本地加载。',
+  guideTypographyStep2: '选择系统字体或 OpenRunde 比较相同样例，再选希望保留的字体。',
   guideTypographyStep1:
     '在“常规”中进入“字体”，比较默认的阿里巴巴普惠体 3、系统字体与 OpenRunde，点选喜欢的样张。',
   guideTypographyBody: '用相同文字和数字比较字体。选择会同步应用到 Island 与设置窗口。',
-  guideTypographyTitle: '字体与中文表达',
+  guideTypographyTitle: '字体：选一种读起来舒服的样子',
   guideEditorHelp:
     '带箭头的设置项进入编辑页。胶囊返回键恢复上一页及其滚动位置。删除或清除数据时，需要再次确认。',
   guideRecordingNote:
-    '在 Windows 上的 Ripple Next 中，使用独立演示配置录制。通过视频控件播放、暂停或跳转。画面包含运镜，界面文字为简体中文。',
+    '录像来自真实 Ripple Next 界面与独立演示配置，以英文为主；中文表达章节使用对应语言。通过视频控件播放、暂停或跳转。',
   fontSettings: '字体',
   fontSettingsRowHint: '选择界面使用的字形',
   fontSettingsHint: '比较下面的字形，再选择设置与 Island 使用的字体。',
@@ -48,6 +46,13 @@ export const zhCN: Messages = {
   chineseApple: '苹果中文 · 趣味',
   chineseMicrosoftHint: '认真直译、系统关怀，偶尔吟诗。',
   chineseAppleHint: '双关、反复和精心雕琢的断句。',
+  guideExpressionTitle: '中文表达：功能相同，换一种声音',
+  guideExpressionBody:
+    '这段语言特有录像从标准简体中文切换到微软中文、苹果中文，并打开关于页比较原创表达；其他录像使用英文。',
+  guideExpressionStep1: '在常规中选择简体中文，语言下方会出现中文表达选择器。',
+  guideExpressionStep2: '选择微软中文或苹果中文，指南、提示和空状态会使用不同语境表达。',
+  guideExpressionStep3:
+    '技术字段、关键操作、错误及日期数字含义保持一致；选择标准或其他语言可回到普通措辞。',
   guideOpenSection: '打开相关设置',
   guideAITitle: 'AI：关联接口、密钥和模型',
   guideAIBody:
@@ -370,7 +375,7 @@ export const zhCN: Messages = {
   searchEngineUrlHint: '在搜索词的位置写入 {query}。例如：https://www.google.com/search?q={query}',
   clipboardEmpty: '剪贴板为空',
   nothingPlaying: '没有正在播放的内容',
-  playMusicHint: '在 Spotify 或 Apple Music 中播放音乐',
+  playMusicHint: '在支持系统媒体会话的播放器中开始播放。',
   tasksEmpty: '还没有任务，在下方添加吧！',
   newTask: '新任务…',
   add: '添加',

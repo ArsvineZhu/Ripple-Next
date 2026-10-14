@@ -10,20 +10,20 @@ Ripple Next 在 Windows、macOS、Linux 上共用界面和数据格式，通过�
 
 接口来源：[Windows ColorDialog](https://learn.microsoft.com/dotnet/api/system.windows.forms.colordialog)、[macOS 颜色对话框](https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/PromptforaColor.html)、[KDE 对话框](https://develop.kde.org/docs/administration/kdialog/)。
 
-| 功能           | Windows                              | macOS                                                 | Linux                                                  |
-| -------------- | ------------------------------------ | ----------------------------------------------------- | ------------------------------------------------------ |
-| 音乐           | GSMTC 会话、控制能力与封面           | AppleScript 读取运行中的 Spotify、Music；Spotify 封面 | 会话 D-Bus 上的 MPRIS、控制能力与封面                  |
-| 唤起播放器     | 缓存的应用标识／路径                 | 激活正在运行的应用                                    | MPRIS Raise 或同一会话的托盘 Activate                  |
-| 已安装快捷应用 | 开始菜单 `.lnk` 与 Store 标识        | 系统、共享、用户 Applications，含 Utilities           | XDG 桌面条目，经 `gio launch` 启动                     |
-| 登录启动       | 打包应用的系统登录设置               | 打包应用的原生登录项                                  | 当前 XDG 自启动目录中的 `ripple-next.desktop`          |
-| 透明窗口输入   | 按原生光标／岛边界切换穿透           | Electron 岛外点击穿透                                 | XWayland 上的 X11 `ShapeInput`                         |
-| 设备状态       | WinRT 蓝牙；摄像头／麦克风注册表探测 | 蓝牙与采集设备注册表探测                              | `bluetoothctl`、`fuser`、`pactl` 或 PipeWire `pw-dump` |
+| 功能           | Windows                              | macOS                                                 | Linux                                                     |
+| -------------- | ------------------------------------ | ----------------------------------------------------- | --------------------------------------------------------- |
+| 音乐           | GSMTC 会话、控制能力与封面           | AppleScript 读取运行中的 Spotify、Music；Spotify 封面 | 会话 D-Bus 上的 MPRIS、控制能力与封面                     |
+| 唤起播放器     | 缓存的应用标识／路径                 | 激活正在运行的应用                                    | MPRIS Raise 或同一会话的托盘 Activate                     |
+| 已安装快捷应用 | 开始菜单 `.lnk` 与 Store 标识        | 系统、共享、用户 Applications，含 Utilities           | XDG 桌面条目，经 `gio launch` 启动                        |
+| 登录启动       | 打包应用的系统登录设置               | 打包应用的原生登录项                                  | 当前 XDG 自启动目录中的 `ripple-next.desktop`             |
+| 透明窗口输入   | 按原生光标／岛边界切换穿透           | Electron 岛外点击穿透                                 | XWayland 上的 X11 `ShapeInput`                            |
+| 设备状态       | WinRT 蓝牙；摄像头／麦克风注册表探测 | 蓝牙与采集设备注册表探测                              | BlueZ D-Bus、inotify + `fuser`、PipeWire／PulseAudio 事件 |
 
 播放器发布受支持的媒体会话后才会出现；控制可用性由其能力决定。macOS 当前接入 Spotify／Music，Music 适配器读取元数据和控制，但尚未读取封面。摄像头／麦克风提示依据系统和驱动提供的探测信息。
 
 ## 封面与多播放器
 
-Linux 从 `mpris:artUrl` 获取封面，本地读取上限为 5 MiB。保留已有扩展名格式支持；扩展名无法识别时，根据 PNG／JPEG／GIF／WebP 文件签名决定 data URL 的 MIME。文件缺失、过大或无法读取时，歌曲和控制仍保持可用。图片解码失败显示音乐占位图，切换会话或封面 URL 后重试。
+Linux 从 `mpris:artUrl` 获取封面，本地读取上限为 5 MiB。已识别扩展名决定图片格式；扩展名无法识别时，根据 PNG／JPEG／GIF／WebP 文件签名决定 data URL 的 MIME。文件缺失、过大或无法读取时，歌曲和控制仍保持可用。图片解码失败显示音乐占位图，切换会话或封面 URL 后重试。
 
 Linux 缓存 MPRIS 的 `CanRaise` 能力。Folia 等播放器报告 false，或 `Raise` 调用失败时，Ripple 向同一个 D-Bus 唯一所有者的 `/StatusNotifierItem` 调用 `org.kde.StatusNotifierItem.Activate`，激活已有托盘实例，不启动应用进程。两个激活接口都不可用时，音乐页显示打开失败；原会话退出后，不会转而激活替代进程。
 
@@ -39,15 +39,15 @@ Windows 通过共用的类型化 CLR 桥接读取 GSMTC 元数据、封面和控
 
 Snap 播放器可通过 AppArmor 限制 MPRIS 访问。从 IDE 或编程工具启动的 Ripple 可能继承其 AppArmor 标签，使 Snap Spotify 等播放器拒绝读取，而其他播放器仍然可见。D-Bus 报告 `AccessDenied` 并指出发送方 AppArmor 标签时，从桌面入口或正常用户会话启动 Ripple，再检查该播放器。
 
-| 现象                            | 检查或处理                                                                                                                            |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| 旧构建报告 `spawn pactl ENOENT` | 使用更新构建。当前代码在 `pactl` 缺失时改用 `pw-dump --no-colors`；PipeWire 系统若两个命令都没有，安装发行版提供 `pw-dump` 的工具包。 |
-| 麦克风状态不可用                | 确认音频后端能连接当前用户会话。PipeWire 检测运行中的 `Stream/Input/Audio` 节点；后端选择保持到 Ripple 重启。                         |
-| 蓝牙／摄像头探测失败            | 检查 `bluetoothctl`／`fuser` 是否存在，以及相应设备的访问权限；连接和权限错误可在诊断中查看。                                         |
-| 已安装应用无法启动              | 检查桌面条目与 `gio launch`；移动或移除应用后重新选择入口。                                                                           |
-| 无法保存 AI 密钥                | 解锁／配置系统凭据服务并重启 Ripple；Linux 拒绝使用明文加密后端。                                                                     |
-| 开发时 sandbox 报错             | 使用版本匹配、root 所有且权限为 `4755` 的 Chromium sandbox helper，见[开发指南](development.zh-CN.md)。                               |
-| 岛外点击被拦截                  | 检查 XWayland 与诊断中的首次 ShapeInput 确认；修改主进程／preload 输入代码后重启。                                                    |
+| 现象                            | 检查或处理                                                                                                                                                     |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 旧构建报告 `spawn pactl ENOENT` | 使用更新构建。当前优先用 `pw-dump --monitor --no-colors`，缺少此工具时用 `pactl subscribe`；PipeWire 系统若两个命令都没有，安装发行版提供 `pw-dump` 的工具包。 |
+| 麦克风状态不可用                | 确认音频后端能连接当前用户会话。PipeWire 检测运行中的 `Stream/Input/Audio` 节点；后端选择保持到 Ripple 重启。                                                  |
+| 蓝牙／摄像头探测失败            | 检查 BlueZ 系统总线访问，以及 `fuser` 对视频设备的读取权限；连接和权限错误可在诊断中查看。                                                                     |
+| 已安装应用无法启动              | 检查桌面条目与 `gio launch`；移动或移除应用后重新选择入口。                                                                                                    |
+| 无法保存 AI 密钥                | 解锁／配置系统凭据服务并重启 Ripple；Linux 拒绝使用明文加密后端。                                                                                              |
+| 开发时 sandbox 报错             | 使用版本匹配、root 所有且权限为 `4755` 的 Chromium sandbox helper，见[开发指南](development.zh-CN.md)。                                                        |
+| 岛外点击被拦截                  | 检查 XWayland 与诊断中的首次 ShapeInput 确认；修改主进程／preload 输入代码后重启。                                                                             |
 
 自定义命令由可执行文件和独立 argv 启动。工作流中的 `localhost:3000/` 在文件路径判断之前识别为 URL，交给默认浏览器；浏览器已打开但页面失败时，检查浏览器关联和端口 3000 上的服务。
 
@@ -67,7 +67,7 @@ macOS 发现应用程序包时不遍历包内部；AppleScript 媒体控制可�
 
 主进程合并 Chromium `gestureScrollBegin`／`gestureFlingCancel` 后，以仅含时间戳的事件传给 preload。没有原生边界的设备使用 150 ms 静默间隔，以及持续衰减尾部／重新上升输入规则。主进程和 preload 的修改需要重启应用才能验证。
 
-启动、媒体、设置和剪贴板复制错误显示在对应功能旁。电池／设备提醒保留用户已展开的页面。分钟时钟按分钟边界更新，原生滚动避免持续动画循环；剪贴板与设备轮询在岛折叠后继续运行。
+启动、媒体、设置和剪贴板复制错误显示在对应功能旁。电池／设备提醒保留用户已展开的页面。分钟时钟按分钟边界更新，原生滚动避免持续动画循环；剪贴板采样与原生设备监听在岛折叠后继续运行。
 
 ## 本地诊断
 
@@ -76,8 +76,6 @@ macOS 发现应用程序包时不遍历包内部；AppleScript 媒体控制可�
 ## 验证记录
 
 CI 在 Ubuntu、Windows、macOS 上执行静态检查和测试；发布打包覆盖 Linux x64、Windows x64、macOS x64／arm64。打包验证构建集成，各主机原生行为按[发布验收](release.zh-CN.md)逐项检查。
-
-2026 年 10 月的 Linux 更新完成完整检查、测试、Linux 打包，并验证无扩展名封面、默认浏览器的实际工作流启动，以及 PipeWire 采集活动回到空闲。宣传截图取自真实 Linux renderer 的独立演示配置。此前 Windows 适配验证过原生 Shell／WinRT，以及打包应用的启动和剪贴板；新 Windows／macOS 版本继续在对应主机执行验收。
 
 ## 协议与 API 参考
 

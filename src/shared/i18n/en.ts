@@ -10,7 +10,8 @@ export const en = {
   musicMarquee: 'Scroll long text',
   musicMarqueeHint: 'Scroll overflowing titles and artist names; turn off for static text.',
   musicIdleArtist: 'Show artist while idle',
-  musicIdleArtistHint: 'Include the artist beside the title while the Island is collapsed.',
+  musicIdleArtistHint:
+    'Include the artist while idle. Hover quick view always shows the artist and playback control.',
   musicPlayer: 'Playback source',
   musicPlayerHint:
     'Choose Automatic or a running player. The choice also updates the Island and lasts until the player closes.',
@@ -20,18 +21,18 @@ export const en = {
   findingApplications: 'Finding installed applications…',
   workflowQuickApp: 'Add a saved quick app',
   guideTypographyStep3:
-    'The playful variants change selected interface phrases. Dates and numbers keep standard Simplified Chinese formatting. Choose Standard to return to the ordinary wording.',
+    'The chosen font applies to Settings and the Island. Bundled fonts load locally when selected.',
   guideTypographyStep2:
-    'Choose Simplified Chinese to reveal Chinese expression. Standard, Microsoft Chinese and Apple Chinese share the same actions and technical labels.',
+    'Select System or OpenRunde to compare their samples, then choose the font you want to keep.',
   guideTypographyStep1:
     'In General, open Font. Compare the default Alibaba PuHuiTi 3, System and OpenRunde; select your preferred sample.',
   guideTypographyBody:
     'Choose a font by comparing the same text and numbers. The setting applies across the Island and Settings.',
-  guideTypographyTitle: 'Typography and Chinese expression',
+  guideTypographyTitle: 'Typography: choose how it reads',
   guideEditorHelp:
     'Rows with a chevron open an editor. The capsule back button returns to the previous page and restores its scroll position. Deleting or clearing data asks for confirmation.',
   guideRecordingNote:
-    'Recorded in Ripple Next on Windows with a separate demo profile. Play, pause or seek using the video controls. The recordings include camera pans and zooms; interface labels are in Simplified Chinese.',
+    'Recorded in the actual Ripple Next interface with a separate demo profile. Most flows use English; Chinese expression is demonstrated in Chinese. Use the video controls to play, pause or seek.',
   fontSettings: 'Font',
   fontSettingsRowHint: 'Choose the interface typeface',
   fontSettingsHint: 'Compare the text samples, then choose a font for Settings and the Island.',
@@ -49,6 +50,15 @@ export const en = {
   chineseApple: 'Apple Chinese · playful',
   chineseMicrosoftHint: 'Literal translation, earnest reassurance and occasional poetry.',
   chineseAppleHint: 'Wordplay, repetition and deliberately polished phrasing.',
+  guideExpressionTitle: 'Chinese expression: the same tools, a different voice',
+  guideExpressionBody:
+    'This language-specific recording switches from Standard Simplified Chinese to Microsoft Chinese and Apple Chinese, and visits About to compare their authored wording. Other recordings use English.',
+  guideExpressionStep1:
+    'In General, choose Simplified Chinese. The Chinese expression selector appears below Language.',
+  guideExpressionStep2:
+    'Choose Microsoft Chinese or Apple Chinese. Hints, guide prose and empty states use contextual expressions across the application.',
+  guideExpressionStep3:
+    'Technical fields, critical actions, errors and date/number formats keep their meaning. Choose Standard or a different language to return to its ordinary wording.',
   guideOpenSection: 'Open related settings',
   guideAITitle: 'AI: connect an endpoint, key and model',
   guideAIBody:
@@ -399,7 +409,7 @@ export const en = {
     'Use {query} where the search term should go. Example: https://www.google.com/search?q={query}',
   clipboardEmpty: 'Clipboard is empty',
   nothingPlaying: 'Nothing playing',
-  playMusicHint: 'Play music on Spotify or Apple Music',
+  playMusicHint: 'Start playback in a supported player',
   tasksEmpty: 'No tasks yet. Add one below!',
   newTask: 'New task…',
   add: 'Add',

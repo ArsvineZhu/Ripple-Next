@@ -1,29 +1,15 @@
-[简体中文](README.zh-CN.md)
+[简体中文](README.zh-CN.md) · [Architecture](../../docs/architecture.md)
 
 # Shared contracts
 
-`launch.ts` owns one `Application` and `LaunchTarget` model for discovery, quick apps and workflows. A workflow persists `targets`, with type resolution at editing time. Installed applications carry an opaque platform identity in `native`; commands keep argv and an optional working directory. `launch-targets` sends the selected target array once and returns indexed failures. Platform adapters own interpretation and activation of native identities.
+Shared contains runtime-neutral serializable data, validation schemas and pure policies consumed by main, preload and renderer. Native discovery, filesystem access, provider requests and UI state belong to their owning runtime layers.
 
-`MediaSnapshot` describes all sessions, automatic/manual selection, freshness and errors. `MediaSession` includes playback state and nullable control capabilities. `media.ts` owns the canonical session/snapshot/operation types and pure selection/capability rules. Control IPC requires a session ID. Selection updates the current main-owned snapshot; controls return the refreshed snapshot plus a domain error.
+Application/LaunchTarget describes installed apps, HTTP(S) shortcuts and command argv/working directories. MediaSession/MediaSnapshot describes capabilities, automatic/manual selection, freshness and bounded operation errors; commands require the displayed session ID. Stable page IDs and layout policies are independent of navigation order.
 
-`pages.ts` owns stable page IDs, default order and built-in layout policies. Persisted page IDs are strings; the state schema accepts additional named pages independently of their navigation position.
+AppState owns persisted defaults and preferences, including weather, fonts, music and the structured AI graph. AI schemas validate stable IDs, bindings, model customization and ordered injections. Credentials are named secure-store records owned by main. Related graph/credential changes share the durable transaction.
 
-`backgroundImage.ts` normalizes background settings and encodes local paths into the dedicated image URL without CSS backslash escaping. It performs no file access.
+Input geometry handles fractional scales and viewport limits. Background/color policies normalize resources and preserve alpha. Diagnostic schemas accept bounded operation/view/error metadata; clipboard text and native protocol payloads are not diagnostic event fields.
 
-Shared defines serializable IPC and domain contracts, Zod schemas for persisted app state and quick-app targets, and pure input-geometry helpers. Main, preload and renderer consume these definitions; runtime services stay in their owning layers.
+Bundled en/zh-CN/zh-TW/ja catalogs have matching keys/interpolation variables. Contextual Microsoft/Apple Chinese overlays inherit ordinary technical and critical wording, and private i18next variants map to standard zh-CN for Intl formatting.
 
-`contracts.ts` owns request, response, notice and assistant-stream shapes. `appState.ts` owns persisted defaults, the structured AI graph, the canonical weather preferences. `aiConfiguration.ts` validates stable IDs, endpoint/key/model references, customization patches and ordered injections; context awareness is fixed off. `weather.ts` separates reading, detected address and bounded errors. `licenses.ts` describes license metadata and text. Runtime services stay outside shared. `i18n/` supplies complete bundled catalogs to main and renderer.
-
-`color.ts` parses persisted RGB/hex CSS colors and preserves alpha when a native RGB choice is applied. The `show-color-picker` contract returns hex or null; `colorPickerFailed` belongs to Settings.
-
-See the [developer guide](../../docs/development.md) and [repository map](../../INDEX.md).
-
-`diagnostics.ts` defines safe error metadata and structured IPC, capability and lifecycle events. Native clipboard methods are explicit members of the shared IPC contract; diagnostics never include their text payloads.
-
-`ScrollGestureStartSchema` validates the native touchpad boundary's timestamp-only payload. Main produces it, preload validates it, and renderer uses it to separate fresh gestures from older momentum.
-
-`fonts.ts` validates uiFont choices. i18n owns original playful Chinese overlays; localeForFormatting normalizes internal/private language variants before Intl. Font and glass defaults apply to new settings without overwriting saved choices.
-
-diagnosticError.ts owns application-authored DiagnosticError reasons, field constraints and safe system/HTTP classifications. diagnosticFormat.ts owns readable record formatting and severity policy. RendererDiagnosticSchema bounds the explicit preload reports; free-form payloads are excluded. See [diagnostics](../../docs/diagnostics.md).
-
-MusicPreferences owns enabled 3D artwork, strength 0–2 (default 1), marquee and idle artist flags. Existing saved state defaults missing music preferences without altering other settings. Manual player selection remains a media-service session choice, not a persisted application ID.
+See [development](../../docs/development.md), [tests](../../tests/README.md) and the [repository map](../../INDEX.md).

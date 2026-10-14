@@ -15,3 +15,5 @@ Windows MSI 已显式指定随仓库提供的 `.ico`，`allowBuilds` 因此禁�
 Forge 将 src/assets/third-party/liquid-glass-notices.txt 作为额外资源分发。锁定的玻璃 vendor 源码保留原始格式，不参与 lint、format、Knip 和重复代码报告；类型检查仍包含这些文件。
 
 主进程、preload 与 renderer 构建保留 sourcemap 和可读生成代码；主进程诊断只解析 .vite 内相邻 map，最多缓存 16 份。map 随构建分发，不纳入 Git。
+
+Forge generateAssets 在打包前按目标架构构建原生资源。PR #14 生成可审查的软件包，批准后的合并提交触发对应预发布；原生资源位于 ASAR 外。

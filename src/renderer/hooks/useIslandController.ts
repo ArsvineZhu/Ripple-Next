@@ -3,7 +3,7 @@ import { useIslandInteraction } from './useIslandInteraction';
 import { useEffect, useLayoutEffect, useReducer } from 'react';
 
 import { measureTextWidth } from '../lib/text';
-import { COMPACT_MEDIA_CHROME_WIDTH } from '../lib/compactMediaLayout';
+import { compactMediaWidth } from '../lib/compactMediaLayout';
 import { useAssistant } from './useAssistant';
 import { useClipboard } from './useClipboard';
 import { useOverview } from './useOverview';
@@ -137,17 +137,15 @@ export function useIslandController() {
   const trackTitle = mediaTrack ? mediaTrack.name || t('unknownSong') : '';
   const trackArtist = mediaTrack ? mediaTrack.artist || t('unknownArtist') : '';
   const music = appState.settings.music;
+  const showCompactArtist = mode === 'quick' || music.idleArtist;
   const nowPlayingText = mediaTrack
-    ? trackTitle + (music.idleArtist ? ` • ${trackArtist}` : '')
+    ? trackTitle + (showCompactArtist ? ` • ${trackArtist}` : '')
     : '';
   const textWidth =
     measureTextWidth(trackTitle) +
-      (music.idleArtist ? measureTextWidth(` • ${trackArtist}`, 13, 400) : 0) ||
+      (showCompactArtist ? measureTextWidth(` • ${trackArtist}`, 13, 400) : 0) ||
     nowPlayingText.length * 7;
-  const nowPlayingWidth = Math.min(
-    300,
-    Math.max(122, Math.ceil(textWidth + COMPACT_MEDIA_CHROME_WIDTH)),
-  );
+  const nowPlayingWidth = compactMediaWidth(textWidth, mode === 'quick');
   const hasMediaFeedback = Boolean(mediaActionError || (mediaTrack && mediaSnapshot.error));
   const getExpandedTabSize = (id: string, answerHeight = 0) => {
     const size = islandPages.size(id, {
@@ -165,7 +163,7 @@ export function useIslandController() {
     mode === 'large'
       ? expandedSize.width
       : mode === 'quick' &&
-          isPlaying &&
+          (isPlaying || media.showPausedQuickView) &&
           !alert &&
           !chargingAlert &&
           !bluetoothAlert &&
@@ -179,7 +177,7 @@ export function useIslandController() {
             cameraAlert ||
             microphoneAlert
           ? 260
-          : isPlaying
+          : isPlaying || media.showPausedQuickView
             ? nowPlayingWidth
             : 170;
   const compactMediaError =

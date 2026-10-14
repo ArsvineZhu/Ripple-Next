@@ -18,7 +18,7 @@ export function runCommand(
             Object.assign(
               new DiagnosticError(
                 'System command failed: ' +
-                  path.basename(executable) +
+                  path.win32.basename(executable) +
                   ' (' +
                   (error.code ?? error.signal ?? 'unknown') +
                   ')',

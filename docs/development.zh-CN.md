@@ -1,8 +1,8 @@
-[English](development.md)
+[English](development.md) · [架构](architecture.zh-CN.md)
 
-# 开发指南
+# 开发
 
-使用 [.node-version](../.node-version) 中的 Node `22.23.3`，并使用 `package.json` 固定的 pnpm `12.9.1`。当前工具链要求 Node 22.13 或更新版本。Linux 打包需要 `dpkg`、`fakeroot`、`rpm` 和构建工具；可选系统功能使用 `bluetoothctl` 与 `fuser`。麦克风检测使用 `pactl`；缺少此工具时，在 PipeWire 系统上切换到 `pw-dump`，读取正在运行的音频采集流。选中的检测后端保持到应用重启，命令或连接失败仍记录为诊断错误。Windows MSI 需要 WiX Toolset，macOS 打包需要 Xcode Command Line Tools。在对应系统运行原生 maker。
+使用 [.node-version](../.node-version) 的 Node `22.23.3` 和 package.json 的 pnpm `12.9.1`，按提交的锁文件安装。原生打包在对应主机运行：Linux 使用 cc、dpkg、fakeroot、rpm，Windows MSI 使用 WiX，macOS 使用 Xcode 命令行工具。
 
 ```sh
 pnpm install --frozen-lockfile
@@ -13,76 +13,37 @@ pnpm package
 pnpm make
 ```
 
-Linux 开发时可能需要与 Electron 构建匹配、root 所有且权限为 `4755` 的 Chromium sandbox helper。如果安装了相同构建的 Ripple Next，可在启动 Forge 时设置 `CHROME_DEVEL_SANDBOX=/usr/lib/ripple-next/chrome-sandbox`。
+Linux 开发需要有效 Chromium 沙盒，可通过 `CHROME_DEVEL_SANDBOX` 指定匹配的已安装 helper，其所有者为 root、权限为 4755。Forge 使用 X11／XWayland 运行透明窗口；修改主进程／preload 后重启应用。
 
-## 工具职责
+## 命令与配置
 
-`pnpm start` 使用 Electron 应用数据目录下的 `Ripple Next Development`，打包版继续使用 `Ripple Next`。开发版的数据、Chromium 缓存和凭据独立，但两个版本共用 Electron 原生单实例锁。启动任意版本都会打开当前实例的设置窗口，同时只运行一个实例。锁使用正式版配置目录；Linux 从用户主目录确定锁位置，不同 `XDG_CONFIG_HOME` 配置也共用该锁。
+| 命令                     | 用途                                              |
+| ------------------------ | ------------------------------------------------- |
+| `start`                  | Forge／Vite 开发及原生资源生成                    |
+| `typecheck`              | 主进程、preload、界面、工具的严格 TypeScript 项目 |
+| `lint`                   | Oxlint 正确性、Hooks 与分层边界，警告视为失败     |
+| `format`／`format:check` | Prettier 写入／只读检查                           |
+| `deadcode`               | Knip 入口、导出及依赖                             |
+| `duplicates`             | JSCPD 生产源码重复分析                            |
+| `check`                  | 全部只读静态检查                                  |
+| `test`                   | 递归 Vitest `.test.ts`／`.test.tsx`               |
+| `build:native`           | 对应主机的监听器／窗口模块构建                    |
+| `package`／`make`        | 可运行目录／原生安装程序及归档                    |
 
-工具配置集中在 [.config](../.config/README.zh-CN.md)，由 package scripts 显式选择。
+[.config](../.config/README.zh-CN.md) 管理可移动工具配置。根清单、锁文件、pnpm-workspace.yaml 和编辑器／Git 发现文件保留在工具要求的位置。Vite 转译，独立编译器项目检查类型；共享层不依赖运行服务，界面不导入 Node、Electron 或主进程／preload。
 
-| 命令                      | 契约                                                                                           |
-| ------------------------- | ---------------------------------------------------------------------------------------------- |
-| `typecheck`               | 严格检查 main/preload/renderer/工具 TS 项目，Vite 仅转译                                       |
-| `lint`                    | Oxlint 检查 TS/React/Hooks 正确性和导入边界，warning 使 CI 失败                                |
-| `format` / `format:check` | Prettier 写入/检查配置的 2 空格、LF、单引号及 100 列风格                                       |
-| `deadcode`                | Knip 检查入口、导出和依赖；Forge 构造器显式引用动态 makers/plugins                             |
-| `duplicates`              | JSCPD 按项目阈值扫描生产 TS/TSX                                                                |
-| `check`                   | 聚合上述只读静态检查                                                                           |
-| `test`                    | Vitest 覆盖状态持久化、安全密钥存储、IPC、AI 流式响应、交互状态、国际化、平台命令及 Linux 几何 |
+## 配置、状态与原生集成
 
-Oxlint 关闭 `react/set-state-in-effect`，因为 OS 遥测和偏好 effect 会有意驱动状态。Renderer 不导入 Node、Electron 或 main/preload；shared 不依赖运行时服务。类型检查以 TypeScript 为准。
+开发使用 `Ripple Next Development`，安装版本使用 Electron app-data 下的 `Ripple Next`；数据、缓存、凭据分别保存，原生锁维持一个实例。Linux 在 home 配置目录解析锁，再次启动打开设置。
 
-## 运行架构
+SQLite schema 和预编译语句归 appStateStore，主进程校验唯一已提交快照并原子更新变化的行／列表，AI 图与关联加密凭据共享事务。读写失败保留数据，界面通过桥接初始化并提交类型化 patch。
 
-Main 拥有应用生命周期、托盘、透明窗口、系统能力和 typed IPC。服务拥有状态持久化、安全凭据、通知、AI 请求、应用发现/启动和自动启动；平台适配器封装系统差异。Preload 暴露 typed `electronAPI`，shared Zod schema 验证状态文件和启动目标。Renderer 拥有视图和交互；XState 管理鼠标离开、几何重入、焦点、菜单与拖动状态。
+Windows 媒体／设备使用常驻执行器；Linux 媒体／蓝牙使用内置 D-Bus 客户端，PipeWire 使用 `pw-dump --monitor --no-colors`，仅有 PulseAudio 时使用 `pactl subscribe`，V4L2 使用内置 inotify 程序并在事件后通过 `fuser` 读取。Forge 构建 Linux 程序与目标架构 macOS 窗口模块，作为原生资源分发。
 
-状态服务使用新用户数据目录中的 `ripple-next.sqlite` 保存设置、任务、工作流、快捷应用和已加密的 API key。`src/main/database/schema.sql` 定义当前表，`appStateStore.ts` 管理预编译 SQL、主进程唯一快照和事务，只写本次变化的设置行或功能列表。读取失败直接抛出，写入失败保留已提交快照；不再运行历史迁移链或版本分发。Renderer 在显示界面前读取状态快照，再通过 typed patch 更新；设置和功能数据不使用 `localStorage`。API key 使用 Electron `safeStorage` 加密，且不会返回 renderer。Linux 缺少 OS 密钥存储时拒绝保存密钥。Ripple Next 不读取或迁移旧 Ripple 数据目录。Linux 自启动优先使用绝对路径 `XDG_CONFIG_HOME/autostart`，否则使用 `~/.config/autostart`。
+## 验证与拍摄
 
-AI SDK 的 `streamText` 为 Chat Completions 使用现有 OpenAI 兼容适配器，并按所选带序号接口选择 OpenAI Responses 或 Anthropic 适配器。`src/main/ai/configuration.ts` 管理配置图，密文使用 `ai-api-key:<id>` 命名记录；main 串行修改、保留模型自定义，并原子删除关联密钥。普通配置自动保存，凭据替换需明确提交；上下文上限按字符计数，上下文感知仍关闭。内置系统提示词保留在 `src/main/ai/default-assistant.md`；`xstate`、`@xstate/react` 管理可取消交互延迟，自定义应用命令通过 `spawn` 参数数组执行。
+测试按[平台、功能及公共契约](../tests/README.zh-CN.md)归类，可用 `pnpm test tests/platform/linux` 或 `pnpm test tests/features/media` 选择范围。内核测试跳过不支持的主机，私有 broker 和夹具隔离系统／播放器操作。
 
-浏览器搜索地址模板保存在设置中，必须包含 `{query}`；直接输入 HTTP(S) 地址仍会作为网址打开。时钟和日期使用当前语言，并可跟随系统时区或指定 IANA 时区。错误会路由到所属功能区行内展示；`InlineNotices` 沿用 Island 的 Motion 淡入与模糊过渡。长内容区使用系统原生纵向滚动，横向页签使用可接续的连续动画与有界回弹；AI 回答会随内容增长，并限制在当前屏幕可用高度内。设置页滑块由对应 CSS Module 统一管理主题轨道、滑块和焦点样式。
+拍摄使用独立配置与演示内容，实际录制英文界面，中文表达演示使用对应语言，逐张／逐段检查。临时工具与中间资料保存在忽略的 out/，原始字体、供应方算法和声明保持完整。
 
-## 页面注册
-
-页面使用 `overview`、`tasks` 等稳定字符串标识，位置由保存的排序决定。`src/shared/pages.ts` 管理内置页面元信息，以及固定或依内容计算的尺寸策略；`src/renderer/lib/tabs.tsx` 将它们与图标、渲染函数组合。创建 Island 页面注册表时可添加新定义，提供 ID、标题、图标、渲染函数及尺寸策略。可用条件、圆角、对齐和阻止折叠能力可按需设置。导航与动画从注册表读取页面。当前数据契约直接使用命名页面 ID。
-
-## 本地诊断
-
-[诊断说明](diagnostics.zh-CN.md)统一说明日志格式、级别、操作关联、源码映射及 trace 启动方式。默认输出可读文本，通过 `RIPPLE_LOG_LEVEL` 或 `--ripple-log-level` 选择本次详细程度。轮转日志保存在 `<userData>/diagnostics/`，本地转储继续保留最新 10 份及 30 天上限。
-
-Linux 使用透明 XWayland 窗口，并限制在所选显示器的工作区内，以保留桌面面板。仅让 X11 `ShapeInput` 跟随动画中的 Island；修改 `ShapeBounding` 可能出现黑边。X11 客户端保持静态导入并打入安装包。Island 始终通过同一 X11 客户端请求 `_NET_WM_STATE_SKIP_TASKBAR`。设置窗口是独立的普通 BrowserWindow。Island 需等 renderer ready 且首次输入区域得到确认后才显示。边界说明见[主进程](../src/main/README.zh-CN.md)、[preload](../src/preload/README.zh-CN.md)和[renderer](../src/renderer/README.zh-CN.md)。
-
-Forge 在启动和打包前清理 `.vite`；`.vite`、`out`、报告和 `node_modules` 不纳入 Git。各类读者的说明见[文档目录](INDEX.zh-CN.md)。
-
-## 正式版工作
-
-`pnpm package` 生成可运行目录，`pnpm make` 同时执行配置的原生安装包／归档 maker。[发布指南](release.zh-CN.md)维护版本／标签流程和运行验收。修改主进程或 preload 后重启整个应用，renderer 热更新只替换界面代码。截图数据与会改变状态的运行验证使用独立配置。
-
-[四语产品 README](INDEX.zh-CN.md)介绍功能，本指南维护工具链命令。行为变化时同步双语技术指南与界面截图；演示数据规则见[拍摄说明（英语）](assets/screenshots/README.md)。
-
-## 设置资源
-
-`pnpm package` 执行 `scripts/collect-licenses.mjs`，将已安装依赖及锁定玻璃源码的许可收集到 `src/assets/third-party/licenses.json`，把 Chromium 许可 HTML 复制到生成目录 `out/license-assets`，Forge 将两者放入资源包。设置先读取元数据，选择条目时再读取文本；依赖变化后重新生成。生成输出与运行报告不入 Git。
-
-天气请求及凭据留在 main。有界缓存按位置、单位和凭据区分结果，并复用并发请求；更换密钥后使用新的缓存身份。Renderer 在进入、聚焦和每分钟刷新自动定位预览。操作见[使用指南](../instructions.zh-CN.md)，材质与测量见[设置玻璃](../src/renderer/components/liquidGlass/README.zh-CN.md)。
-
-## 字体与指南素材
-
-共享 fonts.ts 校验 uiFont，AppStateProvider 在每个 renderer 应用字体。原始 WOFF2 与许可见[字体资源](../src/assets/fonts/alibaba-puhuiti/README.md)，不要转换或裁剪。主进程／托盘使用 zh-ms／zh-apple，i18next 使用合法私有 BCP 47 标识，Intl 使用 zh-CN。覆盖表继承未改动的标准中文键。
-
-[指南录像来源](../src/assets/guide/README.md)记录场景与更新方法。在独立演示配置录制真实动作，运镜可裁切／缩放已有画面，不要制作虚假的 UI 帧。同步更新封面、本地化步骤与截图画廊。
-
-## 启动能力归属
-
-`shared/launch.ts` 定义 Application／LaunchTarget／Workflow。核心启动编排只调用 `platform/apps.ts`，IPC 入口校验一次目标数组，按顺序尝试每项并返回带序号的失败。Windows、macOS、Linux 分别管理原生发现、身份解析和激活。五分钟内存缓存只由 Windows 管理，构造函数接受发现缓存时长。不再使用原始名称启动 IPC、缓存准备 IPC、renderer 启动循环或应用目录文件读写。QuickAppEditor 自己管理草稿与搜索生命周期，WorkflowEditor 复用同一保存目标，保留命令 argv 与工作目录。
-
-## 偏好操作与天气
-
-设置视图使用共享设置对象和一个补丁操作。Main 在保存前执行显示器／自启动效果，仅广播已提交结果；Island 直接在保存的显示器上启动，不再由 renderer 请求恢复。AppStateProvider 合并排队补丁并返回完成结果，原生开关在操作结束前保持忙碌。天气配置只保存一份模式、城市／地区／国家、单位和密钥来源；查询拼接归 main。useWeather 统一管理总览与位置编辑器的刷新及过期结果。
-
-设备和取色在平台边界选择实现。查询与系统对话框命令归 Windows／macOS／Linux 适配器，取色服务只管理所属窗口与取消。字体配置仅使用 default／system／openrunde；AI 标签直接采用用户名称或回退名称，并按当前列表编号，已删除旧字体别名和自动名称解析。
-
-设置页由可复用偏好模块及专用公共控件拼装。重复布局应扩展公共控件接口，不在分类里复制输入框结构或样式。分类负责领域编辑，SettingsApp 负责导航；显示器发现、背景解码与 AI 元信息查询在对应视图启动。
-
-Island 与设置共用 components/content 的输入与按钮基础组件；功能页由公共控件、启动、媒体控制及 Markdown 组件拼装。草稿留在功能内，持续采集留在折叠页面副作用之外；React Activity 保留折叠时的页面状态。轮询诊断按来源仅保留最新错误签名，变化的错误不会无限增加去重表。
+见[使用](../instructions.zh-CN.md)、[平台支持](platform-compatibility.zh-CN.md)、[原生监听](native-observation.zh-CN.md)、[诊断](diagnostics.zh-CN.md)和[发布](release.zh-CN.md)。

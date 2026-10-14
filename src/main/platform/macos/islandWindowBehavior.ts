@@ -46,6 +46,7 @@ let nativeModule: MacosWindowNative | null | undefined;
 function nativeCandidates(): string[] {
   // Main is bundled to `.vite/build/main.cjs` (dev) or the forge main dir (packaged).
   return [
+    ...(process.resourcesPath ? [path.join(process.resourcesPath, 'macos_window.node')] : []),
     path.resolve(__dirname, '../../native/macos-window/build/Release/macos_window.node'),
     path.resolve(__dirname, '../../../native/macos-window/build/Release/macos_window.node'),
     path.resolve(process.cwd(), 'native/macos-window/build/Release/macos_window.node'),

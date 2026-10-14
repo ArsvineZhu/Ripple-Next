@@ -1,16 +1,16 @@
 # Ripple Next working rules
 
-- Use pnpm 12+ and the Node version in `.node-version`; keep `pnpm-lock.yaml` synchronized.
-- Follow the product identity and persistence contracts in package.json, shared schemas and current release notes.
-- Read the nearest source-scope README and AGENTS before changing its boundary.
-- Keep generated `.vite`, `out`, dependencies and reports out of Git.
-- Run `pnpm check` and `pnpm test` before integration; package after changing startup, IPC or build paths.
-- Synchronize product READMEs in en, zh-CN, zh-TW and ja; maintain affected detailed guides in en/zh-CN. Keep agent instructions in technical English.
-- Write human documentation in direct, concrete language. Do not use defensive justification, apologetic positioning or boundary-seeking filler. Preserve user prose edits.
-- Use one agent unless the user explicitly requests delegation.
-- Track Objective, Decisions and Current Work; return to the authorized objective after investigation.
-- Keep the active whole-repository capability map in docs/architecture.md and its zh-CN counterpart current. Verify complete runtime paths; remove obsolete internal compatibility and redundant verification scaffolding.
-- Keep current branch notes under 4.1.0-beta.1 explicitly unreleased; preserve published 4.0.0 history.
-- Keep bundled font bytes and notices intact. Guide demos must use actual captured application flows, with provenance and selectable prose.
-
-- Compose all renderer surfaces from shared controls; feature files own layout and domain operations. Preserve draft state across page switches/collapse and continuous sampling outside hidden page effects.
+- Use one agent unless the user explicitly requests delegation. Track Objective, Decisions and Current Work through long tasks.
+- Use Node from .node-version and pnpm 12+; package.json owns product identity/version and pnpm-lock.yaml stays synchronized.
+- Read the nearest source-scope README and AGENTS before changing a boundary. Use CodeGraph first when .codegraph exists.
+- Main owns persistence, OS effects and native caches. Shared owns serializable schemas/pure policies. Renderer features own layout/domain operations and compose shared controls.
+- Preserve page drafts across navigation/collapse; continuous media/device/clipboard observation and active assistant work stay above hidden pages.
+- Preserve Linux ShapeInput-only updates, initial input-region confirmation, bundled X11 and Windows supervised native event execution. Keep stale metadata/artwork and device failures local to their source.
+- Maintain current capability/ownership maps in docs/architecture.md and its zh-CN counterpart. Remove redundant internal compatibility and verification scaffolding when no current contract needs them.
+- Run pnpm check and pnpm test before integration. Package and run the affected platform after startup, IPC, native adapter or build changes.
+- Tests belong to platform/<os>, features/<feature> or shared. Fixtures own setup/cleanup or independent oracles; keep assertions at their contract owner.
+- Keep generated .vite, out, reports, dependencies and temporary capture tools out of Git. Preserve original bundled font bytes, licenses and notices.
+- English is canonical. Synchronize the four product READMEs; maintain affected detailed guides in en/zh-CN. Agent instructions use technical English.
+- Maintained docs describe current facts and actions. Published release notes and asset provenance are explicit historical records. Preserve user prose edits and avoid defensive justification.
+- Capture actual application flows with isolated demo data. Use English except for language-specific demonstrations; guide prose remains selectable and videos remain user-controlled.
+- Version 4.1.0-beta.1 is a release candidate until the user approves PR #14 merge/publication. Prepare release materials and validation before requesting that approval; never merge or publish early.

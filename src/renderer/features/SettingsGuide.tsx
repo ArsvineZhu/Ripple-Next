@@ -11,6 +11,8 @@ import workflowVideo from '../../assets/guide/workflow.webm';
 import workflowPoster from '../../assets/guide/workflow.png';
 import aiVideo from '../../assets/guide/ai.webm';
 import aiPoster from '../../assets/guide/ai.png';
+import expressionVideo from '../../assets/guide/expression.webm';
+import expressionPoster from '../../assets/guide/expression.png';
 import styles from './SettingsGuide.module.css';
 
 function Recording({ src, poster, label }: { src: string; poster: string; label: string }) {
@@ -66,6 +68,15 @@ export function SettingsGuide({ navigate }: { navigate(category: SettingsCategor
       steps: ['guideTypographyStep1', 'guideTypographyStep2', 'guideTypographyStep3'],
       video: typographyVideo,
       poster: typographyPoster,
+      category: 'general',
+    },
+    {
+      id: 'expression',
+      title: 'guideExpressionTitle',
+      body: 'guideExpressionBody',
+      steps: ['guideExpressionStep1', 'guideExpressionStep2', 'guideExpressionStep3'],
+      video: expressionVideo,
+      poster: expressionPoster,
       category: 'general',
     },
     {

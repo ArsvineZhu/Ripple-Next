@@ -49,21 +49,6 @@
   opacity: 0.7;
   font-weight: 400;
 }
-.trackText[data-marquee='false'] {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.trackRepeat {
-  padding-right: 30px;
-}
-
-.artistRepeat {
-  opacity: 0.7;
-  font-weight: 400;
-}
-
 .playButton {
   width: 30px;
   display: flex;

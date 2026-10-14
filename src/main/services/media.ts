@@ -31,8 +31,8 @@ export function createMediaService(
   let watching = false;
   const poll = async () => {
     await getSnapshot();
-    if (!closed && watching) {
-      timer = setTimeout(() => void poll(), backend.subscribe ? 30_000 : 5000);
+    if (!closed && watching && !backend.subscribe) {
+      timer = setTimeout(() => void poll(), 5000);
       timer.unref();
     }
   };

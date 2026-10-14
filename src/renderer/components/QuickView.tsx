@@ -1,13 +1,12 @@
 import styles from './QuickView.module.css';
-import { COMPACT_MEDIA_CHROME_WIDTH } from '../lib/compactMediaLayout';
 import typography from '../styles/typography.module.css';
 import { useTranslation } from 'react-i18next';
 import { localeForFormatting } from '../../shared/i18n';
 import { AnimatePresence } from 'motion/react';
 import { motion } from 'motion/react';
-import { useReducedMotion } from 'motion/react';
 import { MediaArtwork } from './MediaArtwork';
 import { MediaTransition } from './MediaTransition';
+import { MediaMarquee } from './MediaMarquee';
 import { MediaControl } from './MediaControl';
 import { MediaFeedback } from './MediaFeedback';
 import { Zap } from 'lucide-react';
@@ -35,9 +34,6 @@ type Props = Pick<
   | 'trackArtist'
   | 'hideNotActiveIslandEnabled'
   | 'textColor'
-  | 'textWidth'
-  | 'nowPlayingWidth'
-  | 'isHovered'
   | 'standbyBorderEnabled'
 > &
   Pick<
@@ -73,19 +69,13 @@ export function QuickView({
   trackArtist,
   hideNotActiveIslandEnabled,
   textColor,
-  textWidth,
-  nowPlayingWidth,
-  isHovered,
   time,
   percent,
   standbyBorderEnabled,
   weather,
 }: Props) {
   const { t, i18n } = useTranslation();
-  const reduced = useReducedMotion();
-  const scroll =
-    music.marquee && !reduced && textWidth > nowPlayingWidth - COMPACT_MEDIA_CHROME_WIDTH;
-  const showArtist = music.idleArtist;
+  const showArtist = mode === 'quick' || music.idleArtist;
   const number = (value: number | string | null) =>
     value === null || value === ''
       ? '??'
@@ -129,17 +119,7 @@ export function QuickView({
                   onOpen={(id) => void openMediaSession(id)}
                   preferences={music}
                 />
-                <div
-                  className={styles['trackClip']}
-                  style={{
-                    WebkitMaskImage: scroll
-                      ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)'
-                      : 'none',
-                    maskImage: scroll
-                      ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)'
-                      : 'none',
-                  }}
-                >
+                <div className={styles.trackClip} style={{ color: textColor }}>
                   <MediaTransition
                     identity={JSON.stringify([
                       mediaTrack?.id,
@@ -147,57 +127,23 @@ export function QuickView({
                       showArtist ? trackArtist : '',
                     ])}
                   >
-                    <motion.div
-                      className={styles['trackText']}
-                      data-marquee={scroll}
-                      animate={scroll ? { x: [0, -(textWidth + 30)] } : { x: 0 }}
-                      transition={
-                        scroll
-                          ? { duration: 12, repeat: Infinity, ease: 'linear' }
-                          : { duration: 0.3, ease: 'easeInOut' }
-                      }
-                      style={{ color: textColor }}
-                    >
-                      <span
-                        style={{
-                          paddingRight: scroll ? 30 : 0,
-                        }}
-                      >
-                        {trackTitle}
-                        {showArtist && <span className={styles['artist']}> • {trackArtist}</span>}
-                      </span>
-                      {scroll && (
-                        <span className={styles['trackRepeat']}>
-                          {trackTitle}
-                          {showArtist && (
-                            <span className={styles['artistRepeat']}> • {trackArtist}</span>
-                          )}
-                        </span>
-                      )}
-                    </motion.div>
+                    <MediaMarquee enabled={music.marquee} className={styles.trackText}>
+                      {trackTitle}
+                      {showArtist && <span className={styles.artist}> • {trackArtist}</span>}
+                    </MediaMarquee>
                   </MediaTransition>
                 </div>
-                <div className={styles.playButton}>
-                  <AnimatePresence>
-                    {isHovered && (
-                      <motion.div
-                        key="play-pause-hover"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.25, ease: 'easeInOut' }}
-                      >
-                        <MediaControl
-                          session={mediaTrack}
-                          compact
-                          command="playpause"
-                          disabled={mediaBusy || mediaSnapshot.status === 'error'}
-                          onCommand={controlMedia}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                {mode === 'quick' && (
+                  <div className={styles.playButton}>
+                    <MediaControl
+                      session={mediaTrack}
+                      compact
+                      command="playpause"
+                      disabled={mediaBusy || mediaSnapshot.status === 'error'}
+                      onCommand={controlMedia}
+                    />
+                  </div>
+                )}
               </div>
               <MediaFeedback error={mediaActionError ?? mediaSnapshot.error} compact />
             </motion.div>

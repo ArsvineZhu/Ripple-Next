@@ -13,3 +13,5 @@ Remove unused code and dependencies at their owner. A tool exception must identi
 Keep the product tour synchronized in `README.md`, `README.zh-CN.md`, `README.zh-TW.md` and `README.ja.md`. Detailed guides are maintained in English and Simplified Chinese. Use direct, concrete language about features and actions; remove defensive justification and boundary-seeking filler. Preserve reader edits when refreshing translations.
 
 Take screenshots from the running application with an isolated demo profile. Label sample service content and review images for personal data. See [capture notes](docs/assets/screenshots/README.md). Versioned release notes summarize the integrated Git history and final behavior changes; published notes stay attached to their original version.
+
+Maintained guides explain current state; versioned release notes and capture provenance retain their specific records. Use English captures except for language-specific demonstrations. PR #14 merge/publication requires the user's confirmation after the complete candidate is reviewable.

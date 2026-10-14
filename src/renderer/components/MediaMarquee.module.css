@@ -1,0 +1,39 @@
+.clip {
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+}
+.text {
+  width: max-content;
+  white-space: nowrap;
+  line-height: 1.35;
+}
+.text > span + span {
+  margin-left: 30px;
+}
+.clip[data-marquee='true'] {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8px,
+    black calc(100% - 8px),
+    transparent
+  );
+}
+.clip[data-marquee='true'] .text {
+  animation: marquee 12s linear infinite;
+  will-change: transform;
+}
+.clip[data-marquee='false'] .text {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--marquee-distance));
+  }
+}

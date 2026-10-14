@@ -1,12 +1,10 @@
-import { useLayoutEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { MediaControl } from '../components/MediaControl';
 import { MediaFeedback } from '../components/MediaFeedback';
 import type { useMedia } from '../hooks/useMedia';
 import type { MediaSession } from '../../shared/media';
 import { selectAutomaticSession } from '../../shared/media';
-import { measureTextWidth } from '../lib/text';
+import { MediaMarquee } from '../components/MediaMarquee';
 import { MediaArtwork } from '../components/MediaArtwork';
 import { MediaTransition } from '../components/MediaTransition';
 import { MediaSessionCarousel } from '../components/MediaSessionCarousel';
@@ -17,22 +15,6 @@ type Props = Omit<ReturnType<typeof useMedia>, 'showPausedQuickView'> & {
   textColor: string;
   music?: MusicPreferences;
 };
-function useClipWidth() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(150);
-  useLayoutEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-    const measure = () => {
-      if (node.clientWidth > 0) setWidth(node.clientWidth);
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-  return { ref, width };
-}
 function TrackText({
   text,
   artist = false,
@@ -44,25 +26,16 @@ function TrackText({
   active: boolean;
   marquee: boolean;
 }) {
-  const { ref, width } = useClipWidth();
-  const reduced = useReducedMotion();
-  const distance = measureTextWidth(text, artist ? 13 : 18, artist ? 400 : 600);
-  const scroll = marquee && distance > width && !reduced;
   return (
-    <div ref={ref} className={styles.textClip} data-marquee={scroll}>
-      <MediaTransition identity={text}>
-        <motion.div
-          className={artist ? styles.artist : styles.title}
-          animate={scroll && active ? { x: [0, -(distance + 30)] } : { x: 0 }}
-          transition={
-            scroll && active ? { duration: 10, repeat: Infinity, ease: 'linear' } : { duration: 0 }
-          }
-        >
-          <span>{text}</span>
-          {scroll && <span aria-hidden="true">{text}</span>}
-        </motion.div>
-      </MediaTransition>
-    </div>
+    <MediaTransition identity={text}>
+      <MediaMarquee
+        enabled={marquee}
+        active={active}
+        className={artist ? styles.artist : styles.title}
+      >
+        {text}
+      </MediaMarquee>
+    </MediaTransition>
   );
 }
 function TrackCard({

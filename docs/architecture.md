@@ -1,90 +1,63 @@
-# Feature and capability map
+[简体中文](architecture.zh-CN.md) · [Repository map](../INDEX.md)
 
-This map covers the repository-wide refactor of PR #14. An entry point, a connected implementation and a working runtime flow are separate facts. Runtime results are updated as each path is changed. Version 4.1.0-beta.1 remains unreleased.
+# Capabilities and ownership
 
-## Objective, decisions and current work
+Ripple Next has two renderer windows: the floating Island for daily actions and a Settings window for configuration and editing. Main owns one committed application snapshot, native effects and service lifetimes. Both windows use the same typed preload bridge and receive committed updates.
 
-- **Objective:** preserve actual features, three model protocols, native integrations, layouts and packaging while reducing code, conversions, duplicated steps and coupling.
-- **Decisions:** remove obsolete internal compatibility paths. Main owns persistence and system effects; shared owns serializable domain contracts; renderer owns presentation and interaction. Keep necessary encryption, transactions, native input regions and resource notices.
-- **Current work:** Persistence, both-window synchronization and task restart are implemented. Launch targets, weather preferences and native preference commits are unified. AI streaming, cancellation and partial failures are unified and verified, including a configured real model. Search and native clipboard history/copy paths are now verified. Media types and platform selection are unified, and duplicate metadata queries are removed. Settings now compose shared preference controls; categories own edits and queries, and the forwarding controller is removed. Island pages now compose shared content, launch, media-control and Markdown modules. The source ownership audit covers the paths below, including resources, diagnostics and build scripts. Final delivery verifies Windows flows and packages; macOS/Linux native acceptance and real player/device changes require matching hosts/devices.
+## Complete user paths
 
-Diagnostics now has one main-owned readable sink, explicit bounded renderer reports, operation correlation, per-window context and original-source mapping. UI review restored bare-field focus and shared action buttons and sealed the sticky preview gutter.
+| Capability                       | Runtime path and result                                                                                                                                                                                                                            |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Startup and Settings             | Application profile → native instance lock → SQLite/secure store → Island and Settings bootstrap. Launching again opens the existing Settings window. Closing Settings keeps the Island running.                                                   |
+| Preferences, display and startup | Settings control → AppStateProvider → validated IPC → native effects → atomic store commit → both-window broadcast. Failed native effects retain the committed value.                                                                              |
+| Search                           | TextEntry → URL/template resolution → openExternal → system browser. Errors remain beside the input.                                                                                                                                               |
+| Workflows and quick apps         | Settings editor → typed LaunchTarget → persistence; Island LaunchButton → one ordered target array → main orchestration → platform activation → indexed per-target results.                                                                        |
+| Overview                         | Clock preferences → Intl formatting; WeatherPreferences → weather service → provider/cache → reading/location/error; browser battery events → battery state.                                                                                       |
+| Music                            | Native adapter → media service → shared snapshot/selection → cards. Controls and player activation address the displayed session ID. Metadata and artwork update separately.                                                                       |
+| AI                               | Settings endpoint/credential/model graph → secure records → selected model and resolved prompt → protocol SDK stream → assistant lifecycle → Markdown/native-copy controls. Cancellation and partial failure preserve the owning request's result. |
+| Clipboard                        | Explicit native read → bounded in-memory history → row copy → native write. History contains at most 100 entries and one million characters, and resets on exit.                                                                                   |
+| Tasks                            | Feature-owned draft → tasks patch → atomic persistence → broadcast. Completing a task removes it from the active list.                                                                                                                             |
+| Device alerts                    | Battery events/native device observation → alert queue → Island state/border. An alert preserves an already expanded page; device failures remain source-local.                                                                                    |
+| Guide, About and licenses        | Bundled real recordings/posters → user-controlled playback; product metadata and known license records → Settings.                                                                                                                                 |
+| Diagnostics                      | Validated operation/view events → main bounded log/crash directory → diagnostics-folder action.                                                                                                                                                    |
+| Build and release                | pnpm checks → Forge/Vite main/preload/renderer → native modules/resources → platform makers → versioned release artifacts. Publication follows the release guide's approval gate.                                                                  |
 
-## User paths
-
-| Capability and official entry                                 | Data flow and result                                                                                                                                              | Supported behavior and remaining verification                                                                                                                                                                                                    |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Launch, repeated launch, tray/menu Settings                   | main/index → profile/instance lock → state/services → Island/Settings windows → preload → renderer bootstrap                                                      | Windows packaged startup, both-window synchronization, restart and unreadable-setting error UI verified; database-open failures now show a localized native error and data location before exiting                                               |
-| Appearance, fonts, language, glass, placement, display, pages | Settings → AppStateProvider patch → IPC → store → broadcast → both renderers; display/autostart also call native effects                                          | Unified preference commits apply native display/autostart operations before persistence; invalid displays and unavailable startup leave saved values intact. Restart display restoration is main-owned.                                          |
-| Browser Search                                                | input → URL/template resolution → openExternal → default browser; inline errors                                                                                   | Browser-only fallback removed; text/template and direct-address flows reached the actual default browser and local HTTP endpoint                                                                                                                 |
-| Workflows and Quick Apps                                      | Settings → persisted targets; Island launch → preload → main → URL/command/native app → row result                                                                | Unified LaunchTarget/batch IPC/platform capability; Windows browser opening, continuation after failure and argv/cwd verified; quick apps also launch independently in the compact page with no workflows                                        |
-| Overview                                                      | clock preferences → Intl; location/unit → main weather service → WeatherAPI → reading/location/error; browser battery API                                         | One weather-preferences model and one renderer hook; actual weather lookup, automatic address display, preserved manual fields and restart verified on Windows.                                                                                  |
-| Music                                                         | native events/main sampler → media service → GSMTC / running Spotify or Music / MPRIS → session snapshot → selection/control/activation → card                    | One media model/platform entry; no pre-action metadata query or selection wait. Windows native enumeration returned idle without error. Windows Folia playback/control and cover matching verified; macOS/Linux acceptance remains host-specific |
-| AI configuration and answers                                  | Settings endpoint/key/model → graph + encrypted store → active model → Island prompt → assistant → three SDK protocols → deltas + terminal result → Markdown/copy | Real model and three HTTP protocols verified through the packaged app; cancellation, partial errors, injections, Markdown, native copy and reset passed                                                                                          |
-| Clipboard                                                     | native read → bounded session history → entry → native write                                                                                                      | Windows native read/history/UI copy/readback passed, including exact whitespace and duplicate ordering. History is limited to 100 entries/one million characters and resets at restart                                                           |
-| Tasks                                                         | Island text → tasks patch → SQLite → broadcast/restart; completion removes an entry                                                                               | Verified in packaged Windows app: native typing, restart persistence, completion and both-window synchronization                                                                                                                                 |
-| Device alerts                                                 | battery/Bluetooth/camera/microphone → alerts → Island mode/border; errors → notice/diagnostics                                                                    | One platform entry owns selection; each native adapter owns sampling/cache. Windows Bluetooth/camera/microphone calls returned valid statuses; native device-state changes still need acceptance                                                 |
-| Guide, About, licenses, diagnostics                           | local recordings/resources → Settings; license selection → main file read; diagnostics → bounded local logs/crashes                                               | Connected; preserve genuine footage and original fonts/notices; remove temporary capture helpers and redundant diagnostic tests                                                                                                                  |
-| Build and release                                             | pnpm → Forge/Vite → sandbox preload/native modules/assets → platform makers → CI artifacts                                                                        | Connected; verify Windows package and other native makers on matching hosts; no release or PR merge in this work                                                                                                                                 |
-
-Unavailable capabilities: Island Liquid Glass and AI context awareness remain disabled. Full long-conversation/task migration and optional Windows/Linux tray behavior are not implemented. Present these states directly rather than claiming placeholder implementations are usable.
-
-## Internal ownership
+## Layer boundaries
 
 ```mermaid
 flowchart TD
-  UI[Island views / Settings editors] --> Bridge[preload: explicit ElectronAPI]
-  UI --> ViewState[AppStateProvider: pending UI edits]
-  ViewState --> Bridge
-  Bridge --> IPC[main IPC: sender and input boundary]
-  IPC --> State[appStateStore: durable snapshot and atomic patch]
-  IPC --> AI[AI graph / encrypted credentials / assistant]
-  IPC --> OS[apps / media / devices / autostart / windows]
-  IPC --> Weather[weather requests and bounded cache]
-  AI --> State
-  AI --> Provider[AI SDK protocol adapters]
-  OS --> Native[platform adapters]
-  State --> SQLite[(SQLite)]
-  State --> Broadcast[state broadcast to both windows]
-  Broadcast --> ViewState
-  Shared[shared: domain schemas and pure policies] -.-> UI
+  Views[Island features and Settings editors] --> Controls[Shared content and preference controls]
+  Views --> Bridge[Typed preload bridge]
+  Bridge --> IPC[Sender and payload validation]
+  IPC --> Store[Atomic SQLite state and encrypted credentials]
+  IPC --> Services[Media, AI, weather, launch and diagnostics services]
+  Services --> Adapters[Platform adapters and native listeners]
+  Store --> Broadcast[Committed state broadcast]
+  Broadcast --> Views
+  Shared[Shared schemas and pure policies] -.-> Views
   Shared -.-> IPC
-  Shared -.-> State
 ```
 
-| Owner                 | Data, rules and complete operations                                           | Hidden implementation and dependency direction                                          |
-| --------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Application lifecycle | profiles, instance lock, windows/tray, shutdown                               | Electron stays in main; development isolation is separate from feature state            |
-| Persistence           | settings/tasks/workflows/quickApps, ciphertext, atomic patches                | appStateStore hides SQL, paths and transactions; callers submit domain objects          |
-| AI configuration      | endpoint/key/model references, identity, related deletion, credentials        | graph service calls storage; renderer neither allocates identities nor receives keys    |
-| AI execution          | selected model, prompt/injections, protocol settings, cancellation, streaming | main hides SDK/network; renderer consumes request results/errors                        |
-| Launch targets        | app/URL/command targets and ordered group launch                              | adapters hide shell/desktop files/WinRT; workflows and quick apps should share targets  |
-| Media                 | selection, capabilities, operations, error snapshots                          | main selects/serializes; adapters read/control; renderer does not infer native identity |
-| Weather               | location/unit, credential mode, concurrent requests, bounded cache            | main hides keys/API; shared owns serializable location/reading/error                    |
-| Island layout/input   | page identity/order, geometry, mode, focus/leave/gestures                     | shared policies; renderer animation; main native input regions                          |
-| Settings interaction  | categories/editors, controls, edits, confirmation, scroll/focus               | Settings owns edits; no routing through the large Island controller                     |
-| Liquid Glass          | refraction algorithm, bitmap cache, press/drag/menu highlight                 | retain algorithm provenance; consolidate material/interaction entry points              |
-| Resources/tools       | fonts/notices/recordings; development/package scripts                         | preserve licenses; generated .vite/out stay outside production APIs                     |
+Main services own domain orchestration; adapters own native discovery, preparation, identifiers and caches. Shared modules contain runtime-neutral data and policies. Preload exposes named methods and unsubscribe functions. Renderer files compose the common controls and perform their feature's operations.
 
-## Confirmed reductions and order of work
+AppStateProvider keeps pending edits separate from committed state and coalesces writes. Main commits only affected settings or feature lists. Related AI graph and credential deletions share the transaction. Read failures remain errors rather than replacing saved data with defaults.
 
-1. **Persistence:** delete historical page/AI migrations, schema-version checks and SQL dispatch wrappers; write only changed data. Remove default-state/error-side-channel loading. Preserve atomic transactions and OS encryption.
-2. **Island/Settings:** remove unused Settings operations and quick-app editing state from Island; feature owners keep their own state.
-3. **Launch targets:** use structured targets for workflows; main launches the group. Remove string re-inference, advance cache-building IPC and fixed sleeps.
-4. **Location/system state:** one automatic/manual location representation and one external-query conversion; commit display/autostart effects with their state.
-5. **AI:** verify provider streaming, cancellation, failures and retry; consolidate validation/diagnostics; retire generated-name parsing and font aliases.
-6. **Repository maintenance:** inspect large Settings files, glass layers, platform commands, shared types, tests and scripts. Remove redundant tests and completed verification scaffolding. Update owner documentation and verify all user paths.
+## Native observation
 
-These are evidence-backed starting points, not the whole scope. Keep queues that solve actual concurrency: media operations, durable writes, pending renderer edits and cross-window broadcasts have distinct responsibilities. Initial native input-region confirmation protects transparent-window clicks and is not a business checkpoint.
+Windows uses the supervised MTA executor for GSMTC, Bluetooth DeviceWatcher and capture registry events. Linux uses MPRIS and BlueZ signals, incremental PipeWire/PulseAudio streams and the bundled C inotify camera listener. Healthy event backends do not run periodic samplers. macOS queries the dictionaries of running Spotify/Music and uses its native device probes. See [native observation](native-observation.md) and [platform support](platform-compatibility.md).
 
-## Runtime data and maintenance
+MPRIS session IDs include the unique D-Bus owner. Property signals update cached metadata directly; local cover reads use per-session generations so late results cannot overwrite the current track. Every window subscribes to the same main-owned snapshot and selection.
 
-Completed in this pass: one committed persistence snapshot, changed-data writes, direct read errors and an unreadable-setting startup view; removal of redundant Island editors/page-edit operations and delayed browser-guide opening. The packaged Windows app passed real Settings inputs, native task typing, restart restoration and completion. Corrupt demo settings reproduced the error view. This pass also unifies Application/LaunchTarget, removes renderer launch loops, fixed waits and three superseded IPC methods, and moves native activation/discovery/cache to platform adapters and quick-app drafts to their editor. Weather preferences, refresh ownership and native preference commits are now unified and verified on Windows. AI now has one configuration owner, one cancellation/terminal-result owner and SDK-owned streaming. The configured real model doubao-seed-2.1-lite passed streamed Markdown rendering, native code copy and reset. Separate local HTTP fixtures passed all three protocols, ordered injections, partial failure and cancellation followed by a new request. Database-open failure now shows a localized native error without changing the file. Device sampling uses one platform entry; Windows sampling and native chooser cancellation on owner closure passed. Native input automation failed to initialize, so physical chooser selection remains unverified. Search template/direct-address requests reached the default browser. Native clipboard history and copy/readback passed with whitespace and duplicate ordering preserved. Presentation now shares input/action/feedback/surface controls across Settings and Island. Launch and media-control behavior each have one reusable owner; Markdown is a content module. Task/search drafts belong to their feature and survive collapse through React Activity. Polling error tracking is bounded by source. Real media playback/control and device changes remain native acceptance items.
+## Renderer composition and lifecycle
 
-SQLite and OS-encrypted records are durable. Clipboard, requests and previews are session state. Weather cache: 20 entries/60 seconds. Logs: 5 MiB. Crash reports: newest 10 and no older than 30 days. Windows application discovery is on demand; its adapter shares a five-minute memory cache without preparation or file round trips. .vite/out are regenerable builds. Do not erase user data to make runtime verification pass.
+Content owns ActionButton, TextEntry, EmptyState, Feedback and Surface. Preferences compose those primitives with reusable rows/cards/fields; specialized switches, sliders, selectors and colors share their own modules. LaunchButton, MediaControl, MediaArtwork, MediaMarquee, MediaTransition and MarkdownContent own behavior reused by feature surfaces.
 
-Baseline c916b0c: production TS/TSX/CSS/SQL, 237 files/22,418 nonblank lines; scripts, 4 files/203 lines; tests/fixtures, 63 files/6,645 lines. Reduction must come from implementation cost, not deleting features, algorithms or notices.
+The page registry owns stable IDs, visibility/order, geometry and rendering. Feature pages own drafts. React Activity preserves them while hiding pages and pausing page effects. Media/device/clipboard observation and active assistant work stay above that lifecycle. The interaction machine owns collapse, re-entry, menus, focus and drag guards; geometry follows current visible dimensions and fractional display/input coordinates.
 
-Navigation: [Development](development.md) · [Platform support](platform-compatibility.md) · [Repository map](../INDEX.md)
+Idle music omits the playback-control slot. Hover quick view adds that width and always includes the artist. Both card sizes measure text against the actual viewport and use a CSS marquee. Track changes retain one keyed current content layer, and hidden-page restoration restarts measurement/animation.
 
-Windows music now uses native events and a supervised executor; both windows consume the same main-owned snapshot/selection. Real Folia commands, artwork matching and executor recovery are verified. Music preferences persist and apply to both card sizes. See [native observation](native-observation.md); macOS/Linux retain their existing native backends.
+## Resources, validation and availability
+
+Fonts and third-party notices ship as original resources. Guide videos and promotional screenshots capture actual application flows with isolated demo data; English is the default capture language. Tests are organized by [platform, feature and shared ownership](../tests/README.md).
+
+Island Liquid Glass and AI context awareness are unavailable. Windows/Linux keep the tray visible. The application does not collect desktop content for AI context awareness or maintain a completed-task archive. These states are reflected in the interface and usage guide.

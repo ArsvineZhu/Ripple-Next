@@ -1,39 +1,42 @@
 [简体中文](native-observation.zh-CN.md) · [Architecture](architecture.md)
 
-# Native observation and command execution
+# Native observation and commands
 
-Windows media and device integration uses one supervised, persistent MTA process. Main owns snapshots and selection; renderer windows subscribe to changes. Commands address the displayed session and return when the native API accepts or declines the operation. Metadata and cover decoding run separately from control execution.
+Main owns one media snapshot and source selection for both windows. Platform adapters own native subscriptions, caches and preparation; commands address the displayed session and are never automatically replayed. Metadata/artwork work stays outside the playback command path.
 
-## Why the old path was slow
+## Event and sampling sources
 
-A media control previously started PowerShell, acquired GSMTC, sent the command, then started another metadata/artwork read. Renderer polling could add five seconds to an external track change. Bluetooth polling added up to fifteen seconds. Camera and microphone reads created additional PowerShell hosts. The repeated process/runtime initialization and independent renderer schedules were the principal avoidable costs.
+| Platform/source               | Native owner                                         | Update behavior                                                                                             |
+| ----------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Windows media                 | GSMTC manager and session events                     | Reconcile sessions/current source; publish playback/capabilities and metadata; decode covers asynchronously |
+| Windows Bluetooth             | Classic/LE DeviceWatcher                             | Maintain connected-device state from added/removed/updated events                                           |
+| Windows camera/microphone     | ConsentStore registry notification                   | Re-arm subtree notification, then read capture activity                                                     |
+| Linux media                   | MPRIS NameOwnerChanged/PropertiesChanged             | Maintain unique-owner sessions and apply property changes to cached metadata                                |
+| Linux Bluetooth               | BlueZ ObjectManager/Device1 signals                  | Read the connected set on service/device changes                                                            |
+| Linux microphone/portal video | `pw-dump --monitor --no-colors`                      | Apply incremental node patches/removals; running input streams determine activity                           |
+| PulseAudio-only microphone    | `pactl subscribe`                                    | If pw-dump is absent, coalesce source-output/server events into state reads                                 |
+| Linux V4L2 camera             | Bundled C inotify listener                           | Watch video opens/closes and hotplug, then reconcile holders with fuser                                     |
+| macOS media/devices           | Running player dictionaries and native device probes | Main owns media fallback sampling; device hooks sample supported probes                                     |
+| Battery                       | Chromium battery events                              | Update charge/level directly                                                                                |
 
-The replacement uses Windows system events:
+Healthy Windows/Linux event backends do not periodically sample. The device hook subscribes once and repeats a read if another event arrives during a pending read. Clipboard text uses a separate bounded two-second/focus sampler.
 
-| Source                        | Native owner                                        | Update policy                                                             |
-| ----------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------- |
-| Media sessions/current player | GSMTC manager SessionsChanged/CurrentSessionChanged | Reconcile subscriptions and publish the current snapshot                  |
-| Playback state/capabilities   | PlaybackInfoChanged                                 | Read the inexpensive current playback info; retain track artwork          |
-| Title/artist/album/artwork    | MediaPropertiesChanged                              | Coalesce bursts for 35ms, publish metadata, decode artwork asynchronously |
-| Bluetooth Classic and LE      | DeviceWatcher with connected-device selectors       | Added/Removed/Updated events maintain the connected set                   |
-| Camera and microphone         | RegNotifyChangeKeyValue on ConsentStore             | Re-arm subtree notification before reading capture activity               |
+## Metadata and image lifetime
 
-References: [GSMTC events](https://learn.microsoft.com/en-us/uwp/api/windows.media.control.globalsystemmediatransportcontrolssession), [Bluetooth selectors](https://learn.microsoft.com/en-us/uwp/api/windows.devices.bluetooth.bluetoothdevice.getdeviceselectorfromconnectionstatus), [DeviceWatcher](https://learn.microsoft.com/en-us/windows/apps/develop/devices-sensors/enumerate-devices), [registry notification](https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regnotifychangekeyvalue).
+MPRIS IDs include their unique owner, preventing a stale command from targeting a replacement player. Signals update metadata immediately. Local files are recognized by extension or image signatures and bounded to 5 MiB. Metadata publishes first, cover I/O finishes independently and missing/failed covers leave playback available.
 
-## Ownership and lifecycle
+Every new cover generation invalidates prior image work, including metadata changes that reuse the same temporary URL. A → B → A does not revive the older A result. Current text clears an obsolete cover while the current image loads. Renderer decode failure displays the music placeholder and retries on a changed session/source.
 
-`platform/windows/nativeRuntime.cs` owns WinRT objects, listeners, command execution and capture registry notification. `nativeRuntime.ts` compiles the bundled source with the installed .NET Framework compiler once per source hash, caches the executable in the user's temporary directory, and supervises its JSON-lines transport. No Windows SDK or additional runtime is downloaded. The source file is passed by path to keep the compiler launch within Windows command-line limits.
+## Supervision and cleanup
 
-The transport shares startup, bounds frames and outstanding requests, correlates responses, and times out a command after five seconds. A crash rejects pending operations and reconnects listeners with bounded backoff. Commands are never replayed automatically. EOF, application shutdown or parent-process exit terminates the executor. Diagnostic records contain fixed reasons/native codes, not protocol payloads or song data.
+Windows nativeRuntime.ts supervises a persistent MTA process and bounded JSON-lines requests. It compiles bundled C# once per source hash using the system compiler. Startup, frame/request limits and five-second command deadlines bound the transport. Failure rejects pending requests and restarts observation with backoff; EOF/parent/application exit ends the executor.
 
-Media and device adapters interpret native snapshots. The media service owns one observation/recovery schedule for every renderer: events plus a 30-second health read on Windows; one five-second query schedule on current macOS/Linux backends. Opening Settings does not create another media sampler. `onMediaSnapshotChanged` broadcasts automatic/manual selection and native updates to both windows. Devices retain their own native failure scope and a slow cached health check.
+Linux signalBus.ts owns match rules and replacement D-Bus connections. nativeStream.ts supervises persistent native event sources with startup/frame limits and exponential recovery capped at 30 seconds. pipewire.ts frames incremental JSON and merges node state/property updates. The inotify executable blocks in the kernel while idle and exits on parent death. Forge compiles/packages the Linux listener and target-architecture macOS window addon.
 
-Every properties event refreshes artwork, including events whose title/artist/album remain unchanged. A monotonic per-session generation invalidates older metadata and image work immediately; A → B → A does not authorize an old A image to overwrite the new A generation. Track text changes clear the previous cover while the current one loads. Decode failure retains the music placeholder and playback controls.
+Faults remain local to their player/device. Shutdown removes subscriptions, timers and child processes. Diagnostics contain bounded native codes/reasons rather than song data or protocol frames.
 
-## Measurements and acceptance
+## Validation
 
-On this Windows host with Folia on 2026-10-14, a warm native read took about 0.2–0.7ms. Pause/play/next/previous command acknowledgements took 2.4–8.4ms; corresponding player state or track events arrived in 22–471ms. The packaged renderer measured about 6–8ms for play/pause acknowledgement. These are local observations; player decoding and notification timing remain part of the end-to-end latency.
+Private D-Bus brokers exercise player arrival/departure, property delivery, metadata-before-cover and obsolete generations. Kernel tests trigger actual inotify opens/closes/hotplug on temporary video-named files. Live renderer acceptance checks controls, shared snapshots and animation restart; physical Bluetooth/capture transitions use corresponding hardware.
 
-Two next/previous cycles matched song metadata and artwork against a separate fresh GSMTC reader, and the renderer image matched the current snapshot. The original track was restored. An interrupted executor produced stale disabled media state and recovered in about 1.16 seconds. Bluetooth/capture initialization returned valid native states; hardware connect/disconnect and actual capture transitions still require matching-device acceptance.
-
-The current macOS dictionary queries and Linux MPRIS backend retain their existing native behavior. Their future event adapters can implement the same optional backend subscription: MPRIS PropertiesChanged/NameOwnerChanged on Linux, and player-specific native notifications on macOS. Core selection, IPC and UI do not need platform branches for that extension.
+References: [GSMTC](https://learn.microsoft.com/en-us/uwp/api/windows.media.control.globalsystemmediatransportcontrolssession), [DeviceWatcher](https://learn.microsoft.com/en-us/windows/apps/develop/devices-sensors/enumerate-devices), [registry events](https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-regnotifychangekeyvalue), [MPRIS](https://specifications.freedesktop.org/mpris/latest/Player_Interface.html), [BlueZ](https://bluez.readthedocs.io/en/latest/device-api/), [PipeWire](https://docs.pipewire.org/page_man_pw-dump_1.html), [inotify](https://man7.org/linux/man-pages/man7/inotify.7.html).

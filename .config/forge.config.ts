@@ -27,6 +27,12 @@ const config: ForgeConfig = {
     icon: 'src/assets/icons/icon',
     extraResource: [
       path.join(projectRoot, 'src/assets/icons/icon.png'),
+      ...(process.platform === 'linux'
+        ? [path.join(projectRoot, 'out/native/ripple-device-events')]
+        : []),
+      ...(process.platform === 'darwin'
+        ? [path.join(projectRoot, 'native/macos-window/build/Release/macos_window.node')]
+        : []),
       path.join(projectRoot, 'src/assets/third-party/liquid-glass-notices.txt'),
       path.join(projectRoot, 'src/assets/third-party/licenses.json'),
       ...(fs.existsSync(path.join(projectRoot, 'node_modules/electron/dist/LICENSES.chromium.html'))
@@ -45,7 +51,15 @@ const config: ForgeConfig = {
       : {}),
   },
   hooks: {
-    generateAssets: async () => {
+    generateAssets: async (_config, platform, arch) => {
+      if (platform === 'linux' || platform === 'darwin')
+        execFileSync(
+          process.execPath,
+          [path.join(projectRoot, 'scripts/build-native.mjs'), `--arch=${arch}`],
+          {
+            cwd: projectRoot,
+          },
+        );
       execFileSync(process.execPath, [path.join(projectRoot, 'scripts/collect-licenses.mjs')], {
         cwd: projectRoot,
       });

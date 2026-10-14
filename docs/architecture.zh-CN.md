@@ -1,90 +1,63 @@
-# 功能与内部能力地图
+[English](architecture.md) · [仓库地图](../INDEX.zh-CN.md)
 
-本地图从 PR #14 的当前实现出发，覆盖全库整改。入口存在、代码接通、实际运行通过是不同状态；下面的运行核验随整改更新。版本保持 4.1.0-beta.1 未发布。
+# 能力与责任归属
 
-## 目标与当前工作
+Ripple Next 有两个渲染窗口：Island 用于日常操作，设置窗口用于配置和编辑。主进程维护唯一的已提交状态、原生系统效果和服务生命周期；两个窗口共用类型化 preload 桥接并接收提交后的更新。
 
-- **目标**：保留真实功能、三种模型协议、原生系统集成、布局和打包能力，统一数据和操作，明显减少代码、转换、重复流程及跨模块修改。
-- **决定**：不维持历史内部兼容路径；主进程拥有持久化与系统效果；共享层只定义正式数据；渲染层拥有展示和交互。保留必要的加密、事务、输入区域及资源许可。
-- **当前工作**：持久化、双窗同步与任务重启路径已整改；启动目标、天气配置及系统偏好提交已统一；AI 流式回答、取消和部分失败已统一并完成真实模型核验；搜索与原生剪贴板已核验，媒体类型与平台选择已统一并删除重复查询；设置现由公共偏好组件拼装，分类持有编辑与查询，转发控制器已删除；Island 各页也已由公共内容、启动、媒体控制及 Markdown 模块拼装；源码归属检查覆盖下表路径，包括资源、诊断与构建脚本。最终交付核验 Windows 流程和打包，Windows Folia 播放控制、封面对应与恢复已核验；macOS／Linux 原生验收及真实设备状态变化需要对应主机与设备。
+## 完整用户路径
 
-诊断现由 main 的单一可读入口管理，使用受限渲染上报、操作关联、分窗口上下文和原始源码映射；界面复核修复裸输入焦点、公共操作按钮与吸顶预览留缝。
+| 能力               | 运行路径与结果                                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 启动与设置         | 应用配置目录 → 原生单实例锁 → SQLite／安全存储 → Island 和设置初始化；再次启动打开已有设置，关闭设置保留 Island。                           |
+| 偏好、显示器与启动 | 设置控件 → AppStateProvider → 校验后的 IPC → 原生效果 → 原子保存 → 双窗广播；系统效果失败时保留已提交值。                                   |
+| 搜索               | TextEntry → 网址／模板解析 → openExternal → 系统浏览器；错误显示在输入旁。                                                                  |
+| 工作流与快捷应用   | 设置编辑 → LaunchTarget → 持久化；Island LaunchButton → 有序目标数组 → 主进程编排 → 平台激活 → 按目标返回结果。                             |
+| 概览               | 时钟偏好 → Intl；WeatherPreferences → 天气服务／供应方／缓存 → 天气与地址或错误；浏览器电池事件 → 电量。                                    |
+| 音乐               | 原生适配器 → 媒体服务 → 共用快照／来源选择 → 卡片；控制及唤起携带当前卡片会话 ID，元数据与封面独立更新。                                    |
+| AI                 | 设置接口／凭据／模型图 → 加密记录 → 当前模型与解析后的提示词 → SDK 协议流 → 助手生命周期 → Markdown／原生复制；取消和部分失败归属于原请求。 |
+| 剪贴板             | 原生读取 → 有界内存历史 → 行内复制 → 原生写入；最多 100 条、100 万字符，退出后清空。                                                        |
+| 任务               | 功能草稿 → tasks patch → 原子保存 → 广播；完成后从活动列表移除。                                                                            |
+| 设备提醒           | 电池事件／原生设备监听 → 提醒队列 → Island 状态／边框；提醒保留已展开页面，失败局限于对应来源。                                             |
+| 指南、关于与许可   | 实际录像／封面 → 用户控制播放；产品元信息和指定许可记录 → 设置。                                                                            |
+| 诊断               | 校验后的操作／视图事件 → 主进程有界日志与崩溃目录 → 打开诊断目录。                                                                          |
+| 构建与发布         | pnpm 检查 → Forge／Vite 主进程、preload、界面 → 原生模块和资源 → 平台 maker → 版本软件包；发布遵循确认流程。                                |
 
-## 用户路径
-
-| 能力与官方入口                               | 数据流与结果                                                                                                                                         | 当前支持与待核验                                                                                                                                      |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 启动、再次启动、托盘/菜单打开设置            | `main/index` → app profile/实例锁 → 状态与服务 → Island/Settings BrowserWindow → preload → renderer bootstrap                                        | Windows 打包启动、双窗同步、重启保留及损坏设置的错误页面已核验；数据库文件打不开时已显示本地化原生错误及数据位置，再退出                              |
-| 外观、字体、语言、玻璃、位置、显示器、功能页 | Settings 编辑 → AppStateProvider patch → IPC → state store → 广播 → 两个 renderer；显示器和自启动另有系统调用                                        | 统一提交在保存前执行显示器／自启动系统操作；无效显示器及不可用自启动不改写保存值，显示器重启恢复归 main                                               |
-| 浏览器搜索                                   | Search 输入 → URL/template 解析 → `openExternal` → OS 默认浏览器；失败在搜索页显示                                                                   | 已删除浏览器 fallback；查询模板和直接地址均通过正式入口到达默认浏览器及本机 HTTP 服务                                                                 |
-| 工作流和快捷应用                             | 设置编辑 → 正式目标 → 持久化；Island 启动 → preload → 主进程 → URL/命令/原生应用 → 行内结果                                                          | 统一 LaunchTarget、整组 IPC 与平台接口；Windows 真实浏览器打开、失败后继续命令及 argv／工作目录保留已核验；没有工作流时，快捷应用也能从紧凑页独立启动 |
-| 概览：时间、日期、天气、电量                 | Settings 时间/位置 → Intl 时钟；天气 → 主进程服务 → WeatherAPI → reading/location/error；电量 → 浏览器系统电池 API                                   | 统一天气配置与刷新 hook；Windows 真实天气查询、自动地址显示、手动字段保留及重启已核验                                                                 |
-| 音乐                                         | 原生事件／主进程采样 → media service → Windows GSMTC / macOS Spotify、Music / Linux MPRIS → session snapshot → 选择、控制和激活 → 更新卡片           | 统一媒体模型和平台入口；选择不等待查询，控制前不重读元数据。Windows Folia 控制、封面对应与执行器恢复已核验；其他系统原生行为需对应主机验收            |
-| AI 配置和回答                                | Settings endpoint/key/model → graph service + encrypted store → 选择模型 → Island prompt → assistant → SDK 三种协议 → 增量及最终结果 → Markdown/复制 | 真实模型及三种 HTTP 协议通过打包应用核验；取消、部分错误、有序注入、Markdown、原生复制和重置通过                                                      |
-| 剪贴板                                       | native read → 会话内有界历史 → 选择条目 → native write                                                                                               | Windows 原生读取、历史、界面复制与回读通过，空白及去重顺序保留；容量为 100 条／100 万字符，重启清空                                                   |
-| 任务                                         | Island 文本 → tasks patch → SQLite → 广播/重启；完成即移除                                                                                           | Windows 打包应用已通过键盘新增、重启保留、勾选完成及两窗同步                                                                                          |
-| 设备提醒                                     | 电量和蓝牙/摄像头/麦克风读取 → alerts → Island 模式/边框；失败 → notice/diagnostics                                                                  | 原生读取已接通；采样和错误 owner 待核验，不能为缺设备伪造正常状态                                                                                     |
-| 使用指南、关于、许可与诊断                   | 本地录屏/资源 → Settings；许可列表 → main 读取指定记录；诊断 → 有界本地日志与 crash folder                                                           | 已接通；保留真实录像、字体原文件及许可；清理临时采集脚本与重复诊断测试                                                                                |
-| 构建和发布                                   | pnpm → Forge/Vite → sandbox preload + native modules + assets → 平台 maker → CI artifacts                                                            | Windows package 与运行核验通过；其他平台按对应主机验证；当前不发布、不合并 PR                                                                         |
-
-尚未开放的能力：Island Liquid Glass 和 AI 上下文感知在设置中禁用。完整长会话/任务迁移及 Windows/Linux 可选托盘未实现。它们应直接表达未开放，不能靠兼容壳或占位实现宣称可用。
-
-## 内部能力及责任
+## 分层边界
 
 ```mermaid
 flowchart TD
-  UI[Island feature views / Settings editors] --> Bridge[preload: explicit ElectronAPI]
-  UI --> ViewState[AppStateProvider: pending UI edits]
-  ViewState --> Bridge
-  Bridge --> IPC[main IPC: sender and input boundary]
-  IPC --> State[appStateStore: durable snapshot and atomic patch]
-  IPC --> AI[AI graph / encrypted credentials / assistant]
-  IPC --> OS[apps / media / devices / autostart / windows]
-  IPC --> Weather[weather requests and bounded cache]
-  AI --> State
-  AI --> Provider[AI SDK protocol adapters]
-  OS --> Native[platform adapters]
-  State --> SQLite[(SQLite)]
-  State --> Broadcast[state broadcast to both windows]
-  Broadcast --> ViewState
-  Shared[shared: domain schemas and pure policies] -.-> UI
+  Views[Island 功能和设置编辑] --> Controls[公共内容与偏好控件]
+  Views --> Bridge[类型化 preload 桥接]
+  Bridge --> IPC[发送方和载荷校验]
+  IPC --> Store[原子 SQLite 状态和加密凭据]
+  IPC --> Services[媒体 AI 天气 启动 诊断服务]
+  Services --> Adapters[平台适配器与原生监听]
+  Store --> Broadcast[提交状态广播]
+  Broadcast --> Views
+  Shared[公共 schema 与纯策略] -.-> Views
   Shared -.-> IPC
-  Shared -.-> State
 ```
 
-| 所属能力         | 数据、规则和完整操作                                       | 隐藏的实现与依赖方向                                                              |
-| ---------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| 应用生命周期     | profile、实例锁、窗口/托盘生命周期、退出                   | Electron 只在 main；开发数据隔离不替代功能状态                                    |
-| 持久化           | settings/tasks/workflows/quickApps、加密字节、patch 原子性 | SQL、文件路径和事务只属于 appStateStore；调用方提交正式对象，不组织表写入         |
-| AI 配置          | endpoint/key/model 引用、稳定身份、删除关联、凭据保存      | main graph service 调用存储；renderer 不分配身份、不接收密钥                      |
-| AI 执行          | 选定模型解析、模板/注入、协议参数、取消、流式结果          | SDK/网络在 main；renderer 消费一个请求的结果与错误                                |
-| 启动目标         | 应用/URL/命令目标和按序启动                                | platform adapters 隐藏 shell、desktop file、WinRT；工作流和快捷应用应共用正式目标 |
-| 媒体             | 会话选择、能力、操作结果、错误快照                         | main service 选择/串行化，平台只实现读取和操作；renderer 不推断系统会话身份       |
-| 天气             | 位置、单位、凭据模式、并发请求和有界缓存                   | main 隐藏密钥/API，shared owns serializable location/reading/error                |
-| Island 布局/输入 | 页面身份/顺序、目标几何、模式、焦点/离开/手势              | shared owns geometry/page policies；renderer owns动画；main owns原生输入区域      |
-| 设置交互         | 分类/二级页、控件、编辑、确认、滚动/焦点恢复               | Settings owner；不经 Island 大控制器传递编辑操作                                  |
-| Liquid Glass     | 真实折射算法、位图缓存、按压/拖动/菜单高亮                 | 保留现有算法来源；统一材料与交互入口，关闭时无玻璃鼠标响应                        |
-| 资源/工具        | 字体、许可、录像；开发/打包脚本                            | 资源许可保持完整；生成目录 `.vite`/`out` 不进入生产 API                           |
+主进程服务负责领域编排，适配器负责原生发现、准备、身份和缓存。共享层提供运行时无关的数据与策略。preload 暴露具名方法和取消订阅函数；界面功能组合公共控件并执行所属操作。
 
-## 已确认的减量点与整改顺序
+AppStateProvider 分离待提交与已提交状态，合并写入。主进程只提交变化的设置或功能列表，AI 图和相关凭据删除位于同一事务。读取失败直接报错，不用默认值覆盖已保存数据。
 
-1. **持久化完整路径**：删除旧版页面/AI 迁移、schema version 核对和 SQL 分发包装；patch 只写受影响数据。取消读取默认值与 `getLoadError` 双通道；保留数据库事务和 OS 加密。
-2. **Island 与设置职责**：删除 Island 控制器未使用的设置操作和快捷应用编辑状态；页面编辑操作由 Settings 持有；将实际功能状态交还各功能 owner。
-3. **启动目标完整路径**：工作流统一结构化目标，主进程负责整组启动；移除字符串二次推断、提前 build-cache IPC 和固定等待。
-4. **位置/状态正式数据**：统一自动/手动位置表示，在天气 owner 转换一次外部查询；将显示器与自启动系统效果和提交合为一次操作。
-5. **AI 完整路径**：真实服务调用、流式显示、取消/失败/重试；收拢重复校验、诊断生命周期、可删除名称兼容解析和字体 alias。
-6. **全库维护成本**：检查 Settings 长文件、玻璃重复层、平台重复命令、共享 types、测试和脚本；删除无独有行为保护的测试及验证结束后的脚手架。文档随 owner 修改，最后核验全部真实路径。
+## 原生监听
 
-这些是当前证据支持的切入点，后续发现同类问题继续归入所属路径。媒体命令序列、状态写入序列、renderer 乐观编辑合并和跨窗口广播各自解决真实并发问题，不能仅因使用 queue 就删除。原生输入区域确认解决透明窗口实际点击问题，也不是业务检查点。
+Windows 使用常驻 MTA 执行器监听 GSMTC、蓝牙 DeviceWatcher 和采集注册表。Linux 使用 MPRIS／BlueZ 信号、PipeWire／PulseAudio 增量流及内置 C inotify 摄像头监听器。事件后端正常时没有周期采样；macOS 查询运行中 Spotify／Music 的字典并使用设备探测。见[原生监听](native-observation.zh-CN.md)和[平台支持](platform-compatibility.zh-CN.md)。
 
-## 运行与维护
+MPRIS 会话 ID 包含唯一 D-Bus owner。属性信号直接更新缓存元数据，本地封面按会话代次读取，迟到结果不能覆盖当前曲目。双窗订阅相同的主进程快照及选择。
 
-本轮已完成持久化快照与按变化提交、直接读取错误、设置损坏的启动错误页、Island 冗余编辑器/页面操作清理，以及延迟打开网页指南的删除。Windows 打包应用通过实际设置控件、原生键盘新增任务、重启恢复和勾选完成；读取错误通过损坏演示配置复现。本轮进一步统一启动目标及 Application，删除 renderer 启动循环、固定等待和三个旧 IPC；原生激活／发现／缓存归平台适配器，快捷应用草稿归编辑器。天气配置、刷新 owner 和原生偏好提交已统一并完成 Windows 核验；AI 现由同一配置模块解析模型，由一个执行模块负责取消与最终结果，协议流直接使用 SDK。已配置的真实模型 doubao-seed-2.1-lite 完成流式 Markdown 显示、原生代码复制和重置；独立本机 HTTP fixture 完成三种协议、有序注入、部分回答失败和取消后再次请求。数据库打开失败已显示本地化原生错误，原文件保持不变。设备检测通过统一平台入口选择实现，Windows 三个检测接口及取色窗口关闭后终止 helper 已核验；原生输入自动化初始化失败，实际点选颜色尚未核验。搜索查询／直接地址已到达默认浏览器；原生剪贴板历史、复制与回读通过，并保留空白和去重顺序。设置与 Island 现已共享输入、操作、反馈和容器，启动及媒体控制各有一个复用模块，Markdown 归公共内容组件。任务／搜索草稿由功能持有，并通过 React Activity 在折叠时保留；轮询错误跟踪按来源有界。真实媒体播放／控制及设备状态变化仍需原生验收。
+## 界面组合与生命周期
 
-当前只保留 SQLite 正式状态和 OS 加密记录；剪贴板/请求过程/预览属于会话状态。天气缓存上限 20 项、60 秒，日志上限 5 MiB，crash reports 保留最新 10 份且不超过 30 天。Windows 应用发现按需执行，结果由 Windows 适配器在内存保留五分钟，不再有缓存准备和文件读写流程。`.vite`/`out` 为可重新生成的构建目录；不要删除用户数据来通过运行核验。
+公共内容模块管理 ActionButton、TextEntry、EmptyState、Feedback、Surface；偏好模块基于这些控件组合行、卡片和字段。开关、滑杆、选择器与颜色使用各自的公共模块。LaunchButton、MediaControl、MediaArtwork、MediaMarquee、MediaTransition、MarkdownContent 管理跨功能复用的行为。
 
-整改基线提交 `c916b0c`：生产 TS/TSX/CSS/SQL 237 文件、22,418 非空行；脚本 4 文件、203 行；测试及 fixture 63 文件、6,645 行。统计用于判断实质减量，不能通过删除算法、功能或许可资源追求数字。
+页面注册表管理稳定 ID、可见性、顺序、几何和渲染。功能页持有草稿，React Activity 隐藏页面并暂停效果时保留草稿；媒体、设备、剪贴板和活动助手位于这个生命周期之上。交互状态机管理折叠、重入、菜单、焦点和拖动，几何跟随当前可见尺寸及分数缩放坐标。
 
-导航：[开发](development.zh-CN.md) · [平台支持](platform-compatibility.zh-CN.md) · [仓库地图](../INDEX.zh-CN.md)
+音乐 idle 不预留播放键空间；悬停快览加宽并始终显示歌手。两种卡片按实际 DOM 文字和裁切区宽度执行 CSS 滚动，换曲只保留一个当前层；隐藏页面恢复后重测并重新启动动画。
 
-Windows 音乐改为原生事件与受监督执行器，两个窗口使用同一主进程快照／来源；已验证 Folia 控制、封面对应与异常恢复。音乐偏好持久化并作用于两种卡片。见[系统监听与执行](native-observation.zh-CN.md)；macOS／Linux 保留当前原生后端。
+## 资源、验证与可用性
+
+字体及第三方声明以原始资源分发。指南和宣传素材来自独立演示配置中的实际操作，默认使用英文。测试按[平台、功能与公共契约](../tests/README.zh-CN.md)分类。
+
+Island 液态玻璃与 AI 上下文感知尚未开放；Windows／Linux 保持托盘可见。应用不会为上下文感知收集桌面内容，也不维护已完成任务归档；界面和指南明确表达这些状态。
