@@ -14,11 +14,12 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { detailEntryId, type SettingsDetail } from '../../lib/settingsDetails';
-import { useEffect, useId, useRef, useState, type ReactNode, type ChangeEvent } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
 import { useReducedMotionPreference } from '../../hooks/useReducedMotionPreference';
 import styles from './Preferences.module.css';
+import { ActionButton, TextEntry } from '../content';
 
 export function PreferenceGroup({ caption, children }: { caption?: string; children: ReactNode }) {
   return (
@@ -78,14 +79,15 @@ export function PreferenceButton({
   variant?: 'primary' | 'secondary';
 }) {
   return (
-    <button
+    <ActionButton
+      tone={variant}
       type={type}
       className={variant === 'primary' ? styles.primaryButton : styles.addRowButton}
       disabled={disabled}
       onClick={onClick}
     >
       {children}
-    </button>
+    </ActionButton>
   );
 }
 
@@ -205,20 +207,6 @@ export function PreferenceTextField({
   title?: string;
 }) {
   const id = useId();
-  const input = {
-    id,
-    value,
-    placeholder,
-    disabled,
-    autoFocus,
-    required,
-    title,
-    'aria-label': label,
-    'aria-invalid': invalid || undefined,
-    'aria-describedby': hint ? `${id}-hint` : undefined,
-    onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      onValueChange(event.target.value),
-  };
   return (
     <div className={styles.fieldLabel}>
       <label htmlFor={id} hidden={labelHidden}>
@@ -230,16 +218,24 @@ export function PreferenceTextField({
         </span>
       )}
       <div className={styles.editRow}>
-        {multiline ? (
-          <textarea {...input} rows={4} className={`${styles.input} ${styles.promptInput}`} />
-        ) : (
-          <input
-            {...input}
-            type={type}
-            autoComplete={type === 'password' ? 'new-password' : undefined}
-            className={`${styles.input} ${invalid ? styles.invalidInput : ''}`}
-          />
-        )}
+        <TextEntry
+          id={id}
+          label={label}
+          value={value}
+          onValueChange={onValueChange}
+          placeholder={placeholder}
+          disabled={disabled}
+          autoFocus={autoFocus}
+          required={required}
+          title={title}
+          describedBy={hint ? `${id}-hint` : undefined}
+          invalid={invalid}
+          multiline={multiline}
+          rows={4}
+          type={type}
+          appearance="surface"
+          className={`${styles.input} ${multiline ? styles.promptInput : ''} ${invalid ? styles.invalidInput : ''}`}
+        />
         {action}
       </div>
       {error && (

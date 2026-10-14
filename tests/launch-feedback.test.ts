@@ -2,7 +2,7 @@
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, expect, it, vi } from 'vitest';
-import { WorkflowsTab } from '../src/renderer/features/WorkflowsTab';
+import { LaunchButton } from '../src/renderer/components/LaunchButton';
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('../src/renderer/components/NotificationProvider', () => ({
@@ -48,15 +48,21 @@ it('shows a failed quick launch on its own app item and clears it on retry', asy
   const root = createRoot(container);
   await act(async () =>
     root.render(
-      createElement(WorkflowsTab, {
-        workflows: [{ name: 'Daily', targets: [{ kind: 'url', url: 'https://example.com' }] }],
-        bgColor: '#000',
-        textColor: '#fff',
-        quickApps: [
-          { id: 'one', name: 'ChatGPT', target: { kind: 'url', url: 'https://example.com' } },
-          { id: 'two', name: 'Firefox', target: { kind: 'url', url: 'https://example.org' } },
-        ],
-      }),
+      createElement(
+        'div',
+        { id: 'quick-apps' },
+        ...['ChatGPT', 'Firefox'].map((name) =>
+          createElement(
+            'div',
+            { key: name },
+            createElement(
+              LaunchButton,
+              { targets: [{ kind: 'url', url: 'https://example.com' }] },
+              name,
+            ),
+          ),
+        ),
+      ),
     ),
   );
   const [first, second] = Array.from(

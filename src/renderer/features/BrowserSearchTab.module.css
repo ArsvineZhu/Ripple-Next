@@ -1,18 +1,6 @@
 .searchInput {
-  font-weight: 500;
   animation: cubic-bezier(0.165, 0.84, 0.44, 1) appear 0.55s forwards;
-  background-color: transparent;
-  border: none;
-  padding: 12px 20px;
-  font-size: 20px;
-  outline: none;
-  text-align: center;
   width: 90%;
-}
-
-.searchInput::placeholder {
-  color: var(--island-text-color);
-  opacity: 0.6;
 }
 
 .container {
@@ -26,9 +14,5 @@
 .error {
   max-width: 90%;
   margin: 0 0 12px;
-  color: #ff8b8b;
-  font-size: 12px;
-  line-height: 1.4;
   text-align: center;
-  overflow-wrap: anywhere;
 }

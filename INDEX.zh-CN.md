@@ -8,6 +8,7 @@
 - [主进程](src/main/README.zh-CN.md)：生命周期、托盘、窗口、IPC 和平台服务。
 - [Preload](src/preload/README.zh-CN.md)：隔离的 renderer 桥接层。
 - [Renderer](src/renderer/README.zh-CN.md)：Island 外壳、功能视图、hooks 和设置所有者。
+- [公共内容控件](src/renderer/components/content/index.tsx)：Island 与设置共用的输入、操作、反馈与容器。
 - [共享契约](src/shared/README.zh-CN.md)：IPC/领域类型和输入区域几何计算。
 - [工具配置](.config/README.zh-CN.md)：构建、分析和测试配置。
 - [贡献规范](CONTRIBUTING.zh-CN.md)：开发流程及文档同步。

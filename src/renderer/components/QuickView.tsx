@@ -5,21 +5,22 @@ import { localeForFormatting } from '../../shared/i18n';
 import { AnimatePresence } from 'motion/react';
 import { motion } from 'motion/react';
 import { MediaArtwork } from './MediaArtwork';
-import { Pause } from 'lucide-react';
-import { Play } from 'lucide-react';
+import { MediaControl } from './MediaControl';
 import { Zap } from 'lucide-react';
 import { Camera } from 'lucide-react';
 import { Mic } from 'lucide-react';
 import { Headphones } from 'lucide-react';
 import { WeatherIcon } from '../components/WeatherIcon';
 import type { IslandController } from '../hooks/useIslandController';
-import { mediaCommandSupported } from '../../shared/media';
+import type { useMedia } from '../hooks/useMedia';
+import type { useOverview } from '../hooks/useOverview';
+import type { useBattery } from '../hooks/useBattery';
+
 type Props = Pick<
   IslandController,
   | 'mode'
   | 'showInfoWhenIdleEnabled'
   | 'isPlaying'
-  | 'showPausedQuickView'
   | 'alert'
   | 'chargingAlert'
   | 'bluetoothAlert'
@@ -27,22 +28,25 @@ type Props = Pick<
   | 'microphoneAlert'
   | 'trackTitle'
   | 'trackArtist'
-  | 'mediaTrack'
-  | 'mediaSnapshot'
-  | 'mediaActionError'
-  | 'mediaBusy'
-  | 'controlMedia'
-  | 'openMediaSession'
   | 'hideNotActiveIslandEnabled'
   | 'textColor'
   | 'textWidth'
   | 'nowPlayingWidth'
   | 'isHovered'
-  | 'time'
-  | 'percent'
   | 'standbyBorderEnabled'
-  | 'weather'
->;
+> &
+  Pick<
+    ReturnType<typeof useMedia>,
+    | 'mediaTrack'
+    | 'mediaSnapshot'
+    | 'mediaActionError'
+    | 'mediaBusy'
+    | 'controlMedia'
+    | 'openMediaSession'
+    | 'showPausedQuickView'
+  > &
+  Pick<ReturnType<typeof useOverview>, 'time' | 'weather'> &
+  Pick<ReturnType<typeof useBattery>, 'percent'>;
 export function QuickView({
   mode,
   showInfoWhenIdleEnabled,
@@ -158,35 +162,22 @@ export function QuickView({
                 </div>
                 <AnimatePresence>
                   {isHovered && (
-                    <motion.button
-                      className={styles['playButton']}
+                    <motion.div
+                      className={styles.playButton}
                       key="play-pause-hover"
-                      aria-label={t('playPause')}
-                      disabled={
-                        !mediaTrack ||
-                        mediaBusy ||
-                        mediaSnapshot.status === 'error' ||
-                        !mediaCommandSupported(mediaTrack, 'playpause')
-                      }
                       initial={{ opacity: 0, width: 0 }}
                       animate={{ opacity: 1, width: 30 }}
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.25, ease: 'easeInOut' }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (mediaTrack) void controlMedia('playpause', mediaTrack.id);
-                      }}
-                      onMouseEnter={() => {
-                        if (window.electronAPI)
-                          window.electronAPI.setIgnoreMouseEvents(false, false);
-                      }}
                     >
-                      {mediaTrack?.state === 'playing' ? (
-                        <Pause size={15} color="#FFFFFF" fill="#FFFFFF" />
-                      ) : (
-                        <Play size={15} color="#FFFFFF" fill="#FFFFFF" />
-                      )}
-                    </motion.button>
+                      <MediaControl
+                        session={mediaTrack}
+                        compact
+                        command="playpause"
+                        disabled={mediaBusy || mediaSnapshot.status === 'error'}
+                        onCommand={controlMedia}
+                      />
+                    </motion.div>
                   )}
                 </AnimatePresence>
               </div>

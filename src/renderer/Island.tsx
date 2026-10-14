@@ -6,7 +6,7 @@ import { TabPanels } from './components/TabPanels';
 import { useIslandController } from './hooks/useIslandController';
 import { useIslandGeometry } from './hooks/useIslandGeometry';
 import { QuickView } from './components/QuickView';
-import { useCallback, useEffect, useState } from 'react';
+import { Activity, useCallback, useEffect, useState } from 'react';
 import { recordIslandContext } from './lib/diagnostics';
 export default function Island() {
   const controller = useIslandController();
@@ -44,9 +44,7 @@ export default function Island() {
     islandCornerRadius,
     cameraInUse,
     microphoneInUse,
-    charging,
     chargingAlert,
-    percent,
     alert,
     bluetoothAlert,
     currentTabId,
@@ -55,6 +53,7 @@ export default function Island() {
     direction,
     trackPointerPosition,
   } = controller;
+  const { charging, percent } = controller.battery;
   const reportIslandContext = useCallback(() => {
     const bounds = islandElementRef.current?.getBoundingClientRect();
     if (!bounds) return;
@@ -62,11 +61,11 @@ export default function Island() {
       tabId: currentTabId,
       mode,
       expanded: mode === 'large',
-      asked: controller.asked,
+      asked: controller.assistant.asked,
       viewport: { width: window.innerWidth, height: window.innerHeight },
       inputRegion: { width: bounds.width, height: bounds.height },
     });
-  }, [controller.asked, currentTabId, islandElementRef, mode]);
+  }, [controller.assistant.asked, currentTabId, islandElementRef, mode]);
   useEffect(() => {
     reportIslandContext();
     window.addEventListener('resize', reportIslandContext);
@@ -236,9 +235,14 @@ export default function Island() {
     >
       <div className={styles.content}>
         {/*Quickview*/}
-        <QuickView {...controller} />
+        <QuickView
+          {...controller}
+          {...controller.media}
+          {...controller.overview}
+          {...controller.battery}
+        />
 
-        {mode === 'large' && (
+        <Activity mode={mode === 'large' ? 'visible' : 'hidden'}>
           <TabPanels
             tabs={visibleTabs}
             activeId={currentTabId}
@@ -255,7 +259,7 @@ export default function Island() {
               })
             }
           />
-        )}
+        </Activity>
         <div ref={setContainer} data-island-overlay className={styles.overlay} />
       </div>
     </motion.div>

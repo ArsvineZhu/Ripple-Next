@@ -16,7 +16,10 @@ const POLLED_ERROR_SOURCES = new Set<DiagnosticErrorSource>([
   'overview',
 ]);
 const POLLED_ERROR_INTERVAL_MS = 60_000;
-const polledErrorTimes = new Map<string, { loggedAt: number; suppressed: number }>();
+const polledErrorTimes = new Map<
+  DiagnosticErrorSource,
+  { signature: string; loggedAt: number; suppressed: number }
+>();
 
 function timestamp() {
   return new Date().toISOString();
@@ -25,14 +28,16 @@ function timestamp() {
 export function recordRendererError(source: DiagnosticErrorSource, error: unknown): void {
   const serializedError = serializeDiagnosticError(error);
   const now = Date.now();
-  const throttleKey = `${source}:${JSON.stringify(serializedError)}`;
-  const prior = POLLED_ERROR_SOURCES.has(source) ? polledErrorTimes.get(throttleKey) : undefined;
+  const signature = JSON.stringify(serializedError);
+  const previous = POLLED_ERROR_SOURCES.has(source) ? polledErrorTimes.get(source) : undefined;
+  const prior = previous?.signature === signature ? previous : undefined;
   if (prior && now - prior.loggedAt < POLLED_ERROR_INTERVAL_MS) {
     prior.suppressed += 1;
     return;
   }
   if (POLLED_ERROR_SOURCES.has(source)) {
-    polledErrorTimes.set(throttleKey, {
+    polledErrorTimes.set(source, {
+      signature,
       loggedAt: now,
       suppressed: prior?.suppressed ?? 0,
     });

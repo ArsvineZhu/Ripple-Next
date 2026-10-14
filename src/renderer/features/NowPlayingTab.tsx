@@ -1,27 +1,17 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Pause, Play, SkipBackIcon, SkipForwardIcon } from 'lucide-react';
-import type { IslandController } from '../hooks/useIslandController';
+import { MediaControl } from '../components/MediaControl';
+import { Feedback } from '../components/content';
+import type { useMedia } from '../hooks/useMedia';
 import type { MediaSession } from '../../shared/media';
-import { mediaCommandSupported, selectAutomaticSession } from '../../shared/media';
+import { selectAutomaticSession } from '../../shared/media';
 import { measureTextWidth } from '../lib/text';
 import { MediaArtwork } from '../components/MediaArtwork';
 import { MediaSessionCarousel } from '../components/MediaSessionCarousel';
 import styles from './NowPlayingTab.module.css';
 
-type Props = Pick<
-  IslandController,
-  | 'mediaTrack'
-  | 'mediaSnapshot'
-  | 'mediaActionError'
-  | 'mediaBusy'
-  | 'mediaPageId'
-  | 'controlMedia'
-  | 'selectMediaSession'
-  | 'openMediaSession'
-  | 'textColor'
->;
+type Props = Omit<ReturnType<typeof useMedia>, 'showPausedQuickView'> & { textColor: string };
 function useClipWidth() {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(150);
@@ -111,25 +101,13 @@ function TrackCard({
         <TrackText text={session.artist || t('unknownArtist')} artist active={active} />
         <div className={styles.controls}>
           {(['previous', 'playpause', 'next'] as const).map((command) => (
-            <button
+            <MediaControl
               key={command}
-              type="button"
-              className={styles['media-btn']}
-              aria-label={t(command === 'playpause' ? 'playPause' : command)}
-              data-media-command={command}
-              disabled={disabled || !mediaCommandSupported(session, command)}
-              onClick={() => void props.controlMedia(command, session.id)}
-            >
-              {command === 'previous' ? (
-                <SkipBackIcon size={20} fill="currentColor" />
-              ) : command === 'next' ? (
-                <SkipForwardIcon size={20} fill="currentColor" />
-              ) : session.state === 'playing' ? (
-                <Pause size={24} fill="currentColor" />
-              ) : (
-                <Play size={24} fill="currentColor" />
-              )}
-            </button>
+              session={session}
+              command={command}
+              disabled={disabled}
+              onCommand={props.controlMedia}
+            />
           ))}
         </div>
       </div>
@@ -162,9 +140,9 @@ export function NowPlayingTab(props: Props) {
         )}
       />
       {(props.mediaActionError || (props.mediaTrack && props.mediaSnapshot.error)) && (
-        <p className={styles.actionError} role="alert">
+        <Feedback className={styles.actionError}>
           {t(props.mediaActionError ?? props.mediaSnapshot.error!)}
-        </p>
+        </Feedback>
       )}
     </div>
   );

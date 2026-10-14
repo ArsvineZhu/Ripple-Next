@@ -2,7 +2,7 @@
 
 # Renderer
 
-QuickAppEditor owns its draft and discovery state through useQuickApps; the Settings controller only provides persisted lists and list edits. Discovery displays a pending status and rejects stale results. WorkflowEditor persists shared LaunchTarget objects, can add a saved quick app with its arguments/directory intact, and keeps URL commas. WorkflowsTab sends a target array once and displays indexed errors from main; it does not classify or pace launches.
+QuickAppEditor owns its draft and discovery state through useQuickApps; SettingsShortcuts owns persisted lists and list edits. Discovery displays a pending status and rejects stale results. WorkflowEditor persists shared LaunchTarget objects, can add a saved quick app with its arguments/directory intact, and keeps URL commas. WorkflowsTab sends a target array once and displays indexed errors from main; it does not classify or pace launches.
 
 The renderer owns Island presentation, interaction and feature feedback. OS access stays behind the [preload bridge](../preload/README.md). `Island.tsx` composes feature views and QuickView; `useIslandController` composes the feature hooks.
 
@@ -76,3 +76,11 @@ Settings consumers read the standard `settings` object and call `updateSettings`
 `components/preferences` owns the group, card, row, text/password/multiline field, number field, button, icon action, detail link and conditional reveal components and their shared stylesheet. Categories supply labels, values and operations; validation and draft state stay with their feature. Input actions occupy the shared field action slot. Switches, sliders, selects, native colors and the glass back button retain their specialized shared modules.
 
 SettingsTab only mounts the selected category or editor. General owns display discovery and time-zone options; Appearance owns background decoding; Pages owns order/visibility; Shortcuts owns its list operations. AI metadata loads in the AI views. SettingsApp owns navigation, transitions and scroll/focus history. The window-wide forwarding controller and workflow wrapper are removed. Detail identity keys reset each editor draft when its target changes.
+
+## Shared content composition
+
+`components/content` owns ActionButton, TextEntry, EmptyState, Feedback and Surface. Settings preference fields and actions compose the same input/button primitives. Feature styles supply layout; the common module owns type, colors, focus, disabled/pressed states and feedback motion. TextEntry handles Enter submission, Shift+Enter and IME composition centrally.
+
+Tasks and BrowserSearch own their local drafts. Island uses React Activity to preserve page state while collapsed and pause page effects; switching between visible pages also keeps their drafts. Assistant and clipboard hooks stay outside the page lifecycle because assistant activity controls geometry/collapse and clipboard polling continues while collapsed. Feature views accept their hook model rather than importing the entire Island controller.
+
+LaunchButton owns pending state, duplicate-activation protection and indexed failures for both workflow and quick-app actions. MediaControl shares capability checks, displayed-session identity, playback icons and focus/disabled behavior between Now Playing and QuickView. MarkdownContent owns answer typography, code surfaces and native-copy actions. WeatherIcon, MediaArtwork, ElasticScrollArea and the page registry remain the common owners of their existing contracts.

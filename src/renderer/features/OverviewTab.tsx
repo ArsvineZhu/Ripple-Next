@@ -3,12 +3,11 @@ import { localeForFormatting } from '../../shared/i18n';
 import styles from './OverviewTab.module.css';
 import typography from '../styles/typography.module.css';
 import { WeatherIcon } from '../components/WeatherIcon';
-import type { IslandController } from '../hooks/useIslandController';
+import type { useOverview } from '../hooks/useOverview';
+import type { useBattery } from '../hooks/useBattery';
 import type { CSSProperties } from 'react';
-type Props = Pick<
-  IslandController,
-  'charging' | 'percent' | 'weather' | 'textColor' | 'overviewTime' | 'overviewDate'
->;
+type Props = Omit<ReturnType<typeof useOverview>, 'time'> &
+  ReturnType<typeof useBattery> & { textColor: string };
 export function OverviewTab({
   charging,
   percent,

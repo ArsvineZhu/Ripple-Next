@@ -8,6 +8,7 @@
 - [Main process](src/main/README.md): lifecycle, tray, window, IPC and platform services.
 - [Preload](src/preload/README.md): isolated renderer bridge.
 - [Renderer](src/renderer/README.md): Island shell, feature views, hooks and settings owner.
+- [Shared content controls](src/renderer/components/content/index.tsx): inputs, actions, feedback and surfaces used by Island and Settings.
 - [Shared contracts](src/shared/README.md): IPC/domain types and input geometry.
 - [Tool configuration](.config/README.md): build, analysis and test configuration.
 - [Contribution policy](CONTRIBUTING.md): workflow and documentation synchronization.

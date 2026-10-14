@@ -2,7 +2,7 @@
 
 # Renderer
 
-QuickAppEditor 通过 useQuickApps 自己管理草稿和发现状态；设置控制器只提供保存的列表及列表编辑。应用发现显示等待提示，过期查询结果不会覆盖新输入。WorkflowEditor 保存共享 LaunchTarget，可添加保留参数与工作目录的快捷应用，网址中的逗号保持原样。WorkflowsTab 一次发送目标数组，显示 main 返回的逐项错误，不再判断目标类型或控制启动间隔。
+QuickAppEditor 通过 useQuickApps 自己管理草稿和发现状态；SettingsShortcuts 管理保存的列表与列表编辑。应用发现显示等待提示，过期查询结果不会覆盖新输入。WorkflowEditor 保存共享 LaunchTarget，可添加保留参数与工作目录的快捷应用，网址中的逗号保持原样。WorkflowsTab 一次发送目标数组，显示 main 返回的逐项错误，不再判断目标类型或控制启动间隔。
 
 Renderer 负责 Island 展示、交互和各功能反馈，系统访问通过 [preload 桥接](../preload/README.zh-CN.md)。`Island.tsx` 组合功能视图与 QuickView，`useIslandController` 组合功能 hooks。
 
@@ -76,3 +76,11 @@ Select 使用非模态单选菜单；打开时设置仍可滚动，岛内关闭�
 `components/preferences` 统一管理分组、卡片、设置行、文本／密码／多行字段、数字字段、按钮、图标操作、二级入口、条件展开及公共样式。分类页提供标签、值和操作，校验与草稿保留在功能内；输入后的操作按钮放在公共字段的 action 插槽。开关、滑杆、选择器、原生取色与玻璃返回键继续使用各自的公共模块。
 
 SettingsTab 只挂载选中的分类或编辑页。常规页管理显示器发现和时区选项，外观页管理背景解码，功能页管理排序／可见性，快捷页管理自己的列表操作；AI 元信息在 AI 视图加载。SettingsApp 管理导航、过渡与滚动／焦点历史，窗口层转发控制器与工作流包装已删除。编辑目标的身份 key 在切换目标时重置草稿。
+
+## 公共内容组件
+
+`components/content` 管理 ActionButton、TextEntry、EmptyState、Feedback 与 Surface。设置偏好字段和操作复用同一输入与按钮基础组件；功能样式只提供布局，公共模块管理字级、颜色、焦点、禁用／按压状态及反馈动画。TextEntry 统一处理回车提交、Shift+Enter 和输入法组合输入。
+
+任务与浏览器搜索自行持有草稿。Island 使用 React Activity，在折叠时保留页面状态并暂停页面副作用；可见页面间切换也保留草稿。AI 和剪贴板 hooks 留在页面生命周期之外，因为 AI 状态控制尺寸及折叠，剪贴板在折叠时继续采集。功能视图直接接收所属 hook 的模型，不再依赖整个 Island 控制器。
+
+LaunchButton 统一管理工作流与快捷应用的等待、防重复触发及逐项失败。MediaControl 统一展开音乐页与 QuickView 的能力检查、当前会话标识、播放图标和焦点／禁用状态。MarkdownContent 管理回答排版、代码容器和原生复制。WeatherIcon、MediaArtwork、ElasticScrollArea 与页面注册表继续管理各自已有契约。

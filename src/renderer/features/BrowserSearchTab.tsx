@@ -1,59 +1,32 @@
 import styles from './BrowserSearchTab.module.css';
 import { useTranslation } from 'react-i18next';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
 import { InlineNotices } from '../components/InlineNotices';
-import type { IslandController } from '../hooks/useIslandController';
-type Props = Pick<
-  IslandController,
-  | 'browserSearch'
-  | 'setBrowserSearch'
-  | 'searchBrowser'
-  | 'searchError'
-  | 'setSearchError'
-  | 'textColor'
->;
-export function BrowserSearchTab({
-  browserSearch,
-  setBrowserSearch,
-  searchBrowser,
-  searchError,
-  setSearchError,
-  textColor,
-}: Props) {
+import { useBrowserSearch } from '../hooks/useBrowserSearch';
+import { TextEntry, Feedback } from '../components/content';
+export function BrowserSearchTab() {
+  const { browserSearch, setBrowserSearch, searchBrowser, searchError, setSearchError } =
+    useBrowserSearch();
   const { t } = useTranslation();
   return (
     <div className={styles.container}>
       <InlineNotices area="browser-search" />
-      <input
-        className={styles.searchInput}
+      <TextEntry
         id="browser-searchbar"
+        label={t('searchHint')}
         placeholder={t('searchHint')}
         value={browserSearch}
-        onChange={(e) => {
-          setBrowserSearch(e.target.value);
+        onValueChange={(value) => {
+          setBrowserSearch(value);
           setSearchError(null);
         }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            searchBrowser();
-          }
-        }}
-        style={{ color: textColor }}
+        onSubmit={searchBrowser}
+        large
+        centered
+        className={styles.searchInput}
       />
       <AnimatePresence initial={false}>
-        {searchError && (
-          <motion.p
-            className={styles.error}
-            role="alert"
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, filter: 'blur(10px)' }}
-            transition={{ duration: 0.2 }}
-          >
-            {t(searchError)}
-          </motion.p>
-        )}
+        {searchError && <Feedback className={styles.error}>{t(searchError)}</Feedback>}
       </AnimatePresence>
     </div>
   );

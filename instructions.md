@@ -20,6 +20,8 @@ Hover over the Island to reveal **Quick** mode. Click a non-interactive part of 
 
 Settings lets you reorder and hide feature pages and choose a default. Now Playing becomes available when Ripple detects a supported media session. Settings lives outside the Island's page navigation. If every available page is hidden, Overview remains reachable. One continuous horizontal gesture moves one feature page; feature navigation wraps around. Music source navigation stops at the first and last card.
 
+Search and task drafts stay available when you switch pages or fold the Island. Enter submits search, a new task or an AI question. Shift+Enter adds a line in the AI input. Enter used to confirm an IME candidate does not submit.
+
 ## Search and open addresses
 
 Enter a query in Browser Search and submit it to open your system default browser. HTTP(S) addresses open directly. In Settings, configure a search URL template containing `{query}`; Ripple substitutes the encoded query into that placeholder.
@@ -58,7 +60,7 @@ Covers appear in both the expanded page and QuickView. Missing, unsupported or u
 
 In Settings → Integrations, configure the connection in this order:
 
-1. **Base URL configuration**: add an OpenAI-compatible Chat Completions, OpenAI Responses or Anthropic endpoint. Enter the Base URL including its API path, for example `/v1`. Each endpoint has a stable number.
+1. **Base URL configuration**: add an OpenAI-compatible Chat Completions, OpenAI Responses or Anthropic endpoint. Enter the Base URL including its API path, for example `/v1`. Endpoint, key and model numbers follow current list order and compact after removal.
 2. **API key configuration**: choose that Base URL, add a credential, enter its key and choose **Save**. Existing keys show dots and a **Change** button. Typing a replacement leaves the saved key intact until you choose Change.
 3. **Model configuration**: choose a Base URL and one of its saved keys, then enter the provider's exact model identifier and an optional display name. Select the **Current model** used by the Island.
 4. **Model customization**: select a numbered model. Its endpoint and identifier stay fixed on this page. Use the built-in system prompt or your own prompt, add named injections, enable/disable them and reorder them. Enabled snippets append to the system prompt in that order and support the same template variables, including `{{product}}`, `{{version}}`, `{{timezone}}` and `{{current_time}}`.

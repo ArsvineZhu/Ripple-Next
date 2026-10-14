@@ -53,26 +53,11 @@
 }
 
 .playButton {
-  background: none;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  padding: 0;
   margin-left: 1px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
   z-index: 100;
   will-change: opacity, width;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-}
-.playButton:disabled {
-  opacity: 0.3;
-  cursor: default;
 }
 
 .status {

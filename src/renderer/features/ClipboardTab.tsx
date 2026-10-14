@@ -1,9 +1,10 @@
+import { EmptyState, Feedback, Surface } from '../components/content';
 import { CopyButton } from '../components/CopyButton';
 import styles from './ClipboardTab.module.css';
 import { ElasticScrollArea } from '../components/ElasticScrollArea';
 import { useTranslation } from 'react-i18next';
-import type { IslandController } from '../hooks/useIslandController';
-type Props = Pick<IslandController, 'clipboard' | 'clipboardReadFailed' | 'copyToClipboard'>;
+import type { useClipboard } from '../hooks/useClipboard';
+type Props = ReturnType<typeof useClipboard>;
 export function ClipboardTab({ clipboard, clipboardReadFailed, copyToClipboard }: Props) {
   const { t } = useTranslation();
   return (
@@ -12,15 +13,15 @@ export function ClipboardTab({ clipboard, clipboardReadFailed, copyToClipboard }
       id="clipboard"
       data-empty={(clipboard.length === 0 && !clipboardReadFailed) || undefined}
     >
-      {clipboardReadFailed && <p role="alert">{t('clipboardReadFailed')}</p>}
+      {clipboardReadFailed && <Feedback>{t('clipboardReadFailed')}</Feedback>}
       {clipboard.length === 0 && !clipboardReadFailed ? (
-        <p className={styles.emptyState}>{t('clipboardEmpty')}</p>
+        <EmptyState className={styles.emptyState}>{t('clipboardEmpty')}</EmptyState>
       ) : (
         clipboard.map((item, index) => (
-          <div className={styles.row} data-island-interactive key={index}>
+          <Surface className={styles.row} interactive key={index}>
             <p className={styles.entryContent}>{item}</p>
             <CopyButton className={styles.copyButton} onCopy={() => copyToClipboard(item)} />
-          </div>
+          </Surface>
         ))
       )}
     </ElasticScrollArea>

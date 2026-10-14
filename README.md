@@ -88,6 +88,8 @@ The API key is protected with the operating system's encryption . On Linux, key 
 
 ## Keep everyday details within reach
 
+Search and task drafts remain available when you switch pages or fold the Island. Enter submits; confirming an IME candidate keeps you in the input.
+
 The overview puts a readable clock beside weather and battery information. The clock follows your chosen time zone; weather follows the location you set. The battery badge fills to its percentage and turns green while charging. Charging and device activity can also surface as brief status alerts.
 
 <p align="center">

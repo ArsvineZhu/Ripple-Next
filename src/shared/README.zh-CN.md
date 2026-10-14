@@ -12,7 +12,7 @@
 
 Shared 定义可序列化的 IPC 与领域契约、用于持久化状态和快捷应用目标的 Zod schema，以及纯输入区域计算。Main、preload 和 renderer 共用这些定义，运行时服务放在各自所属层。
 
-`contracts.ts` 定义请求、响应、通知及 AI 流事件，`appState.ts` 定义初始值、结构化 AI 配置、统一天气配置。`aiConfiguration.ts` 校验稳定序号、接口／密钥／模型引用、自定义补丁与有序注入，上下文感知固定关闭。`weather.ts` 区分天气、探测地址和有界错误，`licenses.ts` 描述许可元数据与文本。运行服务留在所属层；`i18n/` 为 main 和 renderer 提供完整内置词条。
+`contracts.ts` 定义请求、响应、通知及 AI 流事件，`appState.ts` 定义初始值、结构化 AI 配置、统一天气配置。`aiConfiguration.ts` 校验稳定 ID、接口／密钥／模型引用、自定义补丁与有序注入，上下文感知固定关闭。`weather.ts` 区分天气、探测地址和有界错误，`licenses.ts` 描述许可元数据与文本。运行服务留在所属层；`i18n/` 为 main 和 renderer 提供完整内置词条。
 
 参见[开发指南](../../docs/development.zh-CN.md)和[仓库地图](../../INDEX.zh-CN.md)。
 

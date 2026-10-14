@@ -11,3 +11,5 @@ Initialize bundled i18n before render; keep language preferences in SettingsProv
 Use the shared uiFont preference in every renderer. Normalize playful Chinese variants before Intl. Guide videos must be user-initiated and pause offscreen/unmounted; do not replace real workflow footage with mock interaction diagrams.
 
 Assemble settings pages from components/preferences and specialized shared controls. Keep validation and drafts with the feature; extend the common control interface before copying per-page field markup or styling.
+
+Compose Island and Settings inputs/actions from components/content. Use LaunchButton for launches, MediaControl for playback and MarkdownContent for answers. Feature drafts belong to the feature; retain them while Island is folded. Keep continuous clipboard/media and active assistant lifecycle above hidden pages.

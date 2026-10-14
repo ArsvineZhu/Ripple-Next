@@ -4,8 +4,6 @@ import { useLayoutEffect, useReducer } from 'react';
 
 import { measureTextWidth } from '../lib/text';
 import { useAssistant } from './useAssistant';
-import { useTasks } from './useTasks';
-import { useBrowserSearch } from './useBrowserSearch';
 import { useClipboard } from './useClipboard';
 import { useOverview } from './useOverview';
 import { useBattery } from './useBattery';
@@ -46,17 +44,8 @@ export function useIslandController() {
     ? 'large'
     : resolveMode(requestedMode, standbyBorderEnabled, largeStandbyEnabled);
   const backgroundImage = useBackgroundImage(bgImage);
-  const {
-    mediaTrack,
-    mediaSnapshot,
-    mediaActionError,
-    mediaBusy,
-    mediaPageId,
-    controlMedia,
-    selectMediaSession,
-    openMediaSession,
-    showPausedQuickView,
-  } = useMedia();
+  const media = useMedia();
+  const { mediaTrack, mediaSnapshot, mediaActionError } = media;
   const {
     isHovered,
     setIsHovered,
@@ -72,16 +61,14 @@ export function useIslandController() {
     largeStandby: largeStandbyEnabled,
     leaveDelayMs,
   });
-  const { asked, aiAnswer, assistantError, userText, setUserText, resetAssistant, askAI } =
-    useAssistant();
-  const { tasks, taskText, setTaskText, addTask, removeTask } = useTasks();
+  const assistant = useAssistant();
+  const { asked } = assistant;
+  const tasks = appState.tasks;
   const workflows = appState.workflows;
-  const quickApps = appState.quickApps;
-  const { browserSearch, setBrowserSearch, searchBrowser, searchError, setSearchError } =
-    useBrowserSearch();
-  const { clipboard, clipboardReadFailed, copyToClipboard } = useClipboard();
-  const { time, overviewTime, overviewDate, weather } = useOverview();
-  const { percent, charging } = useBattery();
+  const clipboard = useClipboard();
+  const overview = useOverview();
+  const battery = useBattery();
+  const { percent, charging } = battery;
   const { alert, chargingAlert } = useBatteryAlerts({
     percent,
     charging,
@@ -229,56 +216,24 @@ export function useIslandController() {
     islandCornerRadius,
     cameraInUse,
     microphoneInUse,
-    charging,
     chargingAlert,
-    percent,
     alert,
     bluetoothAlert,
-    showPausedQuickView,
     cameraAlert,
     microphoneAlert,
-    mediaTrack,
     trackTitle,
-    mediaSnapshot,
-    mediaActionError,
-    mediaBusy,
-    mediaPageId,
-    controlMedia,
-    selectMediaSession,
-    openMediaSession,
     trackArtist,
     textWidth,
     nowPlayingWidth,
-    time,
-    overviewTime,
-    overviewDate,
-    weather,
     direction,
     currentTabId,
     visibleTabs,
     selectTab,
-    browserSearch,
-    setBrowserSearch,
-    searchBrowser,
-    searchError,
-    setSearchError,
-    workflows,
-    quickApps,
-    asked,
-    userText,
-    setUserText,
-    askAI,
-    aiAnswer,
-    assistantError,
-    resetAssistant,
+    media,
+    overview,
+    battery,
+    assistant,
     clipboard,
-    clipboardReadFailed,
-    copyToClipboard,
-    tasks,
-    removeTask,
-    taskText,
-    setTaskText,
-    addTask,
     positionMode,
     islandX,
     islandY,

@@ -342,16 +342,11 @@
 
 .input {
   width: 100%;
-  min-width: 0;
-  max-width: 100%;
   min-height: 36px;
   padding: 7px 12px;
-  color: var(--settings-fg, var(--island-text-color));
   background: var(--control-bg);
   border: 1px solid var(--control-border);
   border-radius: var(--control-radius);
-  outline: none;
-  font-size: 14px;
 }
 
 .input:focus {
@@ -537,24 +532,9 @@
 }
 
 .primaryButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
-  gap: 6px;
   min-height: 24px;
   padding: 3px 10px;
-  color: var(--settings-bg, var(--island-bg-color));
-  background: var(--settings-accent, var(--island-text-color));
-  border: 0;
-  border-radius: var(--control-radius);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.primaryButton:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
 }
 
 .appSearch {
@@ -610,20 +590,8 @@
   overflow: hidden;
 }
 .addRowButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   align-self: flex-start;
   padding: 6px 8px;
-  color: var(--settings-fg);
-  border: 0;
-  background: var(--control-bg);
-  border-radius: var(--control-radius);
-  cursor: pointer;
-}
-.addRowButton:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
 }
 .locationPreview {
   display: flex;
@@ -758,10 +726,6 @@
   padding: 12px 0;
   border-bottom: 1px solid var(--settings-divider);
   overflow: hidden;
-}
-.addRowButton:disabled {
-  opacity: 0.4;
-  cursor: default;
 }
 .appSearch > .fieldLabel {
   margin-bottom: 8px;

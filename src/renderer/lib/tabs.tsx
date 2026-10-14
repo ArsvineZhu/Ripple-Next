@@ -34,25 +34,33 @@ export interface IslandPageDefinition {
 const renderers: Record<BuiltinPageId, Pick<IslandPageDefinition, 'icon' | 'render'>> = {
   search: {
     icon: (color) => <Search size={16} color={color} />,
-    render: ({ controller }) => <BrowserSearchTab {...controller} />,
+    render: () => <BrowserSearchTab />,
   },
   workflows: {
     icon: (color) => <Zap size={16} color={color} />,
-    render: ({ controller }) => <WorkflowsTab {...controller} />,
+    render: () => <WorkflowsTab />,
   },
   overview: {
     icon: (color) => <Sun size={16} color={color} />,
-    render: ({ controller }) => <OverviewTab {...controller} />,
+    render: ({ controller }) => (
+      <OverviewTab
+        {...controller.overview}
+        {...controller.battery}
+        textColor={controller.textColor}
+      />
+    ),
   },
   playing: {
     icon: (color) => <Music size={16} color={color} />,
-    render: ({ controller }) => <NowPlayingTab {...controller} />,
+    render: ({ controller }) => (
+      <NowPlayingTab {...controller.media} textColor={controller.textColor} />
+    ),
   },
   assistant: {
     icon: (color) => <Mic size={16} color={color} />,
     render: ({ controller, onAnswerContentSizeChange, resetAnswerContentSize }) => (
       <AssistantTab
-        {...controller}
+        {...controller.assistant}
         onAnswerContentSizeChange={onAnswerContentSizeChange}
         resetAnswerContentSize={resetAnswerContentSize}
       />
@@ -60,11 +68,11 @@ const renderers: Record<BuiltinPageId, Pick<IslandPageDefinition, 'icon' | 'rend
   },
   clipboard: {
     icon: (color) => <List size={16} color={color} />,
-    render: ({ controller }) => <ClipboardTab {...controller} />,
+    render: ({ controller }) => <ClipboardTab {...controller.clipboard} />,
   },
   tasks: {
     icon: (color) => <Check size={16} color={color} />,
-    render: ({ controller }) => <TasksTab {...controller} />,
+    render: () => <TasksTab />,
   },
 };
 

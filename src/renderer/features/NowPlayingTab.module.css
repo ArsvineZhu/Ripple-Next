@@ -73,32 +73,6 @@
   margin-top: 12px;
   align-items: center;
 }
-.media-btn {
-  background: none;
-  border: 0;
-  color: inherit;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
-}
-.media-btn:hover {
-  transform: scale(1.15);
-}
-.media-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
-  transform: none;
-}
-.media-btn:focus-visible {
-  outline: 1px solid var(--control-focus);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
 .emptyState {
   width: 100%;
   text-align: center;
@@ -114,8 +88,6 @@
 }
 .actionError {
   flex-shrink: 0;
-  color: #ffa6a6;
-  font-size: 12px;
   text-align: center;
   margin: 6px 10px;
 }

@@ -1,0 +1,107 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  border: 0;
+  border-radius: var(--control-radius, 12px);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+.primary {
+  background: var(--settings-accent, var(--island-text-color));
+  color: var(--settings-bg, var(--island-bg-color));
+}
+.secondary {
+  background: var(--control-bg, color-mix(in srgb, var(--island-text-color), transparent 90%));
+  color: var(--settings-fg, var(--island-text-color));
+}
+.regular {
+  padding: 8px 14px;
+  font-size: 14px;
+}
+.small {
+  padding: 3px 10px;
+  font-size: 13px;
+}
+.button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.button[aria-busy='true'] {
+  cursor: progress;
+}
+.button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.entry {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 14px;
+  color: var(--settings-fg, var(--island-text-color));
+  outline: none;
+  resize: none;
+  padding: 8px 12px;
+}
+.entry::placeholder {
+  color: var(--settings-fg, var(--island-text-color));
+  opacity: 0.6;
+}
+.bare {
+  border: 0;
+  background: transparent;
+}
+.surface {
+  background: var(--control-bg, color-mix(in srgb, var(--island-text-color), transparent 95%));
+  border: 1px solid
+    var(--control-border, color-mix(in srgb, var(--island-text-color), transparent 90%));
+  border-radius: var(--control-radius, 12px);
+}
+.large {
+  font-size: 20px;
+  font-weight: 500;
+}
+.entry.large {
+  padding: 12px 20px;
+}
+.centered {
+  text-align: center;
+}
+.empty {
+  margin: 0;
+  color: var(--island-text-color);
+  opacity: 0.6;
+  text-align: center;
+  line-height: 1.4;
+}
+.feedback {
+  color: var(--settings-danger, #ff8b8b);
+  margin: 6px 0;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}
+
+.entry:focus-visible {
+  outline: 1px solid var(--control-focus, var(--island-text-color));
+  outline-offset: -1px;
+}
