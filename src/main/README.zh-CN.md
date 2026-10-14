@@ -34,3 +34,4 @@ Linux 窗口需等 renderer 就绪并确认首个 X11 `ShapeInput` 区域后显�
 `services/aiConfiguration.ts` 串行修改配置图并分配稳定序号，凭据密文保存在命名安全存储项中，删除配置与关联密钥在同一 SQLite 事务提交。Migration 4／5 导入原单接口、模型和不透明密文，再移除旧标量设置。`compatibleChat.ts` 选择 Chat Completions、Responses 或 Anthropic 适配器，解析所选模型的系统提示词和已启用有序注入；本地上下文上限在发送前按字符检查。`services/weather.ts` 管理内置／自定义密钥、请求去重和有界 60 秒缓存。`services/licenses.ts` 加载随包许可元数据，仅读取已知许可条目。
 
 新增接口与密钥的可编辑名称初始为空；renderer 用协议／密钥名称及当前顺序生成显示名称。主进程 ID 始终递增，显示编号不复用或重排数据库 ID。
+偏好补丁在保存及广播前执行显示器／登录项操作，Island 创建时直接恢复保存的显示器。自启动适配归 platform/autostart 及三平台实现，Windows／macOS 拒绝开发构建注册并检查系统接受结果。天气接收 WeatherPreferences，仅在请求时生成服务查询。

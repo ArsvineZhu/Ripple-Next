@@ -42,30 +42,37 @@ it('returns a bounded failure without leaking a key-bearing fetch error', async 
 });
 it('does not silently use the built-in credential when custom mode lacks a key', async () => {
   const state = structuredClone(defaultAppState);
-  state.settings.useBuiltInWeatherApi = false;
+  state.settings.weather = {
+    ...state.settings.weather,
+    location: { mode: 'automatic', city: '', region: '', country: '' },
+    unit: 'c',
+    keySource: 'custom',
+  };
   const fetcher = vi.fn();
   vi.stubGlobal('fetch', fetcher);
-  const service = createWeatherService(
-    { load: async () => state },
-    { getSecret: async () => null },
-  );
-  expect((await service.get('auto:ip', 'c')).error).toBe('missing-key');
+  const service = createWeatherService({ getSecret: async () => null });
+  expect((await service.get(state.settings.weather)).error).toBe('missing-key');
   expect(fetcher).not.toHaveBeenCalled();
 });
 it('shares concurrent lookups, caches results and invalidates when credentials change', async () => {
   const state = structuredClone(defaultAppState);
-  state.settings.useBuiltInWeatherApi = false;
+  state.settings.weather = {
+    ...state.settings.weather,
+    location: { mode: 'automatic', city: '', region: '', country: '' },
+    unit: 'c',
+    keySource: 'custom',
+  };
   let key = 'fixture-first';
   const fetcher = vi.fn(
     async () =>
       new Response(JSON.stringify(payload), { headers: { 'Content-Type': 'application/json' } }),
   );
   vi.stubGlobal('fetch', fetcher);
-  const service = createWeatherService({ load: async () => state }, { getSecret: async () => key });
-  await Promise.all([service.get('auto:ip', 'c'), service.get('auto:ip', 'c')]);
-  await service.get('auto:ip', 'c');
+  const service = createWeatherService({ getSecret: async () => key });
+  await Promise.all([service.get(state.settings.weather), service.get(state.settings.weather)]);
+  await service.get(state.settings.weather);
   expect(fetcher).toHaveBeenCalledTimes(1);
   key = 'fixture-second';
-  await service.get('auto:ip', 'c');
+  await service.get(state.settings.weather);
   expect(fetcher).toHaveBeenCalledTimes(2);
 });

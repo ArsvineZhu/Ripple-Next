@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useIslandInteraction } from './useIslandInteraction';
-import { useEffect, useLayoutEffect, useReducer } from 'react';
+import { useLayoutEffect, useReducer } from 'react';
 
 import { measureTextWidth } from '../lib/text';
 import { useAssistant } from './useAssistant';
@@ -13,7 +13,6 @@ import { useBattery } from './useBattery';
 import { useBatteryAlerts } from './useBatteryAlerts';
 import { useDeviceAlerts } from './useDeviceAlerts';
 import { useMedia } from './useMedia';
-import { useSettingsContext } from '../components/SettingsProvider';
 import { modeReducer, resolveMode } from '../lib/modes';
 import { useNavigation } from './useNavigation';
 import { useWindowInput } from './useWindowInput';
@@ -27,27 +26,22 @@ export function useIslandController() {
   const { state: appState } = useAppState();
   const [requestedMode, setMode] = useReducer(modeReducer, 'still');
   const {
-    batteryAlertsEnabled,
-    islandBorderEnabled,
+    batteryAlerts: batteryAlertsEnabled,
+    islandBorder: islandBorderEnabled,
     islandCornerRadius,
-    standbyBorderEnabled,
-    largeStandbyEnabled,
-    hideNotActiveIslandEnabled,
-    showInfoWhenIdleEnabled,
+    standbyMode: standbyBorderEnabled,
+    largeStandbyMode: largeStandbyEnabled,
+    hideIslandWhenInactive: hideNotActiveIslandEnabled,
+    showInfoWhenIdle: showInfoWhenIdleEnabled,
     leaveDelayMs,
-    hourFormat,
-    showAmPm,
-    timeZone,
-    weatherUnit,
     theme,
-    bgColor,
+    backgroundColor: bgColor,
     textColor,
-    bgImage,
-    weatherLocation,
+    backgroundImage: bgImage,
     positionMode,
     islandX,
     islandY,
-  } = useSettingsContext();
+  } = appState.settings;
   const isPreview = useIslandPreview();
   const mode = isPreview
     ? 'large'
@@ -95,14 +89,7 @@ export function useIslandController() {
   const { browserSearch, setBrowserSearch, searchBrowser, searchError, setSearchError } =
     useBrowserSearch();
   const { clipboard, copyToClipboard } = useClipboard();
-  const { time, overviewTime, overviewDate, weather } = useOverview(
-    hourFormat,
-    timeZone,
-    weatherLocation,
-    weatherUnit,
-    showAmPm,
-    `${appState.settings.useBuiltInWeatherApi}:${appState.settings.secretRevision}`,
-  );
+  const { time, overviewTime, overviewDate, weather } = useOverview();
   const { percent, charging } = useBattery();
   const { alert, chargingAlert } = useBatteryAlerts({
     percent,
@@ -191,13 +178,6 @@ export function useIslandController() {
             ? nowPlayingWidth
             : 170;
   let height = mode === 'large' ? expandedSize.height : 40;
-  useEffect(() => {
-    const savedDisplayId = appState.settings.displayId;
-    if (savedDisplayId && window.electronAPI?.setDisplay) {
-      void window.electronAPI.setDisplay(savedDisplayId);
-    }
-  }, [appState.settings.displayId]);
-
   const getSideStyles = () => {
     switch (positionMode) {
       case 'top-left':
@@ -309,14 +289,10 @@ export function useIslandController() {
     taskText,
     setTaskText,
     addTask,
-    hourFormat,
-    timeZone,
     positionMode,
     islandX,
     islandY,
     batteryAlertsEnabled,
-    weatherLocation,
-    weatherUnit,
     leaveDelayMs,
   };
 }

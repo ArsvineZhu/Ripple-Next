@@ -12,7 +12,7 @@
 
 Shared defines serializable IPC and domain contracts, Zod schemas for persisted app state and quick-app targets, and pure input-geometry helpers. Main, preload and renderer consume these definitions; runtime services stay in their owning layers.
 
-`contracts.ts` owns request, response, notice and assistant-stream shapes. `appState.ts` owns persisted defaults, the structured AI graph, weather mode and location tuple. `aiConfiguration.ts` validates stable IDs, endpoint/key/model references, customization patches and ordered injections; context awareness is fixed off. `weather.ts` separates reading, detected address and bounded errors. `licenses.ts` describes license metadata and text. Runtime services stay outside shared. `i18n/` supplies complete bundled catalogs to main and renderer.
+`contracts.ts` owns request, response, notice and assistant-stream shapes. `appState.ts` owns persisted defaults, the structured AI graph, the canonical weather preferences. `aiConfiguration.ts` validates stable IDs, endpoint/key/model references, customization patches and ordered injections; context awareness is fixed off. `weather.ts` separates reading, detected address and bounded errors. `licenses.ts` describes license metadata and text. Runtime services stay outside shared. `i18n/` supplies complete bundled catalogs to main and renderer.
 
 `color.ts` parses persisted RGB/hex CSS colors and preserves alpha when a native RGB choice is applied. The `show-color-picker` contract returns hex or null; `colorPickerFailed` belongs to Settings.
 

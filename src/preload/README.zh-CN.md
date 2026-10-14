@@ -21,3 +21,4 @@ Preload 通过明确的 `contextBridge` 方法暴露隔离的 `electronAPI`，�
 `setIslandPreview(active)` 仅允许设置窗口调用；`getIslandPreview()` 和 `onIslandPreviewChanged()` 将临时预览状态同步给 Island，订阅返回清理函数。预览状态不持久化。
 
 `showColorPicker(initialColor)` 打开设置窗口所属的原生 RGB 选择器，返回六位 hex，取消时返回 null；发送方及参数由 main 校验。
+`updateAppState` 统一提交偏好，包含显示器及自启动效果；独立 set-display／set-auto-launch 通道已删除。`getWeather` 接收共享 WeatherPreferences，不再传输位置元组、拼接查询或自动定位哨兵字符串。

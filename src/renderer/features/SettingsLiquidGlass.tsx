@@ -72,7 +72,7 @@ function GlassPreview() {
 export function SettingsLiquidGlass({ settings: p }: { settings: SettingsFormProps }) {
   const { t } = useTranslation();
   const reduced = useReducedMotionPreference();
-  const glass = p.glassPreferences;
+  const glass = p.settings;
   const fields = [
     ['glassIor', 'glassIorLabel', 1, 2.5, 0.1],
     ['glassRefraction', 'glassRefractionLabel', 0, 2, 0.1],
@@ -90,9 +90,7 @@ export function SettingsLiquidGlass({ settings: p }: { settings: SettingsFormPro
           <PreferenceSwitch
             label={t('settingsGlassEnabled')}
             checked={glass.settingsGlassEnabled}
-            onCheckedChange={(settingsGlassEnabled) =>
-              p.setGlassPreferences({ settingsGlassEnabled })
-            }
+            onCheckedChange={(settingsGlassEnabled) => p.updateSettings({ settingsGlassEnabled })}
           />
         </PrefRow>
         <PrefRow label={t('islandGlassEnabled')} hint={t('islandGlassUnavailable')}>
@@ -121,7 +119,7 @@ export function SettingsLiquidGlass({ settings: p }: { settings: SettingsFormPro
                   label={t('glassDragDeformationLabel')}
                   checked={glass.glassDragDeformation}
                   onCheckedChange={(glassDragDeformation) =>
-                    p.setGlassPreferences({ glassDragDeformation })
+                    p.updateSettings({ glassDragDeformation })
                   }
                 />
               </PrefRow>
@@ -135,7 +133,7 @@ export function SettingsLiquidGlass({ settings: p }: { settings: SettingsFormPro
                   value={glass[key]}
                   placeholder={String(defaultGlassPreferences[key])}
                   onChange={(value) =>
-                    p.setGlassPreferences({ [key]: value ?? defaultGlassPreferences[key] })
+                    p.updateSettings({ [key]: value ?? defaultGlassPreferences[key] })
                   }
                 />
               ))}
@@ -149,7 +147,7 @@ export function SettingsLiquidGlass({ settings: p }: { settings: SettingsFormPro
                   islandGlassEnabled: _island,
                   ...parameters
                 } = defaultGlassPreferences;
-                p.setGlassPreferences(parameters);
+                p.updateSettings(parameters);
               }}
             >
               {t('restoreGlassDefaults')}

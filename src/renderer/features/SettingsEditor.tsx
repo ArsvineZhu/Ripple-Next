@@ -32,11 +32,11 @@ function SimpleFieldEditor({ settings: p, detail }: Props) {
   const inputId = useId();
   const initial =
     detail.page === 'searchTemplate'
-      ? p.searchUrlTemplate
+      ? p.settings.searchUrlTemplate
       : detail.page === 'backgroundImage'
-        ? p.bgImage === 'none'
+        ? p.settings.backgroundImage === 'none'
           ? ''
-          : p.bgImage
+          : p.settings.backgroundImage
         : '';
   const [draft, setDraft] = useState(initial);
   const label = t(detail.page === 'searchTemplate' ? 'searchEngineUrl' : 'backgroundImage');
@@ -60,8 +60,9 @@ function SimpleFieldEditor({ settings: p, detail }: Props) {
               const value = event.target.value;
               setDraft(value);
               if (detail.page === 'searchTemplate') {
-                if (isValidSearchUrlTemplate(value)) p.setSearchUrlTemplate(value.trim());
-              } else p.handleBgImageChange(value.trim() || 'none');
+                if (isValidSearchUrlTemplate(value))
+                  p.updateSettings({ searchUrlTemplate: value.trim() });
+              } else p.updateSettings({ backgroundImage: value.trim() || 'none' });
             }}
             autoFocus
           />

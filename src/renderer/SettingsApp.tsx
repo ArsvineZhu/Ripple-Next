@@ -16,7 +16,7 @@ import { defaultGlassPreferences } from '../shared/glassPreferences';
 export default function SettingsApp() {
   const { t } = useTranslation();
   const controller = useSettingsWindowController();
-  const glass = controller.glassPreferences ?? defaultGlassPreferences;
+  const glass = controller.settings ?? defaultGlassPreferences;
   const { setContainer, setOpenId } = useOverlay();
   const [category, setCategory] = useState<SettingsCategoryId>('guide');
   const [detail, setDetail] = useState<SettingsDetail | null>(null);

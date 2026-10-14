@@ -4,13 +4,14 @@ import { createRoot } from 'react-dom/client';
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
 import { SettingsEditor, type SettingsFormProps } from '../src/renderer/features/SettingsEditor';
 import type { SettingsDetail } from '../src/renderer/lib/settingsDetails';
+import { defaultAppState } from '../src/shared/appState';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en' } }),
 }));
 vi.mock('../src/renderer/components/InlineNotices', () => ({ InlineNotices: () => null }));
-vi.mock('../src/renderer/hooks/useWeatherPreview', () => ({
-  useWeatherPreview: () => ({
+vi.mock('../src/renderer/hooks/useWeather', () => ({
+  useWeather: () => ({
     loading: false,
     snapshot: { location: { city: 'Toronto', region: 'Ontario', country: 'Canada' } },
   }),
@@ -56,14 +57,17 @@ async function fill(input: HTMLInputElement, value: string) {
   });
 }
 it('autosaves three manual location fields without requiring a Save action', async () => {
-  const parts: [string, string, string] = ['Tokyo', 'Tokyo', 'Japan'];
-  const setLocation = vi.fn((next: [string, string, string]) => parts.splice(0, 3, ...next));
+  const settings = structuredClone(defaultAppState.settings);
+  settings.weather.location = { mode: 'manual', city: 'Tokyo', region: 'Tokyo', country: 'Japan' };
+  const setLocation = vi.fn(async (next: Partial<typeof settings>) => {
+    if (next.weather) Object.assign(settings.weather, next.weather);
+    return true;
+  });
   const back = await mount(
     { page: 'weatherLocation' },
     {
-      weatherLocation: 'Tokyo, Tokyo, Japan',
-      weatherLocationParts: parts,
-      setWeatherLocationParts: setLocation,
+      settings,
+      updateSettings: setLocation,
     },
   );
   const fields = [...host.querySelectorAll<HTMLInputElement>('input:not([type=checkbox])')];
@@ -71,26 +75,32 @@ it('autosaves three manual location fields without requiring a Save action', asy
   await fill(fields[0], 'London');
   await fill(fields[1], 'England');
   await fill(fields[2], 'United Kingdom');
-  expect(setLocation).toHaveBeenLastCalledWith(['London', 'England', 'United Kingdom']);
+  expect(setLocation).toHaveBeenLastCalledWith({
+    weather: {
+      ...settings.weather,
+      location: { mode: 'manual', city: 'London', region: 'England', country: 'United Kingdom' },
+    },
+  });
   expect(host.querySelector('button[type=submit]')).toBeNull();
   expect(back).not.toHaveBeenCalled();
 });
 it('uses the existing provider IP query for auto mode and hides manual fields', async () => {
+  const settings = structuredClone(defaultAppState.settings);
+  settings.weather.location.city = 'Tokyo';
   const setLocation = vi.fn();
   await mount(
     { page: 'weatherLocation' },
     {
-      weatherLocation: 'Tokyo',
-      weatherLocationParts: ['Tokyo', '', ''],
-      setAutomaticLocation: setLocation,
+      settings,
+      updateSettings: setLocation,
     },
   );
   await act(async () => host.querySelector<HTMLInputElement>('[role=switch]')!.click());
-  expect(setLocation).toHaveBeenCalledWith(true);
-  await mount(
-    { page: 'weatherLocation' },
-    { weatherLocation: 'auto:ip', setAutomaticLocation: setLocation },
-  );
+  expect(setLocation).toHaveBeenCalledWith({
+    weather: { ...settings.weather, location: { ...settings.weather.location, mode: 'automatic' } },
+  });
+  settings.weather.location.mode = 'automatic';
+  await mount({ page: 'weatherLocation' }, { settings, updateSettings: setLocation });
   expect(host.querySelectorAll('input:not([type=checkbox])')).toHaveLength(0);
   expect(host.textContent).toContain('Toronto');
   expect(host.textContent).toContain('Ontario, Canada');
@@ -101,7 +111,13 @@ it('keeps invalid search-template drafts out of saved state', async () => {
   const save = vi.fn();
   const back = await mount(
     { page: 'searchTemplate' },
-    { searchUrlTemplate: 'https://example.com/?q={query}', setSearchUrlTemplate: save },
+    {
+      settings: {
+        ...defaultAppState.settings,
+        searchUrlTemplate: 'https://example.com/?q={query}',
+      },
+      updateSettings: save,
+    },
   );
   const input = host.querySelector('input')!;
   await fill(input, 'https://example.com/');
@@ -109,7 +125,7 @@ it('keeps invalid search-template drafts out of saved state', async () => {
   expect(back).not.toHaveBeenCalled();
   expect(input.getAttribute('aria-invalid')).toBe('true');
   await fill(input, 'https://example.com/search?q={query}');
-  expect(save).toHaveBeenCalledWith('https://example.com/search?q={query}');
+  expect(save).toHaveBeenCalledWith({ searchUrlTemplate: 'https://example.com/search?q={query}' });
   expect(back).not.toHaveBeenCalled();
   expect(host.querySelector('button[type=submit]')).toBeNull();
 });

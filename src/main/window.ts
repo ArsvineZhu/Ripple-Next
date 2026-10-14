@@ -85,6 +85,7 @@ export const markRendererReady = () => {
 export const createWindow = (
   diagnostics: DiagnosticsService,
   onLoadError: (error: unknown) => void = () => {},
+  displayId: string | null = null,
 ) => {
   activeDiagnostics = diagnostics;
   installDisplaySync();
@@ -94,8 +95,10 @@ export const createWindow = (
   const isLinux = process.platform === 'linux';
   const isWindows = process.platform === 'win32';
   const isMac = process.platform === 'darwin';
-  const primaryDisplay = screen.getPrimaryDisplay();
-  const { x, y, width, height } = getWindowBoundsForDisplay(primaryDisplay);
+  const display =
+    screen.getAllDisplays().find((item) => String(item.id) === displayId) ??
+    screen.getPrimaryDisplay();
+  const { x, y, width, height } = getWindowBoundsForDisplay(display);
 
   const winWidth = width;
   const winHeight = height;
@@ -188,6 +191,16 @@ export const createWindow = (
 };
 
 export const getMainWindow = () => mainWindow;
+export function moveMainWindowToDisplay(displayId: string | null) {
+  const target =
+    displayId === null
+      ? screen.getPrimaryDisplay()
+      : screen.getAllDisplays().find((display) => String(display.id) === displayId);
+  if (!target) throw new TypeError('The selected display is no longer available');
+  if (!mainWindow) throw new Error('The Island window is not available');
+  mainWindow.setBounds(getWindowBoundsForDisplay(target));
+  showMainWindow();
+}
 const inputShape = createLinuxInputShape(() => mainWindow, showMainWindow);
 export const initializeLinuxInputShape = (
   diagnostics: DiagnosticsService,

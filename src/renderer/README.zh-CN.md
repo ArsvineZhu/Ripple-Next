@@ -16,7 +16,7 @@ Island 直接读取保存的快捷应用，不挂载其编辑器或预先重建�
 
 Island 导航只包含七个功能页；设置窗口通过应用启动、托盘或菜单打开。页面注册表把 `shared/pages.ts` 中的稳定字符串 ID、尺寸策略与 `lib/tabs.tsx` 中的图标、渲染函数组合起来，供导航、设置与几何动画使用。新增页面通过 `createIslandPageRegistry` 注册。没有可用的配置页面时，导航显示总览。
 
-`AppStateProvider` 加载主进程快照并串行发送类型化补丁；`AppStateProvider` 在各 renderer 同步保存的语言，`SettingsProvider` 编辑共享偏好。`Intl` 按所选语言和时区格式化时间、日期；展开的 12 小时时钟在较小日期行中显示本地化时段。位置编辑保留城市／行政区／国家三元组及拼接查询；自动模式显示主进程返回的位置快照，在进入、聚焦和每分钟刷新。Renderer 不持有天气密钥，也不直接请求天气服务。
+`AppStateProvider` 加载主进程快照并串行发送类型化补丁；`AppStateProvider` 在各 renderer 同步保存的语言，`SettingsProvider` 编辑共享偏好。`Intl` 按所选语言和时区格式化时间、日期；展开的 12 小时时钟在较小日期行中显示本地化时段。位置编辑使用共享天气配置，包含模式、城市、地区、国家、单位及密钥来源；仅 main 在请求服务时生成查询。自动模式显示主进程返回的位置快照，在进入、聚焦和每分钟刷新。Renderer 不持有天气密钥，也不直接请求天气服务。
 
 `styles/base.css` 负责透明文档、字体和共享动画，`styles/tokens.css` 负责主题／字体 token。Island、通用控件和功能视图各自拥有 CSS Modules。静态展示写入对应模块，动态颜色／几何和 Motion 参数留在所属模块。`OverlayProvider` 将 Select 菜单挂载在 Island 内，`useIslandInteraction` 管理移动、焦点、指针离开与菜单保护。
 
@@ -69,3 +69,4 @@ Select 使用非模态单选菜单；打开时设置仍可滚动，岛内关闭�
 `SettingsFonts` 使用原生单选与共享 `uiFont`；`AppStateProvider` 将 data-ui-font 应用到各窗口，styles/fonts.css 管理原始 WOFF2 字重。`SettingsGuide` 管理手动播放录像，隐藏／离开可视区即暂停，正文可选择。zh-ms／zh-apple 映射为 i18next 私有语言，Intl 按标准 zh-CN 格式显示。见[录像来源](../assets/guide/README.md)。
 
 默认字体使用阿里巴巴普惠体 3，另可选择系统字体与 OpenRunde。已保存的 alibaba-puhuiti 对应同一默认样张。lib/aiDisplay.ts 管理连续显示编号，并隐藏自动生成名称中的 ID 后缀；导航、修改与密钥存储仍使用原有稳定 ID。筛选选项使用完整列表的编号，保证与列表和关联说明一致。
+设置消费者直接读取标准 `settings` 并调用 `updateSettings`；hook 只保留需要局部状态的操作。写入在 main 完成系统效果与持久化后返回结果，失败恢复已提交状态。`useWeather` 统一天气与自动地址的刷新生命周期并忽略过期结果；配置对象原样传入 main。

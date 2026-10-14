@@ -113,6 +113,8 @@ Clipboard history and tasks take care of two different kinds of loose ends: text
 - **Fit your desktop routine.** Startup control and, on macOS, a menu bar icon toggle; Windows and Linux always keep the tray. Platform specifics are in the guides.
 - **Use your language.** 简体中文, 繁體中文, English and 日本語. The interface follows the system by default; a manual choice applies immediately and is remembered.
 
+Display and login-startup changes are saved after the system accepts them. Login-item registration requires a packaged app on Windows and macOS; failed changes keep the previous preference.
+
 <p align="center">
   <img src="docs/assets/screenshots/settings.png" width="440" alt="Settings for language, hour format, time zone, startup, menu bar icon and display">
 </p>

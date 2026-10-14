@@ -15,7 +15,7 @@ API references: [Windows ColorDialog](https://learn.microsoft.com/dotnet/api/sys
 | Music                | GSMTC sessions, capabilities and artwork               | Running Spotify and Music through AppleScript; Spotify artwork | MPRIS over session D-Bus, capabilities and artwork          |
 | Open a player        | Cached app identity/path                               | Activate the running application                               | MPRIS Raise or same-owner tray Activate                     |
 | Installed quick apps | Start Menu `.lnk` files and Store identifiers          | System/shared/user Applications, including Utilities           | XDG desktop entries launched with `gio launch`              |
-| Launch at login      | Native login settings                                  | Native login items for packaged apps                           | `ripple-next.desktop` in the active XDG autostart directory |
+| Launch at login      | Native login settings for packaged apps                | Native login items for packaged apps                           | `ripple-next.desktop` in the active XDG autostart directory |
 | Transparent input    | Native cursor/bounds with click-through outside Island | Electron click-through outside Island                          | X11 `ShapeInput` through XWayland                           |
 | Device status        | WinRT Bluetooth; camera/microphone registry probes     | Bluetooth and capture-device registry probes                   | `bluetoothctl`, `fuser`, and `pactl` or PipeWire `pw-dump`  |
 

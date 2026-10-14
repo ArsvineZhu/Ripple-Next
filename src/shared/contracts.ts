@@ -1,6 +1,6 @@
 import type { Application, LaunchTarget, LaunchResult } from './launch';
 import type { Locale } from './i18n';
-import type { WeatherSnapshot } from './weather';
+import type { WeatherSnapshot, WeatherPreferences } from './weather';
 import type { AIMutation } from './aiConfiguration';
 import type { LicenseMetadata, LicenseRecord } from './licenses';
 import type { AppState, AppStatePatch } from './appState';
@@ -145,7 +145,7 @@ export interface InvokeMap {
   'ai-configuration-status': { args: []; result: Record<number, boolean> };
   'mutate-ai-configuration': { args: [mutation: AIMutation]; result: AppState };
   'save-ai-credential': { args: [id: number, key: string]; result: Record<number, boolean> };
-  'get-weather': { args: [location: string, unit: 'f' | 'c']; result: WeatherSnapshot };
+  'get-weather': { args: [preferences: WeatherPreferences]; result: WeatherSnapshot };
   'save-weather-api-key': { args: [key: string]; result: void };
   'get-app-bootstrap': { args: []; result: AppBootstrap };
   'open-diagnostics-folder': { args: []; result: void };
@@ -184,8 +184,6 @@ export interface InvokeMap {
   };
   'open-external': { args: [url: string]; result: void };
   'get-displays': { args: []; result: DisplayInfo[] };
-  'set-display': { args: [id: string | number]; result: void };
-  'set-auto-launch': { args: [enable: boolean]; result: void };
   'focus-window': { args: []; result: void };
   'open-settings': { args: []; result: void };
   'quit-app': { args: []; result: void };
@@ -196,7 +194,7 @@ export interface ElectronAPI {
   aiConfigurationStatus(): Promise<Record<number, boolean>>;
   mutateAIConfiguration(mutation: AIMutation): Promise<AppState>;
   saveAICredential(id: number, key: string): Promise<Record<number, boolean>>;
-  getWeather(location: string, unit: 'f' | 'c'): Promise<WeatherSnapshot>;
+  getWeather(preferences: WeatherPreferences): Promise<WeatherSnapshot>;
   saveWeatherApiKey(key: string): Promise<void>;
   showColorPicker(initialColor: string): Promise<string | null>;
   getAppBootstrap(): Promise<AppBootstrap>;
@@ -230,8 +228,6 @@ export interface ElectronAPI {
   controlSystemMedia(command: MediaCommand, sessionId: string): Promise<MediaOperationResult>;
   openExternal(url: string): Promise<void>;
   getDisplays(): Promise<DisplayInfo[]>;
-  setDisplay(id: string | number): Promise<void>;
-  setAutoLaunch(enable: boolean): Promise<void>;
   focusWindow(): Promise<void>;
   openSettings(): Promise<void>;
   quitApp(): Promise<void>;

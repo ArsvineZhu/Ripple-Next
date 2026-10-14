@@ -15,7 +15,7 @@ Ripple Next 在 Windows、macOS、Linux 上共用界面和数据格式，通过�
 | 音乐           | GSMTC 会话、控制能力与封面           | AppleScript 读取运行中的 Spotify、Music；Spotify 封面 | 会话 D-Bus 上的 MPRIS、控制能力与封面                  |
 | 唤起播放器     | 缓存的应用标识／路径                 | 激活正在运行的应用                                    | MPRIS Raise 或同一会话的托盘 Activate                  |
 | 已安装快捷应用 | 开始菜单 `.lnk` 与 Store 标识        | 系统、共享、用户 Applications，含 Utilities           | XDG 桌面条目，经 `gio launch` 启动                     |
-| 登录启动       | 系统登录设置                         | 打包应用的原生登录项                                  | 当前 XDG 自启动目录中的 `ripple-next.desktop`          |
+| 登录启动       | 打包应用的系统登录设置               | 打包应用的原生登录项                                  | 当前 XDG 自启动目录中的 `ripple-next.desktop`          |
 | 透明窗口输入   | 按原生光标／岛边界切换穿透           | Electron 岛外点击穿透                                 | XWayland 上的 X11 `ShapeInput`                         |
 | 设备状态       | WinRT 蓝牙；摄像头／麦克风注册表探测 | 蓝牙与采集设备注册表探测                              | `bluetoothctl`、`fuser`、`pactl` 或 PipeWire `pw-dump` |
 

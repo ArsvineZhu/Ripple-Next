@@ -1,3 +1,4 @@
+import type { AppSettings } from '../../shared/appState';
 import { useEffect } from 'react';
 import { useAppState } from '../components/AppStateProvider';
 import { useSettingsContext } from '../components/SettingsProvider';
@@ -17,7 +18,7 @@ export function useSettingsWindowController() {
       .then(settings.setDisplays)
       .catch(() => {});
   }, [settings.setDisplays]);
-  const backgroundImage = useBackgroundImage(settings.bgImage);
+  const backgroundImage = useBackgroundImage(settings.settings.backgroundImage);
   const { workflows, removeWorkflow } = useWorkflows();
   const { hiddenTabs, defaultTabId } = state.settings;
   const tabOrder = islandPages.orderedIds(state.settings.tabOrder);
@@ -36,8 +37,8 @@ export function useSettingsWindowController() {
     if (newHidden.length < TABS.length) updateState({ settings: { hiddenTabs: newHidden } });
   };
   const handlePositionChange = (value: string) => {
-    if (value === settings.positionMode) return;
-    settings.setPositionMode(value);
+    if (value === settings.settings.positionMode) return;
+    settings.updateSettings({ positionMode: value as AppSettings['positionMode'] });
   };
 
   return {
@@ -60,6 +61,6 @@ export function useSettingsWindowController() {
     moveTabOrder,
     toggleTabVisibility,
     handlePositionChange,
-    isFree: settings.positionMode === 'free',
+    isFree: settings.settings.positionMode === 'free',
   };
 }

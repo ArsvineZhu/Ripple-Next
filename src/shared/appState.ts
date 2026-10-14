@@ -6,9 +6,9 @@ import { DEFAULT_PAGE_ID, DEFAULT_PAGE_IDS, PageIdSchema } from './pages';
 import { AIConfigurationSchema, defaultAIConfiguration } from './aiConfiguration';
 import { GlassPreferencesSchema, defaultGlassPreferences } from './glassPreferences';
 import { UiFontSchema } from './fonts';
+import { WeatherPreferencesSchema, defaultWeatherPreferences } from './weather';
 
 const HourFormatSchema = z.enum(['12-hr', '24-hr']);
-const WeatherUnitSchema = z.enum(['f', 'c']);
 const IslandThemeSchema = z.enum(['default', 'sleek-black', 'win95']);
 const PositionModeSchema = z.enum([
   'top-left',
@@ -19,7 +19,6 @@ const PositionModeSchema = z.enum([
   'bottom-right',
   'free',
 ]);
-export type PositionMode = z.infer<typeof PositionModeSchema>;
 
 function isValidTimeZone(value: string) {
   if (value === 'system') return true;
@@ -50,17 +49,12 @@ const AppSettingsSchema = z
     hourFormat: HourFormatSchema,
     showAmPm: z.boolean().default(false),
     timeZone: z.string().min(1).max(128).refine(isValidTimeZone).default('system'),
-    weatherUnit: WeatherUnitSchema,
+    weather: WeatherPreferencesSchema.default(() => structuredClone(defaultWeatherPreferences)),
     theme: IslandThemeSchema,
     backgroundColor: z.string(),
     textColor: z.string(),
     backgroundImage: z.string(),
     displayId: z.string().nullable(),
-    weatherLocation: z.string(),
-    weatherLocationParts: z
-      .tuple([z.string().max(256), z.string().max(256), z.string().max(256)])
-      .default(['', '', '']),
-    useBuiltInWeatherApi: z.boolean().default(true),
     secretRevision: z.number().int().nonnegative().default(0),
     positionMode: PositionModeSchema,
     islandX: z.number().finite().min(0).max(100),
@@ -119,15 +113,12 @@ export const defaultAppState: AppState = {
     hourFormat: '12-hr',
     showAmPm: false,
     timeZone: 'system',
-    weatherUnit: 'f',
+    weather: defaultWeatherPreferences,
     theme: 'default',
     backgroundColor: '#000000',
     textColor: '#FFFFFF',
     backgroundImage: 'none',
     displayId: null,
-    weatherLocation: '',
-    weatherLocationParts: ['', '', ''],
-    useBuiltInWeatherApi: true,
     secretRevision: 0,
     positionMode: 'free',
     islandX: 50,

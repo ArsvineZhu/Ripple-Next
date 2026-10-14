@@ -1,25 +1,20 @@
 import { useTranslation } from 'react-i18next';
 import { formatTime, formatOverviewDate } from '../lib/date';
 import { useState, useEffect } from 'react';
-import { fetchCurrentWeather } from '../lib/weather';
-import type { WeatherReading } from '../lib/weather';
-import { recordRendererError } from '../lib/diagnostics';
+import { useAppState } from '../components/AppStateProvider';
+import { useWeather } from './useWeather';
 
-export function useOverview(
-  hourFormat: boolean,
-  timeZone: string,
-  location: string,
-  weatherUnit: 'f' | 'c',
-  showAmPm = false,
-  weatherRefreshToken = '',
-) {
+export function useOverview() {
+  const { state } = useAppState();
+  const hourFormat = state.settings.hourFormat === '12-hr';
+  const { timeZone, showAmPm } = state.settings;
+  const { snapshot } = useWeather();
   const { i18n } = useTranslation();
   const [clock, setClock] = useState({
     time: null as string | null,
     overviewTime: null as string | null,
     overviewDate: '',
   });
-  const [weather, setWeather] = useState<WeatherReading | null>(null);
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     const update = () => {
@@ -48,29 +43,5 @@ export function useOverview(
       document.removeEventListener('visibilitychange', resume);
     };
   }, [hourFormat, i18n.language, timeZone, showAmPm]);
-  useEffect(() => {
-    if (!location.trim()) {
-      setWeather(null);
-      return;
-    }
-    let active = true;
-    const getWeather = async () => {
-      try {
-        const currentWeather = await fetchCurrentWeather(location, weatherUnit);
-        if (active) setWeather(currentWeather);
-      } catch (error) {
-        if (active) setWeather(null);
-        recordRendererError('overview', error);
-      }
-    };
-    setWeather(null);
-    const initial = setTimeout(() => void getWeather(), 300);
-    const interval = setInterval(getWeather, 600000); // Update every 10 mins
-    return () => {
-      active = false;
-      clearTimeout(initial);
-      clearInterval(interval);
-    };
-  }, [location, weatherUnit, weatherRefreshToken]);
-  return { ...clock, weather };
+  return { ...clock, weather: snapshot?.reading ?? null };
 }

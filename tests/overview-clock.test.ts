@@ -3,6 +3,11 @@ import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { useOverview } from '../src/renderer/hooks/useOverview';
+import { defaultAppState } from '../src/shared/appState';
+vi.mock('../src/renderer/components/AppStateProvider', () => ({
+  useAppState: () => ({ state: defaultAppState }),
+}));
+vi.mock('../src/renderer/hooks/useWeather', () => ({ useWeather: () => ({ snapshot: null }) }));
 
 const format = vi.hoisted(() =>
   vi.fn((_language, _hourFormat, date: Date) => String(date.getUTCMinutes())),
@@ -22,7 +27,7 @@ it('updates the displayed minute at the boundary and refreshes immediately after
   const host = document.createElement('div');
   const root = createRoot(host);
   function Clock() {
-    const { time } = useOverview(false, 'UTC', '', 'c');
+    const { time } = useOverview();
     return createElement('span', null, time);
   }
   try {

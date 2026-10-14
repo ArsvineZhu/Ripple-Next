@@ -80,3 +80,7 @@ Persisted `uiFont` is validated in shared/fonts.ts and applied per renderer by A
 ## Launch ownership
 
 `shared/launch.ts` owns the Application/LaunchTarget/Workflow contracts. Core apps orchestration consumes `platform/apps.ts`, validates the target array at IPC entry and attempts every target once in order, with indexed failures. Windows, macOS and Linux own native discovery, identity resolution and activation. Windows alone owns its five-minute memory cache; the constructor accepts the discovery cache period. There is no raw name-launch IPC, cache preparation IPC, renderer launch loop or disk app-catalog round trip. QuickAppEditor owns its local draft/search lifecycle; WorkflowEditor reuses the same saved targets, including command argv and working directory.
+
+## Preference operations and weather
+
+Settings views use the shared settings object and one patch operation. Main applies display/autostart before persistence and broadcasts only the committed result. Island starts on the saved monitor without a renderer restore request. AppStateProvider coalesces pending patches and resolves their completion, so native toggles can remain busy until the operation finishes. The weather preference stores mode, city/region/country, unit and key source once; provider query assembly belongs to main. useWeather owns refresh and stale-result handling for both Overview and the location editor.

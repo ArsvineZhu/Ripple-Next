@@ -15,7 +15,7 @@ import { changeLanguagePreference } from '../i18n';
 
 interface AppStateContextValue {
   state: AppState;
-  updateState(patch: AppStatePatch): void;
+  updateState(patch: AppStatePatch): Promise<boolean>;
 }
 
 const AppStateContext = createContext<AppStateContextValue | null>(null);
@@ -48,36 +48,43 @@ export function AppStateProvider({
     inFlight: null as AppStatePatch | null,
     queued: null as AppStatePatch | null,
     running: false,
+    acknowledgements: [] as ((saved: boolean) => void)[],
   });
   const updateState = useCallback(
-    (patch: AppStatePatch) => {
-      setState((current) => applyPatch(current, patch));
-      const pending = writes.current;
-      pending.queued = mergePatches(pending.queued, patch);
-      if (pending.running) return;
-      pending.running = true;
-      void (async () => {
-        while (pending.queued) {
-          const next = pending.queued;
-          pending.queued = null;
-          pending.inFlight = next;
-          try {
-            const result = await window.electronAPI?.updateAppState?.(next);
-            pending.authoritative = result ?? applyPatch(pending.authoritative, next);
-          } catch (error) {
-            notify({
-              severity: 'error',
-              code: 'stateSaveFailed',
-              area: noticeAreaForPatch(next),
-              detail: error instanceof Error ? error.message : String(error),
-            });
+    (patch: AppStatePatch) =>
+      new Promise<boolean>((resolve) => {
+        setState((current) => applyPatch(current, patch));
+        const pending = writes.current;
+        pending.acknowledgements.push(resolve);
+        pending.queued = mergePatches(pending.queued, patch);
+        if (pending.running) return;
+        pending.running = true;
+        void (async () => {
+          while (pending.queued) {
+            const next = pending.queued;
+            pending.queued = null;
+            pending.inFlight = next;
+            const acknowledgements = pending.acknowledgements;
+            pending.acknowledgements = [];
+            let saved = true;
+            try {
+              pending.authoritative = await window.electronAPI.updateAppState(next);
+            } catch (error) {
+              saved = false;
+              notify({
+                severity: 'error',
+                code: 'stateSaveFailed',
+                area: noticeAreaForPatch(next),
+                detail: error instanceof Error ? error.message : String(error),
+              });
+            }
+            pending.inFlight = null;
+            setState(applyPatch(pending.authoritative, pending.queued));
+            acknowledgements.forEach((acknowledge) => acknowledge(saved));
           }
-          pending.inFlight = null;
-          setState(applyPatch(pending.authoritative, pending.queued));
-        }
-        pending.running = false;
-      })();
-    },
+          pending.running = false;
+        })();
+      }),
     [notify],
   );
   useEffect(() => {

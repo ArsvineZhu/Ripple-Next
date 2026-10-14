@@ -62,9 +62,14 @@ async function startApplication() {
     notices.report('showTrayFailed', detail, 'warning', 'settings');
   }
 
-  const presentApplication = () => {
+  const presentApplication = async () => {
     if (!startupComplete || !diagnostics) return;
-    if (!getMainWindow()) createWindow(diagnostics, reportWindowLoadError);
+    if (!getMainWindow())
+      createWindow(
+        diagnostics,
+        reportWindowLoadError,
+        (await stateStore.load()).settings.displayId,
+      );
     openSettingsWindow();
   };
   app.on('second-instance', presentApplication);
@@ -212,14 +217,14 @@ async function startApplication() {
       stateStore,
       secretStore,
       assistant,
-      weather: createWeatherService(stateStore, secretStore),
+      weather: createWeatherService(secretStore),
       aiConfiguration: createAIConfigurationService(stateStore, secretStore),
       notices,
       diagnostics: diagnosticsService,
       applyShowTray,
     });
     initializeLinuxInputShape(diagnosticsService, reportInputShapeError);
-    createWindow(diagnosticsService, reportWindowLoadError);
+    createWindow(diagnosticsService, reportWindowLoadError, initialState.settings.displayId);
     startupComplete = true;
     presentApplication();
   });

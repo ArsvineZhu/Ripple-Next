@@ -1,3 +1,4 @@
+import type { AppSettings } from '../../shared/appState';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
 import {
@@ -32,7 +33,6 @@ import { useMemo } from 'react';
 import { TABS } from '../lib/tabs';
 import { Select } from '../components/Select';
 import { SearchableSelect } from '../components/SearchableSelect';
-import { useSettingsContext } from '../components/SettingsProvider';
 import { languagePreference, baseLanguage, localeForFormatting } from '../../shared/i18n';
 import { uiFontLabels } from '../../shared/fonts';
 import { InlineNotices } from '../components/InlineNotices';
@@ -77,12 +77,9 @@ export function SettingsTab(
   const { t, i18n } = useTranslation();
   const reduced = useReducedMotionPreference();
   const {
-    language,
-    handleLanguageChange,
-    showTrayEnabled,
-    handleShowTrayChange,
+    settings: { language, showTray: showTrayEnabled },
     autoLaunchPending,
-  } = useSettingsContext();
+  } = p;
   const positions = [
     { value: 'top-left', label: t('topLeft') },
     { value: 'top-center', label: t('topCenter') },
@@ -145,7 +142,7 @@ export function SettingsTab(
               <Select
                 label={t('language')}
                 value={baseLanguage(language)}
-                onValueChange={(value) => handleLanguageChange(languagePreference(value))}
+                onValueChange={(value) => p.updateSettings({ language: languagePreference(value) })}
                 options={[
                   { value: 'system', label: t('system'), description: t('systemLanguageHint') },
                   { value: 'zh-CN', label: '简体中文' },
@@ -168,7 +165,9 @@ export function SettingsTab(
                     <Select
                       label={t('chineseStyle')}
                       value={language}
-                      onValueChange={(value) => handleLanguageChange(languagePreference(value))}
+                      onValueChange={(value) =>
+                        p.updateSettings({ language: languagePreference(value) })
+                      }
                       options={[
                         { value: 'zh-CN', label: t('chineseStandard') },
                         {
@@ -190,18 +189,20 @@ export function SettingsTab(
             {entry(
               { page: 'fonts' },
               t('fontSettings'),
-              t(uiFontLabels[p.uiFont]),
+              t(uiFontLabels[p.settings.uiFont]),
               t('fontSettingsRowHint'),
             )}
             <PrefRow icon={Clock3} label={t('hourFormat')} hint={t('hourFormatHint')}>
               <PreferenceSwitch
                 label={t('hourFormat')}
-                checked={p.hourFormat}
-                onCheckedChange={(checked) => p.handleHourFormatChange(checked ? '12-hr' : '24-hr')}
+                checked={p.settings.hourFormat === '12-hr'}
+                onCheckedChange={(checked) =>
+                  p.updateSettings({ hourFormat: checked ? '12-hr' : '24-hr' })
+                }
               />
             </PrefRow>
             <AnimatePresence initial={false}>
-              {p.hourFormat && (
+              {p.settings.hourFormat === '12-hr' && (
                 <motion.div
                   key="am-pm"
                   initial={{ height: 0, opacity: 0 }}
@@ -213,8 +214,8 @@ export function SettingsTab(
                   <PrefRow icon={SunMoon} label={t('showAmPm')}>
                     <PreferenceSwitch
                       label={t('showAmPm')}
-                      checked={p.showAmPm}
-                      onCheckedChange={p.setShowAmPm}
+                      checked={p.settings.showAmPm}
+                      onCheckedChange={(value) => p.updateSettings({ showAmPm: value })}
                     />
                   </PrefRow>
                 </motion.div>
@@ -223,8 +224,8 @@ export function SettingsTab(
             <PrefRow icon={Globe2} label={t('timeZone')}>
               <SearchableSelect
                 label={t('timeZone')}
-                value={p.timeZone}
-                onValueChange={p.handleTimeZoneChange}
+                value={p.settings.timeZone}
+                onValueChange={(value) => p.updateSettings({ timeZone: value })}
                 options={timeZoneOptions}
                 searchPlaceholder={t('searchTimeZones')}
                 emptyLabel={t('noTimeZoneMatches')}
@@ -235,10 +236,10 @@ export function SettingsTab(
             <PrefRow icon={Power} label={t('autoLaunch')}>
               <PreferenceSwitch
                 label={t('autoLaunch')}
-                checked={p.autoLaunchEnabled}
+                checked={p.settings.autoLaunch}
                 disabled={autoLaunchPending}
                 busy={autoLaunchPending}
-                onCheckedChange={p.handleAutoLaunchChange}
+                onCheckedChange={p.setAutoLaunch}
               />
             </PrefRow>
             {window.electronAPI?.platform === 'darwin' && (
@@ -246,7 +247,7 @@ export function SettingsTab(
                 <PreferenceSwitch
                   label={t('showTray')}
                   checked={showTrayEnabled}
-                  onCheckedChange={handleShowTrayChange}
+                  onCheckedChange={(checked) => p.updateSettings({ showTray: checked })}
                 />
               </PrefRow>
             )}
@@ -262,8 +263,8 @@ export function SettingsTab(
               <PrefRow icon={Monitor} label={t('display')}>
                 <Select
                   label={t('display')}
-                  value={p.currentDisplayId || String(p.displays[0].id)}
-                  onValueChange={p.handleDisplayChange}
+                  value={p.settings.displayId || String(p.displays[0].id)}
+                  onValueChange={(value) => p.updateSettings({ displayId: value })}
                   options={p.displays.map((display, index) => ({
                     value: String(display.id),
                     label:
@@ -283,8 +284,8 @@ export function SettingsTab(
             <PrefRow icon={Palette} label={t('theme')}>
               <Select
                 label={t('theme')}
-                value={p.theme === 'default' ? 'none' : p.theme}
-                onValueChange={p.setTheme}
+                value={p.settings.theme === 'default' ? 'none' : p.settings.theme}
+                onValueChange={(value) => p.setTheme(value as AppSettings['theme'])}
                 options={[
                   { value: 'none', label: t('defaultTheme'), description: t('defaultThemeHint') },
                   {
@@ -304,23 +305,23 @@ export function SettingsTab(
                 min={0}
                 max={60}
                 stages={5}
-                value={p.islandCornerRadius}
-                disabled={p.theme === 'win95'}
-                onValueChange={p.handleIslandCornerRadiusChange}
+                value={p.settings.islandCornerRadius}
+                disabled={p.settings.theme === 'win95'}
+                onValueChange={(value) => p.updateSettings({ islandCornerRadius: value })}
               />
             </PrefRow>
             <PrefRow label={t('islandBorder')}>
               <PreferenceSwitch
                 label={t('islandBorder')}
-                checked={p.islandBorderEnabled}
-                onCheckedChange={p.handleIslandBorderChange}
+                checked={p.settings.islandBorder}
+                onCheckedChange={(value) => p.updateSettings({ islandBorder: value })}
               />
             </PrefRow>
             <PrefRow label={t('hideInactive')}>
               <PreferenceSwitch
                 label={t('hideInactive')}
-                checked={p.hideNotActiveIslandEnabled}
-                onCheckedChange={p.handlehideNotActiveIslandChange}
+                checked={p.settings.hideIslandWhenInactive}
+                onCheckedChange={(value) => p.updateSettings({ hideIslandWhenInactive: value })}
               />
             </PrefRow>
           </PrefGroup>
@@ -333,7 +334,7 @@ export function SettingsTab(
                       type="radio"
                       name="positionMode"
                       value={position.value}
-                      checked={p.positionMode === position.value}
+                      checked={p.settings.positionMode === position.value}
                       onChange={() => p.handlePositionChange(position.value)}
                     />
                     <span className={styles.radioCustom} />
@@ -371,8 +372,8 @@ export function SettingsTab(
                         max={100}
                         step={0.1}
                         stages={5}
-                        value={p.islandX}
-                        onValueChange={p.handleIslandXChange}
+                        value={p.settings.islandX}
+                        onValueChange={(value) => p.updateSettings({ islandX: value })}
                       />
                     </PrefRow>
                     <PrefRow label={t('positionY')} stacked>
@@ -383,8 +384,8 @@ export function SettingsTab(
                         min={0}
                         max={500}
                         stages={7}
-                        value={p.islandY}
-                        onValueChange={p.handleIslandYChange}
+                        value={p.settings.islandY}
+                        onValueChange={(value) => p.updateSettings({ islandY: value })}
                       />
                     </PrefRow>
                   </motion.div>
@@ -396,11 +397,7 @@ export function SettingsTab(
             {entry(
               { page: 'liquidGlass' },
               t('liquidGlassExperimental'),
-              t(
-                p.glassPreferences.settingsGlassEnabled
-                  ? 'glassStateEnabled'
-                  : 'glassStateDisabled',
-              ),
+              t(p.settings.settingsGlassEnabled ? 'glassStateEnabled' : 'glassStateDisabled'),
               t('liquidGlassExperimentalHint'),
             )}
           </PrefGroup>
@@ -408,22 +405,24 @@ export function SettingsTab(
             <PrefRow label={t('islandColor')}>
               <NativeColorField
                 label={t('islandColor')}
-                value={p.bgColor}
-                onValueChange={p.handleBgColorChange}
+                value={p.settings.backgroundColor}
+                onValueChange={(value) => p.updateSettings({ backgroundColor: value })}
               />
             </PrefRow>
             <PrefRow label={t('textColor')}>
               <NativeColorField
                 label={t('textColor')}
-                value={p.textColor}
-                onValueChange={p.handleTextColorChange}
+                value={p.settings.textColor}
+                onValueChange={(value) => p.updateSettings({ textColor: value })}
               />
             </PrefRow>
             <InlineNotices area="settings" codes={['colorPickerFailed']} />
             {entry(
               { page: 'backgroundImage' },
               t('backgroundImage'),
-              p.bgImage === 'none' ? t('notConfigured') : p.bgImage,
+              p.settings.backgroundImage === 'none'
+                ? t('notConfigured')
+                : p.settings.backgroundImage,
               t('backgroundImageHint'),
             )}
             {p.backgroundImageError && (
@@ -440,29 +439,29 @@ export function SettingsTab(
             <PrefRow label={t('batteryAlerts')}>
               <PreferenceSwitch
                 label={t('batteryAlerts')}
-                checked={p.batteryAlertsEnabled}
-                onCheckedChange={p.handleBatteryAlertsChange}
+                checked={p.settings.batteryAlerts}
+                onCheckedChange={(value) => p.updateSettings({ batteryAlerts: value })}
               />
             </PrefRow>
             <PrefRow label={t('standby')} hint={t('standbyHint')}>
               <PreferenceSwitch
                 label={t('standby')}
-                checked={p.standbyBorderEnabled}
-                onCheckedChange={p.handleStandbyChange}
+                checked={p.settings.standbyMode}
+                onCheckedChange={(value) => p.updateSettings({ standbyMode: value })}
               />
             </PrefRow>
             <PrefRow label={t('largeStandby')} hint={t('largeStandbyHint')}>
               <PreferenceSwitch
                 label={t('largeStandby')}
-                checked={p.largeStandbyEnabled}
-                onCheckedChange={p.handleLargeStandbyChange}
+                checked={p.settings.largeStandbyMode}
+                onCheckedChange={(value) => p.updateSettings({ largeStandbyMode: value })}
               />
             </PrefRow>
             <PrefRow label={t('idleInfo')}>
               <PreferenceSwitch
                 label={t('idleInfo')}
-                checked={p.showInfoWhenIdleEnabled}
-                onCheckedChange={p.handleShowInfoWhenIdleChange}
+                checked={p.settings.showInfoWhenIdle}
+                onCheckedChange={(value) => p.updateSettings({ showInfoWhenIdle: value })}
               />
             </PrefRow>
             <PrefRow label={t('mouseLeaveDelay')} hint={t('mouseLeaveDelayHint')} stacked>
@@ -474,8 +473,8 @@ export function SettingsTab(
                 max={2000}
                 step={50}
                 stages={3}
-                value={p.leaveDelayMs}
-                onValueChange={p.handleLeaveDelayChange}
+                value={p.settings.leaveDelayMs}
+                onValueChange={(value) => p.updateSettings({ leaveDelayMs: value })}
               />
             </PrefRow>
           </PrefGroup>
@@ -518,7 +517,7 @@ export function SettingsTab(
                     }}
                   >
                     <GripVertical size={14} className={styles.grip} />
-                    {tab.icon(p.textColor)}
+                    {tab.icon(p.settings.textColor)}
                     <span className={styles.tabName}>
                       {tab.title ?? t(tab.nameKey ?? 'tabOverview')}
                     </span>
@@ -566,7 +565,7 @@ export function SettingsTab(
             </div>
           </PrefCard>
           <PrefGroup caption={t('browserSearchSettings')}>
-            {entry({ page: 'searchTemplate' }, t('searchEngineUrl'), p.searchUrlTemplate)}
+            {entry({ page: 'searchTemplate' }, t('searchEngineUrl'), p.settings.searchUrlTemplate)}
           </PrefGroup>
           <PrefGroup caption={t('weather')}>
             <PrefRow
@@ -576,12 +575,16 @@ export function SettingsTab(
             >
               <PreferenceSwitch
                 label={t('useBuiltInWeatherApi')}
-                checked={p.useBuiltInWeatherApi}
-                onCheckedChange={p.setUseBuiltInWeatherApi}
+                checked={p.settings.weather.keySource === 'builtin'}
+                onCheckedChange={(checked) =>
+                  p.updateSettings({
+                    weather: { ...p.settings.weather, keySource: checked ? 'builtin' : 'custom' },
+                  })
+                }
               />
             </PrefRow>
             <AnimatePresence initial={false}>
-              {!p.useBuiltInWeatherApi && (
+              {p.settings.weather.keySource === 'custom' && (
                 <motion.div
                   key="weather-api-key"
                   initial={{ height: 0, opacity: 0 }}
@@ -600,15 +603,25 @@ export function SettingsTab(
             {entry(
               { page: 'weatherLocation' },
               t('location'),
-              p.weatherLocation === 'auto:ip'
+              p.settings.weather.location.mode === 'automatic'
                 ? t('automaticLocation')
-                : p.weatherLocation || t('notConfigured'),
+                : [
+                    p.settings.weather.location.city,
+                    p.settings.weather.location.region,
+                    p.settings.weather.location.country,
+                  ]
+                    .filter(Boolean)
+                    .join(', ') || t('notConfigured'),
             )}
             <PrefRow icon={Thermometer} label={t('unit')} hint={t('unitHint')}>
               <PreferenceSwitch
                 label={t('unit')}
-                checked={p.weatherUnit === 'c'}
-                onCheckedChange={(checked) => p.handleWeatherUnitChange(checked ? 'c' : 'f')}
+                checked={p.settings.weather.unit === 'c'}
+                onCheckedChange={(checked) =>
+                  p.updateSettings({
+                    weather: { ...p.settings.weather, unit: checked ? 'c' : 'f' },
+                  })
+                }
               />
             </PrefRow>
           </PrefGroup>

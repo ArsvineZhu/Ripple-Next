@@ -1,6 +1,5 @@
 // @vitest-environment happy-dom
 import { act, createElement, useLayoutEffect } from 'react';
-import type { ChangeEvent } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
@@ -34,7 +33,7 @@ function Harness({ name }: { name: string }) {
   return createElement(
     'output',
     { 'data-window': name },
-    `${settings.islandX},${settings.islandY}`,
+    `${settings.settings.islandX},${settings.settings.islandY}`,
   );
 }
 
@@ -79,9 +78,6 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-function input(value: number) {
-  return { target: { value: String(value) } } as ChangeEvent<HTMLInputElement>;
-}
 async function acknowledge(index: number, values: { islandX?: number; islandY?: number }) {
   const state = { ...defaultAppState, settings: { ...defaultAppState.settings, ...values } };
   await act(async () => {
@@ -91,65 +87,60 @@ async function acknowledge(index: number, values: { islandX?: number; islandY?: 
 }
 
 it('updates position without pointer release and reflects saved changes in the other window', async () => {
-  await act(async () => views.get('settings')!.handleIslandXChange(input(62.5)));
-  expect(views.get('settings')!.islandX).toBe(62.5);
+  await act(async () => {
+    void views.get('settings')!.updateSettings({ islandX: 62.5 });
+  });
+  expect(views.get('settings')!.settings.islandX).toBe(62.5);
   expect(requests[0].patch.settings?.islandX).toBe(62.5);
   await acknowledge(0, { islandX: 62.5 });
-  expect(views.get('island')!.islandX).toBe(62.5);
-  await act(async () => views.get('settings')!.handleIslandYChange(input(0)));
+  expect(views.get('island')!.settings.islandX).toBe(62.5);
+  await act(async () => {
+    void views.get('settings')!.updateSettings({ islandY: 0 });
+  });
   await acknowledge(1, { islandX: 62.5, islandY: 0 });
-  expect(views.get('island')!.islandY).toBe(0);
+  expect(views.get('island')!.settings.islandY).toBe(0);
 });
 
 it('keeps the latest rapid edits over an old acknowledgement and merges pending axes', async () => {
-  await act(async () => views.get('settings')!.handleIslandXChange(input(60)));
   await act(async () => {
-    views.get('settings')!.handleIslandXChange(input(70));
-    views.get('settings')!.handleIslandXChange(input(80));
-    views.get('settings')!.handleIslandYChange(input(123));
+    void views.get('settings')!.updateSettings({ islandX: 60 });
+  });
+  await act(async () => {
+    views.get('settings')!.updateSettings({ islandX: 70 });
+    views.get('settings')!.updateSettings({ islandX: 80 });
+    views.get('settings')!.updateSettings({ islandY: 123 });
   });
   expect(requests).toHaveLength(1);
   await acknowledge(0, { islandX: 60 });
-  expect(views.get('settings')!.islandX).toBe(80);
-  expect(views.get('settings')!.islandY).toBe(123);
+  expect(views.get('settings')!.settings.islandX).toBe(80);
+  expect(views.get('settings')!.settings.islandY).toBe(123);
   expect(requests[1].patch.settings).toEqual({ islandX: 80, islandY: 123 });
   await acknowledge(1, { islandX: 80, islandY: 123 });
-  expect(views.get('island')!.islandX).toBe(80);
+  expect(views.get('island')!.settings.islandX).toBe(80);
 });
 
 it('reports a failed save and applies authoritative position again', async () => {
-  await act(async () => views.get('settings')!.handleIslandXChange(input(75)));
+  await act(async () => {
+    void views.get('settings')!.updateSettings({ islandX: 75 });
+  });
   await act(async () => requests[0].reject(new Error('Storage failed')));
   expect(notify).toHaveBeenCalledWith(expect.objectContaining({ code: 'stateSaveFailed' }));
-  expect(views.get('settings')!.islandX).toBe(defaultAppState.settings.islandX);
+  expect(views.get('settings')!.settings.islandX).toBe(defaultAppState.settings.islandX);
 });
 
-it('persists switch booleans and protects an in-flight autostart change from overlapping requests', async () => {
+it('awaits one autostart preference commit, ignores overlapping toggles and restores the flag on failure', async () => {
   const settings = views.get('settings')!;
-  await act(async () => settings.handleIslandBorderChange(true));
-  expect(requests[0].patch.settings?.islandBorder).toBe(true);
-  expect(views.get('settings')!.islandBorderEnabled).toBe(true);
-  let rejectStartup!: (error: Error) => void;
-  const startup = vi.fn(
-    () =>
-      new Promise<void>((_resolve, reject) => {
-        rejectStartup = reject;
-      }),
-  );
-  window.electronAPI.setAutoLaunch = startup;
   await act(async () => {
-    void settings.handleAutoLaunchChange(true);
-    void settings.handleAutoLaunchChange(false);
+    void settings.setAutoLaunch(true);
+    void settings.setAutoLaunch(false);
   });
-  expect(startup).toHaveBeenCalledOnce();
-  expect(startup).toHaveBeenCalledWith(true);
+  expect(requests).toHaveLength(1);
+  expect(requests[0].patch.settings).toEqual({ autoLaunch: true });
   expect(views.get('settings')!.autoLaunchPending).toBe(true);
-  await act(async () => rejectStartup(new Error('Startup unavailable')));
+  await act(async () => requests[0].reject(new Error('Startup unavailable')));
   expect(views.get('settings')!.autoLaunchPending).toBe(false);
-  expect(views.get('settings')!.autoLaunchEnabled).toBe(defaultAppState.settings.autoLaunch);
-  expect(notify).toHaveBeenCalledWith(expect.objectContaining({ code: 'autoLaunchFailed' }));
+  expect(views.get('settings')!.settings.autoLaunch).toBe(false);
 });
-
 it('maps horizontal endpoints to visible edges and preserves vertical zero', () => {
   const size = { width: 380, height: 250 };
   const viewport = { width: 1920, height: 1080 };

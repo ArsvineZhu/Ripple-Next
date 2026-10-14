@@ -114,3 +114,4 @@ Open **General → Font** and compare Alibaba PuHuiTi 3 (Default), System and Op
 Explicit **Simplified Chinese** reveals **Chinese expression**: Standard, Microsoft Chinese and Apple Chinese. Playful styles alter selected interface phrases while retaining ordinary technical fields and critical actions. Dates and numbers retain zh-CN formatting. Other language choices hide this row.
 
 The guide videos show real editing in an isolated demo profile with sample endpoints; they send no AI requests. Use their playback controls to pause or seek. Leaving the visible section pauses playback. The full beta changes are in [4.1.0-beta.1](docs/releases/4.1.0-beta.1.en.md), currently unreleased.
+Display and autostart use the same preference commit as saving. Failed native changes keep the previous value. Windows/macOS development builds do not register login items.

@@ -21,3 +21,4 @@ The bridge also exposes `readClipboardText()` and `writeClipboardText(text)` so 
 `onScrollGestureStart(callback)` delivers validated native touchpad start timestamps through `scroll-gesture-start` and returns an unsubscribe function. It exposes no raw input events or pointer/key data.
 
 `setIslandPreview(active)` is restricted to the Settings role. `getIslandPreview()` and `onIslandPreviewChanged()` synchronize transient preview visibility with Island; subscriptions return cleanup functions. Preview is not persisted.
+`updateAppState` is the single preference commit, including display and autostart effects. The separate set-display/set-auto-launch channels are removed. `getWeather` accepts the shared WeatherPreferences object; no tuple, joined query or automatic-location sentinel crosses the bridge.

@@ -9,7 +9,13 @@ import type { InvokeMap } from '../shared/contracts';
 import { LaunchTargetsSchema } from '../shared/launch';
 import { setTrayLocale } from './tray';
 import type { DiagnosticsService } from './services/diagnostics';
-import { applyWindowInputRegion, getMainWindow, markRendererReady, showMainWindow } from './window';
+import {
+  applyWindowInputRegion,
+  getMainWindow,
+  markRendererReady,
+  showMainWindow,
+  moveMainWindowToDisplay,
+} from './window';
 import {
   broadcastToRegisteredWindows,
   getWebContentsForRole,
@@ -17,14 +23,14 @@ import {
   isAllowedIpcSender,
 } from './windowRoles';
 import type { WindowRole } from './windowRoles';
-import type { WeatherSnapshot } from '../shared/weather';
+import type { WeatherSnapshot, WeatherPreferences } from '../shared/weather';
+import { WeatherPreferencesSchema } from '../shared/weather';
 import type { createAIConfigurationService } from './services/aiConfiguration';
 import { AIMutationSchema } from '../shared/aiConfiguration';
 import { listLicenses, readLicense } from './services/licenses';
 import { openSettingsWindow } from './settingsWindow';
-import { getWindowBoundsForDisplay } from './windowBounds';
 import { createAppService } from './services/apps';
-import { setAutoLaunch } from './services/autostart';
+import { setAutoLaunch } from './platform/autostart';
 import { createMediaService } from './services/media';
 import { getBluetoothStatus } from './services/getBluetoothStatus';
 import { getCameraStatus } from './services/getCameraStatus';
@@ -65,7 +71,7 @@ interface NoticeService {
 
 interface IPCServices {
   aiConfiguration: ReturnType<typeof createAIConfigurationService>;
-  weather: { get(location: string, unit: 'c' | 'f'): Promise<WeatherSnapshot> };
+  weather: { get(preferences: WeatherPreferences): Promise<WeatherSnapshot> };
   stateStore: StateStore;
   secretStore: SecretStore;
   assistant: AssistantService;
@@ -90,8 +96,6 @@ function channelErrorCode(channel: keyof InvokeMap): NoticeCode | null {
     case 'save-weather-api-key':
     case 'save-ai-credential':
       return 'secretStorageUnavailable';
-    case 'set-auto-launch':
-      return 'autoLaunchFailed';
     case 'open-diagnostics-folder':
       return 'diagnosticsFolderOpenFailed';
     case 'show-color-picker':
@@ -235,6 +239,8 @@ export function registerIPC(services: IPCServices) {
   handle(services, 'update-app-state', async (_event, patch) => {
     if (!isAppStatePatch(patch)) throw new TypeError('Invalid app state update');
     if (patch.settings?.ai) throw new TypeError('AI configuration requires its validated editor');
+    if (patch.settings?.autoLaunch !== undefined) await setAutoLaunch(patch.settings.autoLaunch);
+    if (patch.settings?.displayId !== undefined) moveMainWindowToDisplay(patch.settings.displayId);
     const state = await services.stateStore.update(patch);
     if (typeof patch.settings?.showTray === 'boolean') {
       services.applyShowTray(patch.settings.showTray);
@@ -242,10 +248,9 @@ export function registerIPC(services: IPCServices) {
     broadcastToRegisteredWindows('app-state-changed', state);
     return state;
   });
-  handle(services, 'get-weather', (_event, location, unit) => {
-    if (unit !== 'c' && unit !== 'f') throw new TypeError('Invalid weather unit');
-    return services.weather.get(getText(location, 'Weather location', 2048), unit);
-  });
+  handle(services, 'get-weather', (_event, preferences) =>
+    services.weather.get(WeatherPreferencesSchema.parse(preferences)),
+  );
   handle(services, 'save-weather-api-key', async (event, key) => {
     if (getWindowRole(event.sender) !== 'settings')
       throw new TypeError('Credentials require Settings');
@@ -359,18 +364,6 @@ export function registerIPC(services: IPCServices) {
       bounds: display.bounds,
     })),
   );
-  handle(services, 'set-display', (_event, id) => {
-    if (typeof id !== 'string' && typeof id !== 'number') throw new TypeError('Invalid display');
-    const target =
-      screen.getAllDisplays().find((display) => String(display.id) === String(id)) ||
-      screen.getPrimaryDisplay();
-    getMainWindow()?.setBounds(getWindowBoundsForDisplay(target));
-    showMainWindow();
-  });
-  handle(services, 'set-auto-launch', async (_event, enable) => {
-    if (typeof enable !== 'boolean') throw new TypeError('Expected boolean');
-    await setAutoLaunch(enable);
-  });
   handle(services, 'open-settings', (_event) => {
     openSettingsWindow();
   });

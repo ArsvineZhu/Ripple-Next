@@ -113,6 +113,8 @@ API 密钥通过操作系统加密保护。Linux 保存密钥需要可用的系�
 - **融入启动习惯。** 开机启动；macOS 可开关菜单栏图标，Windows／Linux 始终保留托盘。平台差异见指南。
 - **使用熟悉的语言。** 简体中文、繁體中文、English、日本語；默认跟随系统，手动选择立即生效，并在重启后保留。
 
+显示器与登录启动在系统操作成功后保存，失败保留原设置。Windows／macOS 登录项注册要求使用打包应用。
+
 <p align="center">
   <img src="docs/assets/screenshots/settings.png" width="440" alt="设置页中的语言、时间格式、时区、启动、菜单栏图标和显示器选项">
 </p>

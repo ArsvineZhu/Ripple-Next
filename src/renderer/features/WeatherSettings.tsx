@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { PreferenceSwitch } from '../components/PreferenceSwitch';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
-import { useWeatherPreview } from '../hooks/useWeatherPreview';
+import { useWeather } from '../hooks/useWeather';
 import type { SettingsFormProps } from './SettingsEditor';
 import { PrefCard, PrefRow } from './SettingsPreferences';
 import styles from './SettingsTab.module.css';
@@ -14,8 +14,9 @@ export function WeatherLocationEditor({ settings: p }: { settings: SettingsFormP
   const { t, i18n } = useTranslation();
   const id = useId();
   const reduced = useReducedMotionPreference();
-  const automatic = p.weatherLocation === 'auto:ip';
-  const { snapshot, loading } = useWeatherPreview(automatic, p.weatherRefreshToken);
+  const preferences = p.settings.weather;
+  const automatic = preferences.location.mode === 'automatic';
+  const { snapshot, loading } = useWeather(automatic, 60_000);
   const eastAsian = ['zh', 'ja'].includes(
     new Intl.Locale(localeForFormatting(i18n.language)).language,
   );
@@ -34,7 +35,14 @@ export function WeatherLocationEditor({ settings: p }: { settings: SettingsFormP
           <PreferenceSwitch
             label={t('automaticLocation')}
             checked={automatic}
-            onCheckedChange={p.setAutomaticLocation}
+            onCheckedChange={(checked) =>
+              p.updateSettings({
+                weather: {
+                  ...preferences,
+                  location: { ...preferences.location, mode: checked ? 'automatic' : 'manual' },
+                },
+              })
+            }
           />
         </PrefRow>
         <AnimatePresence initial={false} mode="wait">
@@ -76,23 +84,24 @@ export function WeatherLocationEditor({ settings: p }: { settings: SettingsFormP
               transition={{ duration: reduced ? 0 : 0.2 }}
             >
               <p className={styles.hint}>{t('manualLocationHint')}</p>
-              {(['locationCity', 'locationRegion', 'locationCountry'] as const).map(
-                (key, index) => (
-                  <label className={styles.fieldLabel} key={key} htmlFor={`${id}-${index}`}>
-                    {t(key)}
-                    <input
-                      id={`${id}-${index}`}
-                      className={styles.input}
-                      value={p.weatherLocationParts[index]}
-                      onChange={(e) => {
-                        const parts = [...p.weatherLocationParts] as [string, string, string];
-                        parts[index] = e.target.value;
-                        p.setWeatherLocationParts(parts);
-                      }}
-                    />
-                  </label>
-                ),
-              )}
+              {(['city', 'region', 'country'] as const).map((key, index) => (
+                <label className={styles.fieldLabel} key={key} htmlFor={`${id}-${index}`}>
+                  {t((['locationCity', 'locationRegion', 'locationCountry'] as const)[index])}
+                  <input
+                    id={`${id}-${index}`}
+                    className={styles.input}
+                    value={preferences.location[key]}
+                    onChange={(e) => {
+                      p.updateSettings({
+                        weather: {
+                          ...preferences,
+                          location: { ...preferences.location, [key]: e.target.value },
+                        },
+                      });
+                    }}
+                  />
+                </label>
+              ))}
             </motion.div>
           )}
         </AnimatePresence>

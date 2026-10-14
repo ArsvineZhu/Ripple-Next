@@ -80,3 +80,7 @@ Forge 在启动和打包前清理 `.vite`；`.vite`、`out`、报告和 `node_mo
 ## 启动能力归属
 
 `shared/launch.ts` 定义 Application／LaunchTarget／Workflow。核心启动编排只调用 `platform/apps.ts`，IPC 入口校验一次目标数组，按顺序尝试每项并返回带序号的失败。Windows、macOS、Linux 分别管理原生发现、身份解析和激活。五分钟内存缓存只由 Windows 管理，构造函数接受发现缓存时长。不再使用原始名称启动 IPC、缓存准备 IPC、renderer 启动循环或应用目录文件读写。QuickAppEditor 自己管理草稿与搜索生命周期，WorkflowEditor 复用同一保存目标，保留命令 argv 与工作目录。
+
+## 偏好操作与天气
+
+设置视图使用共享设置对象和一个补丁操作。Main 在保存前执行显示器／自启动效果，仅广播已提交结果；Island 直接在保存的显示器上启动，不再由 renderer 请求恢复。AppStateProvider 合并排队补丁并返回完成结果，原生开关在操作结束前保持忙碌。天气配置只保存一份模式、城市／地区／国家、单位和密钥来源；查询拼接归 main。useWeather 统一管理总览与位置编辑器的刷新及过期结果。

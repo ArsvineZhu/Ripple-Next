@@ -1,28 +1,31 @@
 import { createHash } from 'node:crypto';
-import type { AppState } from '../../shared/appState';
 import { emptyWeather } from '../../shared/weather';
-import type { WeatherSnapshot } from '../../shared/weather';
+import type { WeatherSnapshot, WeatherPreferences } from '../../shared/weather';
 import { fetchWeatherSnapshot } from './weatherAPI';
 
-export function createWeatherService(
-  stateStore: { load(): Promise<AppState> },
-  secrets: { getSecret(name: string): Promise<string | null> },
-) {
+export function createWeatherService(secrets: { getSecret(name: string): Promise<string | null> }) {
   const cache = new Map<string, { at: number; snapshot: WeatherSnapshot }>();
   const pending = new Map<string, Promise<WeatherSnapshot>>();
   return {
-    async get(location: string, unit: 'c' | 'f') {
-      if (!location.trim()) return { ...emptyWeather };
-      const { settings } = await stateStore.load();
+    async get(preferences: WeatherPreferences) {
+      const { location, unit, keySource } = preferences;
+      const query =
+        location.mode === 'automatic'
+          ? 'auto:ip'
+          : [location.city, location.region, location.country]
+              .map((value) => value.trim())
+              .filter(Boolean)
+              .join(', ');
+      if (!query) return { ...emptyWeather };
       let key: string | undefined;
-      if (!settings.useBuiltInWeatherApi) {
+      if (keySource === 'custom') {
         try {
           key = (await secrets.getSecret('weather-api-key')) ?? '';
         } catch {
           return { ...emptyWeather, error: 'missing-key' as const };
         }
       }
-      const cacheId = `${location}:${unit}:${createHash('sha256')
+      const cacheId = `${query}:${unit}:${createHash('sha256')
         .update(key ?? 'builtin')
         .digest('hex')}`;
       const cached = cache.get(cacheId);
@@ -30,7 +33,7 @@ export function createWeatherService(
       const existing = pending.get(cacheId);
       if (existing) return existing;
       const request = fetchWeatherSnapshot(
-        location,
+        query,
         unit,
         (input) => fetch(input, { signal: AbortSignal.timeout(10_000) }),
         key,

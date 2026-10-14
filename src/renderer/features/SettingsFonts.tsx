@@ -12,7 +12,8 @@ const families = {
 
 export function SettingsFonts({ settings }: { settings: SettingsFormProps }) {
   const { t } = useTranslation();
-  const selectedFont = settings.uiFont === 'alibaba-puhuiti' ? 'default' : settings.uiFont;
+  const selectedFont =
+    settings.settings.uiFont === 'alibaba-puhuiti' ? 'default' : settings.settings.uiFont;
   return (
     <section className={styles.page} aria-label={t('fontSettings')}>
       <p className={styles.intro}>{t('fontSettingsHint')}</p>
@@ -25,7 +26,7 @@ export function SettingsFonts({ settings }: { settings: SettingsFormProps }) {
               value={font}
               checked={selectedFont === font}
               aria-label={t(uiFontLabels[font])}
-              onChange={() => settings.setUiFont(font)}
+              onChange={() => settings.updateSettings({ uiFont: font })}
             />
             <div className={styles.copy}>
               <strong>{t(uiFontLabels[font])}</strong>

@@ -1,11 +1,29 @@
-export interface WeatherReading {
+import { z } from 'zod';
+
+const LocationNamesSchema = z.object({
+  city: z.string().max(256),
+  region: z.string().max(256),
+  country: z.string().max(256),
+});
+export const WeatherPreferencesSchema = z
+  .object({
+    location: LocationNamesSchema.extend({ mode: z.enum(['automatic', 'manual']) }).strict(),
+    unit: z.enum(['c', 'f']),
+    keySource: z.enum(['builtin', 'custom']),
+  })
+  .strict();
+export type WeatherPreferences = z.infer<typeof WeatherPreferencesSchema>;
+export const defaultWeatherPreferences: WeatherPreferences = {
+  location: { mode: 'manual', city: '', region: '', country: '' },
+  unit: 'f',
+  keySource: 'builtin',
+};
+
+interface WeatherReading {
   temp: number;
   status: string;
 }
-interface WeatherLocation {
-  city: string;
-  region: string;
-  country: string;
+interface WeatherLocation extends z.infer<typeof LocationNamesSchema> {
   latitude: number;
   longitude: number;
 }
