@@ -88,3 +88,5 @@ CI 在 Ubuntu、Windows、macOS 上执行静态检查和测试；发布打包覆
 - [蓝牙连接选择器](https://learn.microsoft.com/en-us/uwp/api/windows.devices.bluetooth.bluetoothdevice.getdeviceselectorfromconnectionstatus)
 - [Electron BrowserWindow](https://www.electronjs.org/docs/latest/api/browser-window)
 - [Electron app、GPU 与登录项](https://www.electronjs.org/docs/latest/api/app)
+
+Windows 通过系统开始菜单注册项识别 Folia 等播放器的自定义桌面 AUMID。读取时缓存身份，点击封面时激活对应 AppsFolder 入口；身份不明确时不会唤起其他播放器。展开和紧凑音乐视图均在原内容下方独立展示提示。

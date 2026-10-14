@@ -6,6 +6,7 @@ import { AnimatePresence } from 'motion/react';
 import { motion } from 'motion/react';
 import { MediaArtwork } from './MediaArtwork';
 import { MediaControl } from './MediaControl';
+import { MediaFeedback } from './MediaFeedback';
 import { Zap } from 'lucide-react';
 import { Camera } from 'lucide-react';
 import { Mic } from 'lucide-react';
@@ -181,15 +182,7 @@ export function QuickView({
                   )}
                 </AnimatePresence>
               </div>
-              {(mediaActionError || mediaSnapshot.error) && (
-                <p
-                  className={styles.actionError}
-                  role="alert"
-                  title={t(mediaActionError ?? mediaSnapshot.error!)}
-                >
-                  {t(mediaActionError ?? mediaSnapshot.error!)}
-                </p>
-              )}
+              <MediaFeedback error={mediaActionError ?? mediaSnapshot.error} compact />
             </motion.div>
           ) : (
             <motion.div

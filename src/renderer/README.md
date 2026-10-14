@@ -88,3 +88,5 @@ LaunchButton owns pending state, duplicate-activation protection and indexed fai
 Select carries the option value type through its value, options and callback. Theme entries use the persisted default/sleek-black/win95 values directly; selecting Default commits default with its colors in one patch.
 
 Bare TextEntry controls keep transparent backgrounds and no border/outline during focus; surface fields own their focus treatment. Use PreferenceButton for actions instead of attaching its layout-only stylesheet classes to raw buttons. The glass preview bleeds across the scrollport padding with an opaque sticky background, keeping its caption and controls above scrolling parameters. Settings and Island report their own view context and React component frames through the typed diagnostic bridge.
+
+MediaFeedback owns the animated music error band. Expanded cards retain a 150px track region; compact cards retain their 40px row. Feedback extends the shell downward by 24px instead of shrinking or recentering the track. Bottom anchors compensate for the added band, keeping the original content in place.

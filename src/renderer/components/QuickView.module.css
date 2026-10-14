@@ -1,4 +1,7 @@
 .playing {
+  position: absolute;
+  top: 0;
+  height: 40px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -97,13 +100,4 @@
   display: flex;
   align-items: center;
   gap: 2px;
-}
-.actionError {
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #ffa6a6;
-  font-size: 11px;
-  margin: 0 8px;
 }

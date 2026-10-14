@@ -123,8 +123,9 @@ export function useIslandController() {
   const nowPlayingText = mediaTrack ? `${trackTitle} • ${trackArtist}` : '';
   const textWidth = measureTextWidth(nowPlayingText) || nowPlayingText.length * 7;
   const nowPlayingWidth = Math.min(300, Math.max(122, Math.ceil(textWidth + 24 + 6 + 20)));
-  const getExpandedTabSize = (id: string, answerHeight = 0) =>
-    islandPages.size(id, {
+  const hasMediaFeedback = Boolean(mediaActionError || (mediaTrack && mediaSnapshot.error));
+  const getExpandedTabSize = (id: string, answerHeight = 0) => {
+    const size = islandPages.size(id, {
       mediaAvailable: mediaSnapshot.sessions.length > 0,
       workflowCount: workflows.length,
       taskCount: tasks.length,
@@ -132,6 +133,8 @@ export function useIslandController() {
       answerHeight,
       viewportHeight: window.innerHeight,
     });
+    return id === 'playing' && hasMediaFeedback ? { ...size, height: size.height + 24 } : size;
+  };
   const expandedSize = getExpandedTabSize(currentTab);
   let width =
     mode === 'large'
@@ -154,7 +157,21 @@ export function useIslandController() {
           : isPlaying
             ? nowPlayingWidth
             : 170;
-  let height = mode === 'large' ? expandedSize.height : 40;
+  const compactMediaError =
+    mode !== 'large' &&
+    (isPlaying || media.showPausedQuickView) &&
+    !alert &&
+    !chargingAlert &&
+    !bluetoothAlert &&
+    !cameraAlert &&
+    !microphoneAlert &&
+    Boolean(mediaActionError || mediaSnapshot.error);
+  const feedbackHeight =
+    compactMediaError || (mode === 'large' && currentTab === 'playing' && hasMediaFeedback)
+      ? 24
+      : 0;
+  if (compactMediaError) width = Math.max(width, 230);
+  let height = mode === 'large' ? expandedSize.height : 40 + feedbackHeight;
   const getSideStyles = () => {
     switch (positionMode) {
       case 'top-left':
@@ -162,13 +179,18 @@ export function useIslandController() {
       case 'top-right':
         return { left: 'calc(100% - 15px)', top: '15px', x: '-100%' };
       case 'bottom-left':
-        return { left: '15px', top: 'auto', bottom: '45px', x: '0%' };
+        return { left: '15px', top: 'auto', bottom: `${45 - feedbackHeight}px`, x: '0%' };
       case 'bottom-right':
-        return { left: 'calc(100% - 15px)', top: 'auto', bottom: '45px', x: '-100%' };
+        return {
+          left: 'calc(100% - 15px)',
+          top: 'auto',
+          bottom: `${45 - feedbackHeight}px`,
+          x: '-100%',
+        };
       case 'top-center':
         return { left: '49.8%', top: '20px', x: '-50%' };
       case 'bottom-center':
-        return { left: '49.8%', top: 'auto', bottom: '45px', x: '-50%' };
+        return { left: '49.8%', top: 'auto', bottom: `${45 - feedbackHeight}px`, x: '-50%' };
       default:
         return freeIslandPosition(
           islandX,

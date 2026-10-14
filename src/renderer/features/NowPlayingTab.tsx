@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { MediaControl } from '../components/MediaControl';
-import { Feedback } from '../components/content';
+import { MediaFeedback } from '../components/MediaFeedback';
 import type { useMedia } from '../hooks/useMedia';
 import type { MediaSession } from '../../shared/media';
 import { selectAutomaticSession } from '../../shared/media';
@@ -115,35 +115,34 @@ function TrackCard({
   );
 }
 export function NowPlayingTab(props: Props) {
-  const { t } = useTranslation();
   return (
     <div className={styles.container}>
-      <MediaSessionCarousel
-        sessions={props.mediaSnapshot.sessions}
-        selectedId={props.mediaPageId}
-        onSelect={(id) => void props.selectMediaSession(id)}
-        textColor={props.textColor}
-        renderPage={(session, active, showPlayer) => (
-          <TrackCard
-            session={
-              session ??
-              selectAutomaticSession(
-                props.mediaSnapshot.sessions,
-                props.mediaSnapshot.activeSessionId,
-              ) ??
-              props.mediaTrack
-            }
-            active={active}
-            showPlayer={showPlayer}
-            props={props}
-          />
-        )}
+      <div className={styles.trackRegion}>
+        <MediaSessionCarousel
+          sessions={props.mediaSnapshot.sessions}
+          selectedId={props.mediaPageId}
+          onSelect={(id) => void props.selectMediaSession(id)}
+          textColor={props.textColor}
+          renderPage={(session, active, showPlayer) => (
+            <TrackCard
+              session={
+                session ??
+                selectAutomaticSession(
+                  props.mediaSnapshot.sessions,
+                  props.mediaSnapshot.activeSessionId,
+                ) ??
+                props.mediaTrack
+              }
+              active={active}
+              showPlayer={showPlayer}
+              props={props}
+            />
+          )}
+        />
+      </div>
+      <MediaFeedback
+        error={props.mediaActionError ?? (props.mediaTrack ? props.mediaSnapshot.error : null)}
       />
-      {(props.mediaActionError || (props.mediaTrack && props.mediaSnapshot.error)) && (
-        <Feedback className={styles.actionError}>
-          {t(props.mediaActionError ?? props.mediaSnapshot.error!)}
-        </Feedback>
-      )}
     </div>
   );
 }

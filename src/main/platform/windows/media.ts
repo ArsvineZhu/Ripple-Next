@@ -28,6 +28,21 @@ const sessionSchema = z.object({
   Toggle: z.boolean(),
 });
 const applicationPaths = new Map<string, string>();
+let startApps: { expires: number; entries: Map<string, string> } | undefined;
+async function registeredApplications() {
+  if (startApps && Date.now() < startApps.expires) return startApps.entries;
+  const output = await runPowerShell(
+    'ConvertTo-Json -InputObject @(Get-StartApps | Select-Object AppID, Name) -Compress',
+  );
+  const entries = z
+    .array(z.object({ AppID: z.string(), Name: z.string() }))
+    .parse(JSON.parse(output));
+  startApps = {
+    expires: Date.now() + 300_000,
+    entries: new Map(entries.map((item) => [item.AppID, item.Name])),
+  };
+  return startApps.entries;
+}
 export async function getMediaSessions() {
   const output = await runPowerShell(
     manager +
@@ -100,24 +115,42 @@ foreach ($session in $all) {
       Errors: z.array(z.object({ Code: z.number(), Line: z.number(), Kind: z.string() })),
     })
     .parse(JSON.parse(output));
+  const errors: unknown[] = data.Errors.map((error) =>
+    Object.assign(new Error('Windows media query failed at line ' + error.Line), {
+      code: error.Code,
+      name: error.Kind,
+    }),
+  );
+  let registered = new Map<string, string>();
+  if (
+    data.Sessions.some(
+      (item) => !item.ApplicationPath && item.Id === item.Source && !item.Source.includes('!'),
+    )
+  ) {
+    try {
+      registered = await registeredApplications();
+    } catch (error) {
+      errors.push(
+        new DiagnosticError('Windows media application identity lookup failed', [], {
+          cause: error,
+        }),
+      );
+    }
+  }
   applicationPaths.clear();
   for (const item of data.Sessions) {
+    if (item.Id !== item.Source) continue;
     if (item.ApplicationPath) applicationPaths.set(item.Id, item.ApplicationPath);
-    else if (item.Id === item.Source && item.Source.includes('!'))
+    else if (item.Source.includes('!') || registered.has(item.Source))
       applicationPaths.set(item.Id, 'shell:AppsFolder\\' + item.Source);
   }
   return {
     failedIds: data.FailedIds,
-    errors: data.Errors.map((error) =>
-      Object.assign(new Error('Windows media query failed at line ' + error.Line), {
-        code: error.Code,
-        name: error.Kind,
-      }),
-    ),
+    errors,
     sessions: data.Sessions.map((item): MediaSession => ({
       id: item.Id,
       source: item.Source,
-      playerName: item.Source.replace(/\.exe$/i, ''),
+      playerName: registered.get(item.Source) ?? item.Source.replace(/\.exe$/i, ''),
       name: item.Title,
       artist: item.Artist,
       album: item.Album,

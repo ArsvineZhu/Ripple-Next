@@ -88,3 +88,5 @@ The October 2026 Linux changes were validated with the full checks/tests, Linux 
 - [Bluetooth connection selectors](https://learn.microsoft.com/en-us/uwp/api/windows.devices.bluetooth.bluetoothdevice.getdeviceselectorfromconnectionstatus)
 - [Electron BrowserWindow](https://www.electronjs.org/docs/latest/api/browser-window)
 - [Electron app, GPU status and login items](https://www.electronjs.org/docs/latest/api/app)
+
+Windows also recognizes registered custom desktop AUMIDs, including Folia, through Start applications. The selected identity is cached during reads and activated through its exact AppsFolder entry; ambiguous identities never activate a different player. Music feedback has a separate band below the original content in both expanded and compact modes.
