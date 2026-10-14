@@ -8,9 +8,14 @@ import { PreferenceSlider } from '../components/PreferenceSlider';
 import { GlassBackButton } from '../components/GlassBackButton';
 import { Select } from '../components/Select';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
-import type { SettingsFormProps } from './SettingsEditor';
-import { PrefCard, PrefGroup, PrefRow, PrefNumberField } from './SettingsPreferences';
-import styles from './SettingsTab.module.css';
+import type { SettingsValues } from '../components/SettingsProvider';
+import {
+  PreferenceCard,
+  PreferenceGroup,
+  PreferenceRow,
+  PreferenceNumberField,
+} from '../components/preferences';
+import styles from '../components/preferences/Preferences.module.css';
 import previewStyles from './SettingsLiquidGlass.module.css';
 
 function GlassPreview() {
@@ -20,7 +25,7 @@ function GlassPreview() {
   const [choice, setChoice] = useState('default');
   return (
     <div className={previewStyles.sticky}>
-      <PrefCard caption={t('glassPreview')}>
+      <PreferenceCard caption={t('glassPreview')}>
         <div className={previewStyles.preview} data-glass-preview data-glass-host>
           <div className={previewStyles.header}>
             <p>{t('glassPreviewHint')}</p>
@@ -64,12 +69,12 @@ function GlassPreview() {
             </div>
           </div>
         </div>
-      </PrefCard>
+      </PreferenceCard>
     </div>
   );
 }
 
-export function SettingsLiquidGlass({ settings: p }: { settings: SettingsFormProps }) {
+export function SettingsLiquidGlass({ settings: p }: { settings: SettingsValues }) {
   const { t } = useTranslation();
   const reduced = useReducedMotionPreference();
   const glass = p.settings;
@@ -85,23 +90,23 @@ export function SettingsLiquidGlass({ settings: p }: { settings: SettingsFormPro
   ] as const;
   return (
     <>
-      <PrefGroup>
-        <PrefRow label={t('settingsGlassEnabled')} hint={t('settingsGlassEnabledHint')}>
+      <PreferenceGroup>
+        <PreferenceRow label={t('settingsGlassEnabled')} hint={t('settingsGlassEnabledHint')}>
           <PreferenceSwitch
             label={t('settingsGlassEnabled')}
             checked={glass.settingsGlassEnabled}
             onCheckedChange={(settingsGlassEnabled) => p.updateSettings({ settingsGlassEnabled })}
           />
-        </PrefRow>
-        <PrefRow label={t('islandGlassEnabled')} hint={t('islandGlassUnavailable')}>
+        </PreferenceRow>
+        <PreferenceRow label={t('islandGlassEnabled')} hint={t('islandGlassUnavailable')}>
           <PreferenceSwitch
             label={t('islandGlassEnabled')}
             checked={false}
             disabled
             onCheckedChange={() => {}}
           />
-        </PrefRow>
-      </PrefGroup>
+        </PreferenceRow>
+      </PreferenceGroup>
       <GlassPreview />
       <AnimatePresence initial={false}>
         {glass.settingsGlassEnabled && (
@@ -113,8 +118,11 @@ export function SettingsLiquidGlass({ settings: p }: { settings: SettingsFormPro
             transition={{ duration: reduced ? 0 : 0.2 }}
             className={styles.animatedFields}
           >
-            <PrefGroup caption={t('glassParameters')}>
-              <PrefRow label={t('glassDragDeformationLabel')} hint={t('glassDragDeformationHint')}>
+            <PreferenceGroup caption={t('glassParameters')}>
+              <PreferenceRow
+                label={t('glassDragDeformationLabel')}
+                hint={t('glassDragDeformationHint')}
+              >
                 <PreferenceSwitch
                   label={t('glassDragDeformationLabel')}
                   checked={glass.glassDragDeformation}
@@ -122,9 +130,9 @@ export function SettingsLiquidGlass({ settings: p }: { settings: SettingsFormPro
                     p.updateSettings({ glassDragDeformation })
                   }
                 />
-              </PrefRow>
+              </PreferenceRow>
               {fields.map(([key, label, min, max, step]) => (
-                <PrefNumberField
+                <PreferenceNumberField
                   key={key}
                   label={t(label)}
                   min={min}
@@ -137,7 +145,7 @@ export function SettingsLiquidGlass({ settings: p }: { settings: SettingsFormPro
                   }
                 />
               ))}
-            </PrefGroup>
+            </PreferenceGroup>
             <button
               type="button"
               className={styles.addRowButton}

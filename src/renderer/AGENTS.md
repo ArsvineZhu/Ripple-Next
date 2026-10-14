@@ -9,3 +9,5 @@ Treat the workflows feature as empty only when both workflows and quick apps are
 Initialize bundled i18n before render; keep language preferences in SettingsProvider. Use feature/control CSS Modules and Island-scoped Select portals. Movement and open-menu guards belong to useIslandInteraction; preserve settings content and scroll during position commits.
 
 Use the shared uiFont preference in every renderer. Normalize playful Chinese variants before Intl. Guide videos must be user-initiated and pause offscreen/unmounted; do not replace real workflow footage with mock interaction diagrams.
+
+Assemble settings pages from components/preferences and specialized shared controls. Keep validation and drafts with the feature; extend the common control interface before copying per-page field markup or styling.

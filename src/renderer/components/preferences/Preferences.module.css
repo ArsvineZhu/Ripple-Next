@@ -117,6 +117,8 @@
   color: var(--settings-muted);
 }
 .fieldLabel {
+  width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -265,19 +267,6 @@
   filter: brightness(1.05);
 }
 
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
-}
-
-.aboutRows {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .aboutValue {
   flex: 0 1 auto;
   min-width: 0;
@@ -317,23 +306,6 @@
   flex-shrink: 0;
 }
 
-.aboutDiagnostic {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
-
-.sectionHeading {
-  color: var(--settings-muted, inherit);
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  opacity: 0.5;
-  letter-spacing: 0.05em;
-  margin: 0 0 4px;
-}
-
 .row {
   display: flex;
   align-items: center;
@@ -343,15 +315,9 @@
   gap: 15px;
 }
 
-.row:not(.stacked) > input {
+.row > input {
   min-width: 0;
   flex: 1;
-}
-
-.stacked {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
 }
 
 .label {
@@ -364,7 +330,7 @@
   white-space: nowrap;
 }
 
-.row:not(.stacked) > .label {
+.row > .label {
   flex: 1;
 }
 
@@ -463,8 +429,7 @@
   opacity: 0.4;
 }
 
-.iconButton,
-.dangerButton {
+.iconButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -478,21 +443,14 @@
   border-radius: 6px;
 }
 
-.iconButton:hover,
-.dangerButton:hover {
+.iconButton:hover {
   background: var(--control-hover);
 }
 
 .iconButton:focus-visible,
-.dangerButton:focus-visible,
 .primaryButton:focus-visible {
   outline: 2px solid var(--island-text-color);
   outline-offset: 2px;
-}
-
-.dangerButton {
-  color: var(--settings-danger, var(--island-text-color));
-  font-size: 13px;
 }
 
 .positionCard {
@@ -503,12 +461,6 @@
   padding: 14px 16px 16px;
   border: none;
   background: transparent;
-}
-
-.positionHeading {
-  font-size: 13px;
-  font-weight: 500;
-  text-align: center;
 }
 
 .positionGrid {
@@ -605,52 +557,6 @@
   cursor: not-allowed;
 }
 
-.keyActions {
-  display: flex;
-  flex: 0 0 auto;
-  flex-wrap: nowrap;
-  justify-content: flex-end;
-  gap: 8px;
-  align-items: center;
-}
-
-.keyRow {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-width: 0;
-  gap: 8px;
-}
-
-.keyInput {
-  flex: 1 1 auto;
-}
-
-.keyHint {
-  margin: 0;
-  font-size: 11px;
-  opacity: 0.5;
-}
-
-.keyActions .dangerButton {
-  min-height: 24px;
-  padding: 3px 8px;
-  white-space: nowrap;
-}
-
-.quickAppFields {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
-
-.argumentInput {
-  height: 82px;
-  resize: none;
-  overflow: auto;
-}
-
 .appSearch {
   position: relative;
 }
@@ -685,112 +591,6 @@
   background: var(--control-hover);
 }
 
-.launchHint {
-  opacity: 0.45;
-  font-size: 11px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.appList {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin: 0 -16px -14px;
-  border-top: 1px solid var(--settings-divider, rgba(60, 60, 67, 0.1));
-}
-
-.appRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 16px;
-  border: none;
-  border-bottom: 1px solid var(--settings-divider, rgba(60, 60, 67, 0.1));
-  border-radius: 0;
-  background: transparent;
-  min-width: 0;
-}
-
-.appRow:last-child {
-  border-bottom: none;
-}
-
-.appName {
-  flex: 1;
-  min-width: 0;
-  min-height: 36px;
-  padding: 7px 0;
-  color: var(--settings-fg, var(--island-text-color));
-  border: 0;
-  background: none;
-  font-size: 14px;
-  outline: none;
-}
-
-.appName:focus-visible {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
-.workflowForm {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  gap: 6px;
-}
-
-.workflowLabel {
-  composes: label;
-  margin-top: 15px;
-}
-
-.workflowInput {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  height: 72px;
-  resize: none;
-  overflow: auto;
-}
-
-.workflowList {
-  margin-top: 3px;
-}
-
-.workflowRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-width: 0;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--settings-divider, var(--control-border));
-}
-
-.workflowRow:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.workflowSummary {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  flex: 1;
-  overflow-wrap: anywhere;
-}
-
-.itemCount {
-  font-size: 11px;
-  opacity: 0.6;
-}
-
 .iconButton:disabled {
   opacity: 0.25;
   cursor: default;
@@ -807,11 +607,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow: hidden;
-}
-.saveActions {
-  display: flex;
-  justify-content: flex-end;
   overflow: hidden;
 }
 .addRowButton {

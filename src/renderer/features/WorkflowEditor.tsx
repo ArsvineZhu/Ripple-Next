@@ -1,21 +1,19 @@
-import { useId, useRef, useState } from 'react';
+import { PreferenceTextField, PreferenceButton, PreferenceCard } from '../components/preferences';
+import { useRef, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { useAppState } from '../components/AppStateProvider';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
-import { PrefCard } from './SettingsPreferences';
-import styles from './SettingsTab.module.css';
+import styles from '../components/preferences/Preferences.module.css';
 import { DangerAction } from '../components/DangerAction';
 import { Select } from '../components/Select';
-import { parseLaunchTarget, launchTargetText } from '../../shared/launch';
-import type { LaunchTarget } from '../../shared/launch';
+import { parseLaunchTarget, launchTargetText, type LaunchTarget } from '../../shared/launch';
 
 export function WorkflowEditor({ index }: { index?: number }) {
   const { t } = useTranslation();
   const { state, updateState } = useAppState();
   const reduced = useReducedMotionPreference();
-  const id = useId();
   const savedIndex = useRef(index ?? null);
   const original = index === undefined ? undefined : state.workflows[index];
   const [name, setName] = useState(original?.name ?? '');
@@ -44,21 +42,17 @@ export function WorkflowEditor({ index }: { index?: number }) {
     updateState({ workflows });
   };
   return (
-    <PrefCard>
+    <PreferenceCard>
       <div className={styles.prefStack}>
-        <label className={styles.fieldLabel} htmlFor={`${id}-name`}>
-          {t('workflowName')}
-          <input
-            id={`${id}-name`}
-            className={styles.input}
-            value={name}
-            autoFocus
-            onChange={(e) => {
-              setName(e.target.value);
-              persist(e.target.value, targets);
-            }}
-          />
-        </label>
+        <PreferenceTextField
+          label={t('workflowName')}
+          value={name}
+          autoFocus
+          onValueChange={(value) => {
+            setName(value);
+            persist(value, targets);
+          }}
+        />
         <span className={styles.label}>{t('workflowApps')}</span>
         <p className={styles.hint}>{t('workflowRowsHint')}</p>
         <AnimatePresence initial={false}>
@@ -71,55 +65,54 @@ export function WorkflowEditor({ index }: { index?: number }) {
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: reduced ? 0 : 0.2 }}
             >
-              <input
-                className={styles.input}
-                aria-label={t('workflowTargetNumber', { count: position + 1 })}
+              <PreferenceTextField
+                label={t('workflowTargetNumber', { count: position + 1 })}
+                labelHidden
                 value={row.value}
                 placeholder={t('workflowTargetPlaceholder')}
-                aria-invalid={Boolean(row.value.trim() && !row.target)}
                 title={row.target?.kind === 'command' ? row.target.args.join(' ') : undefined}
-                onChange={(e) => {
+                invalid={Boolean(row.value.trim()) && !row.target}
+                onValueChange={(value) => {
                   const next = targets.map((item) =>
                     item.rowId === row.rowId
-                      ? {
-                          ...item,
-                          value: e.target.value,
-                          target: parseLaunchTarget(e.target.value),
-                        }
+                      ? { ...item, value, target: parseLaunchTarget(value) }
                       : item,
                   );
                   setTargets(next);
                   persist(name, next);
                 }}
+                action={
+                  <DangerAction
+                    label={t('removeWorkflowTarget', { count: position + 1 })}
+                    disabled={targets.length === 1 && !row.value}
+                    onConfirm={() => {
+                      const next =
+                        targets.length === 1
+                          ? [{ ...row, value: '', target: null }]
+                          : targets.filter((item) => item.rowId !== row.rowId);
+                      setTargets(next);
+                      persist(name, next);
+                    }}
+                  >
+                    <X size={16} />
+                  </DangerAction>
+                }
               />
-              <DangerAction
-                label={t('removeWorkflowTarget', { count: position + 1 })}
-                disabled={targets.length === 1 && !row.value}
-                onConfirm={() => {
-                  const next =
-                    targets.length === 1
-                      ? [{ ...row, value: '', target: null }]
-                      : targets.filter((item) => item.rowId !== row.rowId);
-                  setTargets(next);
-                  persist(name, next);
-                }}
-              >
-                <X size={16} />
-              </DangerAction>
             </motion.div>
           ))}
         </AnimatePresence>
-        <button
+        <PreferenceButton
           type="button"
-          className={styles.addRowButton}
+
           onClick={() => {
             const rowId = nextRow.current++;
             setTargets((rows) => [...rows, { rowId, value: '', target: null }]);
           }}
+          variant="secondary"
         >
           <Plus size={16} />
           {t('addWorkflowTarget')}
-        </button>
+        </PreferenceButton>
         {state.quickApps.length > 0 && (
           <Select
             label={t('workflowQuickApp')}
@@ -140,6 +133,6 @@ export function WorkflowEditor({ index }: { index?: number }) {
           />
         )}
       </div>
-    </PrefCard>
+    </PreferenceCard>
   );
 }

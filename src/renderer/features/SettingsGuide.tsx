@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Command } from 'lucide-react';
 import type { SettingsCategoryId } from '../lib/settingsCategories';
-import { PrefCard } from './SettingsPreferences';
+import { PreferenceCard } from '../components/preferences';
 import typographyVideo from '../../assets/guide/typography.webm';
 import typographyPoster from '../../assets/guide/typography.png';
 import appearanceVideo from '../../assets/guide/appearance.webm';
@@ -102,7 +102,7 @@ export function SettingsGuide({ navigate }: { navigate(category: SettingsCategor
         <h1>{t('guideTitle')}</h1>
         <p>{t('guideIntro')}</p>
       </section>
-      <PrefCard caption={t('guideKeyboard')}>
+      <PreferenceCard caption={t('guideKeyboard')}>
         <div className={styles.card}>
           {keys.map((row) => (
             <div className={styles.keyRow} key={row.title}>
@@ -122,11 +122,11 @@ export function SettingsGuide({ navigate }: { navigate(category: SettingsCategor
             <p>{t('guideGestures')}</p>
           </div>
         </div>
-      </PrefCard>
+      </PreferenceCard>
       <p className={styles.caption}>{t('guideRecordingNote')}</p>
       {topics.map((topic) => (
         <section key={topic.id} data-guide-topic={topic.id}>
-          <PrefCard>
+          <PreferenceCard>
             <div className={styles.card}>
               <h2>{t(topic.title)}</h2>
               <p>{t(topic.body)}</p>
@@ -151,17 +151,17 @@ export function SettingsGuide({ navigate }: { navigate(category: SettingsCategor
                 <ArrowRight size={16} aria-hidden="true" />
               </button>
             </div>
-          </PrefCard>
+          </PreferenceCard>
         </section>
       ))}
-      <PrefCard caption={t('guideSettings')}>
+      <PreferenceCard caption={t('guideSettings')}>
         <div className={styles.card}>
           <p>{t('guideEditorHelp')}</p>
           <p>{t('guideSecrets')}</p>
           <p>{t('guideColors')}</p>
           <p>{t('guideReopen')}</p>
         </div>
-      </PrefCard>
+      </PreferenceCard>
     </div>
   );
 }

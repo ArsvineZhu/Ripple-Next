@@ -1,18 +1,16 @@
-import { useId } from 'react';
+import { PreferenceTextField, PreferenceCard, PreferenceRow } from '../components/preferences';
 import { MapPin } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { PreferenceSwitch } from '../components/PreferenceSwitch';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
 import { useWeather } from '../hooks/useWeather';
-import type { SettingsFormProps } from './SettingsEditor';
-import { PrefCard, PrefRow } from './SettingsPreferences';
-import styles from './SettingsTab.module.css';
+import type { SettingsValues } from '../components/SettingsProvider';
+import styles from '../components/preferences/Preferences.module.css';
 import { localeForFormatting } from '../../shared/i18n';
 
-export function WeatherLocationEditor({ settings: p }: { settings: SettingsFormProps }) {
+export function WeatherLocationEditor({ settings: p }: { settings: SettingsValues }) {
   const { t, i18n } = useTranslation();
-  const id = useId();
   const reduced = useReducedMotionPreference();
   const preferences = p.settings.weather;
   const automatic = preferences.location.mode === 'automatic';
@@ -29,9 +27,9 @@ export function WeatherLocationEditor({ settings: p }: { settings: SettingsFormP
         .join(eastAsian ? '，' : ', ')
     : '';
   return (
-    <PrefCard>
+    <PreferenceCard>
       <div className={styles.prefStack}>
-        <PrefRow label={t('automaticLocation')} hint={t('automaticLocationHint')}>
+        <PreferenceRow label={t('automaticLocation')} hint={t('automaticLocationHint')}>
           <PreferenceSwitch
             label={t('automaticLocation')}
             checked={automatic}
@@ -44,7 +42,7 @@ export function WeatherLocationEditor({ settings: p }: { settings: SettingsFormP
               })
             }
           />
-        </PrefRow>
+        </PreferenceRow>
         <AnimatePresence initial={false} mode="wait">
           {automatic ? (
             <motion.div
@@ -85,27 +83,24 @@ export function WeatherLocationEditor({ settings: p }: { settings: SettingsFormP
             >
               <p className={styles.hint}>{t('manualLocationHint')}</p>
               {(['city', 'region', 'country'] as const).map((key, index) => (
-                <label className={styles.fieldLabel} key={key} htmlFor={`${id}-${index}`}>
-                  {t((['locationCity', 'locationRegion', 'locationCountry'] as const)[index])}
-                  <input
-                    id={`${id}-${index}`}
-                    className={styles.input}
-                    value={preferences.location[key]}
-                    onChange={(e) => {
-                      p.updateSettings({
-                        weather: {
-                          ...preferences,
-                          location: { ...preferences.location, [key]: e.target.value },
-                        },
-                      });
-                    }}
-                  />
-                </label>
+                <PreferenceTextField
+                  key={key}
+                  label={t((['locationCity', 'locationRegion', 'locationCountry'] as const)[index])}
+                  value={preferences.location[key]}
+                  onValueChange={(value) =>
+                    p.updateSettings({
+                      weather: {
+                        ...preferences,
+                        location: { ...preferences.location, [key]: value },
+                      },
+                    })
+                  }
+                />
               ))}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-    </PrefCard>
+    </PreferenceCard>
   );
 }

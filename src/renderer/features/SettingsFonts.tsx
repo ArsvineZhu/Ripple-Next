@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { uiFontLabels, uiFontChoices } from '../../shared/fonts';
-import type { SettingsFormProps } from './SettingsEditor';
+import type { SettingsValues } from '../components/SettingsProvider';
 import styles from './SettingsFonts.module.css';
 
 const families = {
@@ -10,7 +10,7 @@ const families = {
   openrunde: "'OpenRunde', system-ui, sans-serif",
 };
 
-export function SettingsFonts({ settings }: { settings: SettingsFormProps }) {
+export function SettingsFonts({ settings }: { settings: SettingsValues }) {
   const { t } = useTranslation();
   const selectedFont = settings.settings.uiFont;
   return (

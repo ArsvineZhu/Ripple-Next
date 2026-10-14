@@ -6,9 +6,14 @@ import type { useAIConfiguration } from '../hooks/useAIConfiguration';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
 import { Select } from '../components/Select';
 import { PreferenceSwitch } from '../components/PreferenceSwitch';
-import { PrefCard, PrefGroup, PrefRow, PrefNumberField } from './SettingsPreferences';
+import {
+  PreferenceCard,
+  PreferenceGroup,
+  PreferenceRow,
+  PreferenceNumberField,
+} from '../components/preferences';
 import { AIField } from './AIField';
-import styles from './SettingsTab.module.css';
+import styles from '../components/preferences/Preferences.module.css';
 import { aiDisplayLabel, aiDisplayNumber } from '../lib/aiDisplay';
 import { DangerAction } from '../components/DangerAction';
 
@@ -39,7 +44,7 @@ export function AIModelCustomization({
       : ['default', 'none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'];
   return (
     <>
-      <PrefCard>
+      <PreferenceCard>
         <div className={styles.prefStack}>
           <span className={styles.label}>{aiDisplayLabel(p.ai.models, model, model.name)}</span>
           <p
@@ -48,16 +53,16 @@ export function AIModelCustomization({
           <p className={styles.bindingSummary}>{`${t('aiModel')}: ${model.name}`}</p>
           <p className={styles.hint}>{t('aiModelBindingLocked')}</p>
         </div>
-      </PrefCard>
-      <PrefCard caption={t('systemPrompt')}>
+      </PreferenceCard>
+      <PreferenceCard caption={t('systemPrompt')}>
         <div className={styles.prefStack}>
-          <PrefRow label={t('useDefaultSystemPrompt')}>
+          <PreferenceRow label={t('useDefaultSystemPrompt')}>
             <PreferenceSwitch
               label={t('useDefaultSystemPrompt')}
               checked={profile.systemPrompt === null}
               onCheckedChange={(value) => update({ systemPrompt: value ? null : '' })}
             />
-          </PrefRow>
+          </PreferenceRow>
           <AnimatePresence initial={false}>
             {profile.systemPrompt !== null && (
               <motion.div
@@ -83,8 +88,8 @@ export function AIModelCustomization({
             })}
           </p>
         </div>
-      </PrefCard>
-      <PrefCard caption={t('injectionList')}>
+      </PreferenceCard>
+      <PreferenceCard caption={t('injectionList')}>
         <div className={styles.prefStack}>
           <p className={styles.hint}>{t('injectionsHint')}</p>
           <AnimatePresence initial={false}>
@@ -168,9 +173,9 @@ export function AIModelCustomization({
             {t('addInjection')}
           </button>
         </div>
-      </PrefCard>
-      <PrefGroup caption={t('modelParameters')}>
-        <PrefNumberField
+      </PreferenceCard>
+      <PreferenceGroup caption={t('modelParameters')}>
+        <PreferenceNumberField
           label={t('modelTemperature')}
           value={profile.temperature}
           min={0}
@@ -178,7 +183,7 @@ export function AIModelCustomization({
           step={0.1}
           onChange={(temperature) => update({ temperature })}
         />
-        <PrefRow label={t('reasoningEffort')}>
+        <PreferenceRow label={t('reasoningEffort')}>
           <Select
             label={t('reasoningEffort')}
             value={profile.reasoningEffort}
@@ -190,10 +195,10 @@ export function AIModelCustomization({
               label: value === 'default' ? t('providerDefault') : value,
             }))}
           />
-        </PrefRow>
+        </PreferenceRow>
         {endpoint.protocol === 'anthropic' && (
           <>
-            <PrefRow label={t('thinkingMode')}>
+            <PreferenceRow label={t('thinkingMode')}>
               <Select
                 label={t('thinkingMode')}
                 value={profile.thinkingMode}
@@ -216,9 +221,9 @@ export function AIModelCustomization({
                   label: value === 'default' ? t('providerDefault') : value,
                 }))}
               />
-            </PrefRow>
+            </PreferenceRow>
             {profile.thinkingMode === 'budget' && (
-              <PrefNumberField
+              <PreferenceNumberField
                 label={t('thinkingBudget')}
                 value={profile.thinkingBudget}
                 min={1024}
@@ -228,14 +233,14 @@ export function AIModelCustomization({
             )}
           </>
         )}
-        <PrefNumberField
+        <PreferenceNumberField
           label={t('maxOutputTokens')}
           value={profile.maxOutputTokens}
           min={profile.thinkingMode === 'budget' ? (profile.thinkingBudget ?? 1024) + 1 : 1}
           max={1_000_000}
           onChange={(maxOutputTokens) => update({ maxOutputTokens })}
         />
-        <PrefNumberField
+        <PreferenceNumberField
           label={t('contextLimitCharacters')}
           value={profile.contextLimitCharacters}
           min={100}
@@ -243,15 +248,15 @@ export function AIModelCustomization({
           onChange={(contextLimitCharacters) => update({ contextLimitCharacters })}
         />
         <p className={`${styles.hint} ${styles.groupHint}`}>{t('modelParametersHint')}</p>
-        <PrefRow label={t('contextAwareness')} hint={t('contextAwarenessReserved')}>
+        <PreferenceRow label={t('contextAwareness')} hint={t('contextAwarenessReserved')}>
           <PreferenceSwitch
             label={t('contextAwareness')}
             checked={false}
             disabled
             onCheckedChange={() => {}}
           />
-        </PrefRow>
-      </PrefGroup>
+        </PreferenceRow>
+      </PreferenceGroup>
     </>
   );
 }

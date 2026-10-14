@@ -5,7 +5,6 @@ import { useLayoutEffect, useReducer } from 'react';
 import { measureTextWidth } from '../lib/text';
 import { useAssistant } from './useAssistant';
 import { useTasks } from './useTasks';
-import { useWorkflows } from './useWorkflows';
 import { useBrowserSearch } from './useBrowserSearch';
 import { useClipboard } from './useClipboard';
 import { useOverview } from './useOverview';
@@ -76,7 +75,7 @@ export function useIslandController() {
   const { asked, aiAnswer, assistantError, userText, setUserText, resetAssistant, askAI } =
     useAssistant();
   const { tasks, taskText, setTaskText, addTask, removeTask } = useTasks();
-  const { workflows } = useWorkflows();
+  const workflows = appState.workflows;
   const quickApps = appState.quickApps;
   const { browserSearch, setBrowserSearch, searchBrowser, searchError, setSearchError } =
     useBrowserSearch();

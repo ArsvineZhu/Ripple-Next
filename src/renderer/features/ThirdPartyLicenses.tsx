@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LicenseMetadata, LicenseRecord } from '../../shared/licenses';
-import { PrefCard, PrefGroup, PreferenceLink } from './SettingsPreferences';
-import styles from './SettingsTab.module.css';
+import { PreferenceCard, PreferenceGroup, PreferenceLink } from '../components/preferences';
+import styles from '../components/preferences/Preferences.module.css';
 import { useNotifications } from '../components/NotificationProvider';
 
 export function ThirdPartyLicenses() {
@@ -46,7 +46,7 @@ export function ThirdPartyLicenses() {
   };
   return (
     <>
-      <PrefCard>
+      <PreferenceCard>
         <div className={styles.prefStack}>
           <p className={styles.hint}>{t('thirdPartyLicenseHint')}</p>
           <input
@@ -57,15 +57,15 @@ export function ThirdPartyLicenses() {
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-      </PrefCard>
+      </PreferenceCard>
       {selected && (
-        <PrefCard caption={`${selected.name} · ${selected.version}`}>
+        <PreferenceCard caption={`${selected.name} · ${selected.version}`}>
           <div className={styles.prefStack}>
             <pre className={styles.licenseText}>{selected.text}</pre>
           </div>
-        </PrefCard>
+        </PreferenceCard>
       )}
-      <PrefGroup>
+      <PreferenceGroup>
         {items
           .filter((item) =>
             `${item.name} ${item.license}`.toLowerCase().includes(query.toLowerCase()),
@@ -80,7 +80,7 @@ export function ThirdPartyLicenses() {
               onClick={() => void show(item.id)}
             />
           ))}
-      </PrefGroup>
+      </PreferenceGroup>
     </>
   );
 }

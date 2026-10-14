@@ -1,5 +1,5 @@
-import { useId, useState } from 'react';
-import styles from './SettingsTab.module.css';
+import { useState } from 'react';
+import { PreferenceTextField } from '../components/preferences';
 
 export function AIField({
   label,
@@ -14,32 +14,18 @@ export function AIField({
   valid?(value: string): boolean;
   multiline?: boolean;
 }) {
-  const id = useId();
   const [draft, setDraft] = useState(value);
   const change = (text: string) => {
     setDraft(text);
     if (valid(text)) onChange(text);
   };
   return (
-    <label className={styles.fieldLabel} htmlFor={id}>
-      {label}
-      {multiline ? (
-        <textarea
-          id={id}
-          className={`${styles.input} ${styles.promptInput}`}
-          rows={4}
-          value={draft}
-          onChange={(e) => change(e.target.value)}
-        />
-      ) : (
-        <input
-          id={id}
-          className={styles.input}
-          value={draft}
-          aria-invalid={!valid(draft)}
-          onChange={(e) => change(e.target.value)}
-        />
-      )}
-    </label>
+    <PreferenceTextField
+      label={label}
+      value={draft}
+      onValueChange={change}
+      multiline={multiline}
+      invalid={!valid(draft)}
+    />
   );
 }

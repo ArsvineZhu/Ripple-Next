@@ -11,6 +11,14 @@ import { DangerAction } from '../src/renderer/components/DangerAction';
 
 const fixture = vi.hoisted(() => ({ state: {} as typeof defaultAppState, updateState: vi.fn() }));
 vi.mock('../src/renderer/components/AppStateProvider', () => ({ useAppState: () => fixture }));
+vi.mock('../src/renderer/hooks/useAIConfiguration', () => ({
+  useAIConfiguration: () => ({
+    ai: fixture.state.settings.ai,
+    status: {},
+    mutate: vi.fn(),
+    saveCredential: vi.fn(),
+  }),
+}));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('../src/renderer/hooks/useReducedMotionPreference', () => ({
   useReducedMotionPreference: () => true,
@@ -144,12 +152,12 @@ it('renders contiguous endpoint numbers and edits the original stable ID', async
     baseUrl: 'https://example.com/v1',
   });
   const navigate = vi.fn();
+  fixture.state.settings.ai = ai;
   await act(async () =>
     root.render(
       createElement(AISettingsPage, {
         detail: { page: 'aiEndpoints' },
         navigate,
-        controller: { ai, status: {}, mutate: vi.fn(), saveCredential: vi.fn() },
       }),
     ),
   );

@@ -1,16 +1,22 @@
-import { useId, useState } from 'react';
+import {
+  PreferenceButton,
+  PreferenceCard,
+  PreferenceGroup,
+  PreferenceRow,
+  PreferenceLink,
+  PreferenceTextField,
+} from '../components/preferences';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Network, KeyRound, Brain, SlidersHorizontal } from 'lucide-react';
 import { Select } from '../components/Select';
 import type { AIProtocol } from '../../shared/aiConfiguration';
-import type { SettingsDetail } from '../lib/settingsDetails';
-import { detailEntryId } from '../lib/settingsDetails';
-import type { useAIConfiguration } from '../hooks/useAIConfiguration';
-import { PrefCard, PrefGroup, PrefRow, PreferenceLink } from './SettingsPreferences';
+import { type SettingsDetail, detailEntryId } from '../lib/settingsDetails';
+import { useAIConfiguration } from '../hooks/useAIConfiguration';
 import { AIModelCustomization } from './AIModelCustomization';
 import { AIField } from './AIField';
 import { DangerAction } from '../components/DangerAction';
-import styles from './SettingsTab.module.css';
+import styles from '../components/preferences/Preferences.module.css';
 import { aiDisplayLabel, aiDisplayNumber } from '../lib/aiDisplay';
 
 type Controller = ReturnType<typeof useAIConfiguration>;
@@ -22,13 +28,8 @@ const protocolLabels: Record<AIProtocol, string> = {
 function Remove({ label, onRemove }: { label: string; onRemove(): void }) {
   return <DangerAction label={label} onConfirm={onRemove} />;
 }
-export function AIConfigurationEntries({
-  controller: p,
-  navigate,
-}: {
-  controller: Controller;
-  navigate(detail: SettingsDetail): void;
-}) {
+export function AIConfigurationEntries({ navigate }: { navigate(detail: SettingsDetail): void }) {
+  const p = useAIConfiguration();
   const { t } = useTranslation();
   const links = [
     {
@@ -65,7 +66,7 @@ export function AIConfigurationEntries({
   );
   return (
     <>
-      <PrefGroup>
+      <PreferenceGroup>
         {links.map((link) => (
           <PreferenceLink
             key={link.page}
@@ -77,9 +78,9 @@ export function AIConfigurationEntries({
             onClick={() => navigate({ page: link.page })}
           />
         ))}
-      </PrefGroup>
-      <PrefGroup>
-        <PrefRow label={t('activeAIModel')}>
+      </PreferenceGroup>
+      <PreferenceGroup>
+        <PreferenceRow label={t('activeAIModel')}>
           <Select
             label={t('activeAIModel')}
             value={p.ai.activeModelId === null ? 'none' : String(p.ai.activeModelId)}
@@ -94,20 +95,19 @@ export function AIConfigurationEntries({
               })),
             ]}
           />
-        </PrefRow>
-      </PrefGroup>
+        </PreferenceRow>
+      </PreferenceGroup>
     </>
   );
 }
 export function AISettingsPage({
-  controller: p,
   detail,
   navigate,
 }: {
-  controller: Controller;
   detail: SettingsDetail;
   navigate(detail: SettingsDetail): void;
 }) {
+  const p = useAIConfiguration();
   const { t } = useTranslation();
   const [protocol, setProtocol] = useState<AIProtocol>('completion');
   const [endpointId, setEndpointId] = useState(p.ai.endpoints[0]?.id ?? 0);
@@ -127,24 +127,24 @@ export function AISettingsPage({
     />
   );
   const add = (label: string, disabled: boolean, action: () => void) => (
-    <button type="button" className={styles.addRowButton} disabled={disabled} onClick={action}>
+    <PreferenceButton type="button" disabled={disabled} onClick={action} variant="secondary">
       <Plus size={16} />
       {label}
-    </button>
+    </PreferenceButton>
   );
   if (detail.page === 'aiEndpoints')
     return (
       <>
-        <PrefCard>
+        <PreferenceCard>
           <div className={styles.prefStack}>
-            <PrefRow label={t('aiProtocol')}>
+            <PreferenceRow label={t('aiProtocol')}>
               <Select
                 label={t('aiProtocol')}
                 value={protocol}
                 options={Object.entries(protocolLabels).map(([value, label]) => ({ value, label }))}
                 onValueChange={(value) => setProtocol(value as AIProtocol)}
               />
-            </PrefRow>
+            </PreferenceRow>
             {add(
               t('addBaseUrl'),
               false,
@@ -155,8 +155,8 @@ export function AISettingsPage({
                 }),
             )}
           </div>
-        </PrefCard>
-        <PrefGroup>
+        </PreferenceCard>
+        <PreferenceGroup>
           {p.ai.endpoints.map((item) => (
             <div className={styles.compactItem} key={item.id}>
               {entry(
@@ -171,22 +171,22 @@ export function AISettingsPage({
               />
             </div>
           ))}
-        </PrefGroup>
+        </PreferenceGroup>
       </>
     );
   if (detail.page === 'aiCredentials')
     return (
       <>
-        <PrefCard>
+        <PreferenceCard>
           <div className={styles.prefStack}>
-            <PrefRow label={t('selectBaseUrl')}>
+            <PreferenceRow label={t('selectBaseUrl')}>
               <Select
                 label={t('selectBaseUrl')}
                 value={String(endpointId)}
                 onValueChange={(value) => setEndpointId(Number(value))}
                 options={endpointOptions}
               />
-            </PrefRow>
+            </PreferenceRow>
             <p className={styles.hint}>{t('aiKeysConfigHint')}</p>
             {add(
               t('addApiKey'),
@@ -198,8 +198,8 @@ export function AISettingsPage({
                 }),
             )}
           </div>
-        </PrefCard>
-        <PrefGroup>
+        </PreferenceCard>
+        <PreferenceGroup>
           {p.ai.credentials.map((item) => (
             <div className={styles.compactItem} key={item.id}>
               {entry(
@@ -216,15 +216,15 @@ export function AISettingsPage({
               />
             </div>
           ))}
-        </PrefGroup>
+        </PreferenceGroup>
       </>
     );
   if (detail.page === 'aiModels')
     return (
       <>
-        <PrefCard>
+        <PreferenceCard>
           <div className={styles.prefStack}>
-            <PrefRow label={t('selectBaseUrl')}>
+            <PreferenceRow label={t('selectBaseUrl')}>
               <Select
                 label={t('selectBaseUrl')}
                 value={String(endpointId)}
@@ -234,8 +234,8 @@ export function AISettingsPage({
                 }}
                 options={endpointOptions}
               />
-            </PrefRow>
-            <PrefRow label={t('selectApiKey')}>
+            </PreferenceRow>
+            <PreferenceRow label={t('selectApiKey')}>
               <Select
                 label={t('selectApiKey')}
                 value={String(credentialId)}
@@ -247,7 +247,7 @@ export function AISettingsPage({
                     label: aiDisplayLabel(p.ai.credentials, item, t('apiKey')),
                   }))}
               />
-            </PrefRow>
+            </PreferenceRow>
             <p className={styles.hint}>{t('aiModelsConfigHint')}</p>
             {add(
               t('addModel'),
@@ -259,8 +259,8 @@ export function AISettingsPage({
                 }),
             )}
           </div>
-        </PrefCard>
-        <PrefGroup>
+        </PreferenceCard>
+        <PreferenceGroup>
           {p.ai.models.map((item) => (
             <div className={styles.compactItem} key={item.id}>
               {entry(
@@ -275,12 +275,12 @@ export function AISettingsPage({
               />
             </div>
           ))}
-        </PrefGroup>
+        </PreferenceGroup>
       </>
     );
   if (detail.page === 'aiCustomizations')
     return (
-      <PrefGroup caption={t('selectModelFirst')}>
+      <PreferenceGroup caption={t('selectModelFirst')}>
         {p.ai.models
           .filter((item) => item.name)
           .map((item) => (
@@ -293,18 +293,18 @@ export function AISettingsPage({
               )}
             </div>
           ))}
-      </PrefGroup>
+      </PreferenceGroup>
     );
   if (!('id' in detail)) return null;
   if (detail.page === 'aiEndpoint') {
     const item = p.ai.endpoints.find((value) => value.id === detail.id);
     if (!item) return null;
     return (
-      <PrefCard>
+      <PreferenceCard>
         <div className={styles.prefStack}>
-          <PrefRow label={t('aiProtocol')}>
+          <PreferenceRow label={t('aiProtocol')}>
             <span>{`#${aiDisplayNumber(p.ai.endpoints, item.id)} · ${protocolLabels[item.protocol]}`}</span>
-          </PrefRow>
+          </PreferenceRow>
           <AIField
             label={t('configurationName')}
             value={item.label}
@@ -324,7 +324,7 @@ export function AISettingsPage({
             onChange={(baseUrl) => void p.mutate({ kind: 'edit-endpoint', id: item.id, baseUrl })}
           />
         </div>
-      </PrefCard>
+      </PreferenceCard>
     );
   }
   if (detail.page === 'aiCredential') {
@@ -362,7 +362,6 @@ function CredentialEditor({
   endpoint: string;
 }) {
   const { t } = useTranslation();
-  const inputId = useId();
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const save = async (value: string) => {
@@ -374,7 +373,7 @@ function CredentialEditor({
     }
   };
   return (
-    <PrefCard>
+    <PreferenceCard>
       <form
         className={styles.prefStack}
         onSubmit={(e) => {
@@ -388,32 +387,27 @@ function CredentialEditor({
           value={label}
           onChange={(name) => void p.mutate({ kind: 'edit-credential', id, label: name })}
         />
-        <label className={styles.fieldLabel} htmlFor={inputId}>
-          {t('apiKey')}
-          <span className={styles.hint}>{t('apiKeyManualHint')}</span>
-        </label>
-        <div className={styles.editRow}>
-          <input
-            id={inputId}
-            type="password"
-            autoComplete="new-password"
-            className={styles.input}
-            placeholder={p.status[id] ? '••••••••' : undefined}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            disabled={busy}
-          />
-          <button type="submit" className={styles.primaryButton} disabled={busy || !draft.trim()}>
-            {t(p.status[id] ? 'changeApiKey' : 'saveApiKey')}
-          </button>
-        </div>
+        <PreferenceTextField
+          label={t('apiKey')}
+          hint={t('apiKeyManualHint')}
+          value={draft}
+          onValueChange={setDraft}
+          type="password"
+          placeholder={p.status[id] ? '••••••••' : undefined}
+          disabled={busy}
+          action={
+            <PreferenceButton type="submit" disabled={busy || !draft.trim()}>
+              {t(p.status[id] ? 'changeApiKey' : 'saveApiKey')}
+            </PreferenceButton>
+          }
+        />
         {p.status[id] && (
           <DangerAction label={t('removeApiKey')} disabled={busy} onConfirm={() => save('')}>
             {t('removeApiKey')}
           </DangerAction>
         )}
       </form>
-    </PrefCard>
+    </PreferenceCard>
   );
 }
 function ModelEditor({ controller: p, id }: { controller: Controller; id: number }) {
@@ -424,9 +418,9 @@ function ModelEditor({ controller: p, id }: { controller: Controller; id: number
   const update = (patch: { name?: string; label?: string }, key = keyId) =>
     void p.mutate({ kind: 'edit-model', id, endpointId, credentialId: key, ...patch });
   return (
-    <PrefCard>
+    <PreferenceCard>
       <div className={styles.prefStack}>
-        <PrefRow label={t('selectBaseUrl')}>
+        <PreferenceRow label={t('selectBaseUrl')}>
           <Select
             label={t('selectBaseUrl')}
             value={String(endpointId)}
@@ -439,8 +433,8 @@ function ModelEditor({ controller: p, id }: { controller: Controller; id: number
               label: aiDisplayLabel(p.ai.endpoints, item, protocolLabels[item.protocol]),
             }))}
           />
-        </PrefRow>
-        <PrefRow label={t('selectApiKey')}>
+        </PreferenceRow>
+        <PreferenceRow label={t('selectApiKey')}>
           <Select
             label={t('selectApiKey')}
             value={String(keyId)}
@@ -456,7 +450,7 @@ function ModelEditor({ controller: p, id }: { controller: Controller; id: number
                 label: aiDisplayLabel(p.ai.credentials, item, t('apiKey')),
               }))}
           />
-        </PrefRow>
+        </PreferenceRow>
         {keyId ? (
           <>
             <AIField
@@ -475,6 +469,6 @@ function ModelEditor({ controller: p, id }: { controller: Controller; id: number
         )}
         <p className={styles.hint}>{t('aiModelHint')}</p>
       </div>
-    </PrefCard>
+    </PreferenceCard>
   );
 }

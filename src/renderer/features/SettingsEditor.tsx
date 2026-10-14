@@ -1,4 +1,10 @@
-import { useId, useState } from 'react';
+import {
+  PreferenceButton,
+  PreferenceCard,
+  PreferenceRow,
+  PreferenceTextField,
+} from '../components/preferences';
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { ElasticScrollArea } from '../components/ElasticScrollArea';
@@ -9,27 +15,25 @@ import { AISettingsPage } from './AISettings';
 import { ThirdPartyLicenses } from './ThirdPartyLicenses';
 import { SettingsFonts } from './SettingsFonts';
 import { Select } from '../components/Select';
-import type { useSettingsWindowController } from '../hooks/useSettingsWindowController';
+import { useSettingsContext, type SettingsValues } from '../components/SettingsProvider';
+import { useAppState } from '../components/AppStateProvider';
 import { useQuickApps } from '../hooks/useQuickApps';
 import type { SettingsDetail } from '../lib/settingsDetails';
 import { isValidSearchUrlTemplate } from '../lib/search';
-import { PrefCard, PrefRow } from './SettingsPreferences';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
-import styles from './SettingsTab.module.css';
+import styles from '../components/preferences/Preferences.module.css';
 import { DangerAction } from '../components/DangerAction';
 import { SettingsLiquidGlass } from './SettingsLiquidGlass';
 
-export type SettingsFormProps = ReturnType<typeof useSettingsWindowController>;
 interface Props {
-  settings: SettingsFormProps;
+  settings: SettingsValues;
   detail: SettingsDetail;
   onBack(): void;
-  onOpenDetail?(detail: SettingsDetail): void;
+  onOpenDetail(detail: SettingsDetail): void;
 }
 
 function SimpleFieldEditor({ settings: p, detail }: Props) {
   const { t } = useTranslation();
-  const inputId = useId();
   const initial =
     detail.page === 'searchTemplate'
       ? p.settings.searchUrlTemplate
@@ -43,43 +47,30 @@ function SimpleFieldEditor({ settings: p, detail }: Props) {
   const hint = t(detail.page === 'searchTemplate' ? 'searchEngineUrlHint' : 'backgroundImageHint');
   const valid = detail.page !== 'searchTemplate' || isValidSearchUrlTemplate(draft);
   return (
-    <PrefCard>
+    <PreferenceCard>
       <div className={styles.prefStack}>
-        <label className={styles.fieldLabel} htmlFor={inputId}>
-          {label}
-          <span className={styles.hint}>{hint}</span>
-        </label>
-        <div className={styles.editRow}>
-          <input
-            id={inputId}
-            className={`${styles.input} ${!valid ? styles.invalidInput : ''}`}
-            value={draft}
-            aria-label={label}
-            aria-invalid={!valid}
-            onChange={(event) => {
-              const value = event.target.value;
-              setDraft(value);
-              if (detail.page === 'searchTemplate') {
-                if (isValidSearchUrlTemplate(value))
-                  p.updateSettings({ searchUrlTemplate: value.trim() });
-              } else p.updateSettings({ backgroundImage: value.trim() || 'none' });
-            }}
-            autoFocus
-          />
-        </div>
-        {!valid && (
-          <p className={styles.fieldError} role="alert">
-            {t('invalidSearchUrlTemplate')}
-          </p>
-        )}
+        <PreferenceTextField
+          label={label}
+          hint={hint}
+          value={draft}
+          invalid={!valid}
+          error={!valid ? t('invalidSearchUrlTemplate') : undefined}
+          autoFocus
+          onValueChange={(value) => {
+            setDraft(value);
+            if (detail.page === 'searchTemplate') {
+              if (isValidSearchUrlTemplate(value))
+                p.updateSettings({ searchUrlTemplate: value.trim() });
+            } else p.updateSettings({ backgroundImage: value.trim() || 'none' });
+          }}
+        />
       </div>
-    </PrefCard>
+    </PreferenceCard>
   );
 }
 
 function ApiKeyEditor({ settings: p }: Pick<Props, 'settings'>) {
   const { t } = useTranslation();
-  const inputId = useId();
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const configured = p.hasWeatherApiKey;
@@ -94,7 +85,7 @@ function ApiKeyEditor({ settings: p }: Pick<Props, 'settings'>) {
     }
   };
   return (
-    <PrefCard>
+    <PreferenceCard>
       <form
         className={styles.prefStack}
         onSubmit={(event) => {
@@ -102,26 +93,21 @@ function ApiKeyEditor({ settings: p }: Pick<Props, 'settings'>) {
           void save(draft);
         }}
       >
-        <label className={styles.fieldLabel} htmlFor={inputId}>
-          {t('weatherApiKey')}
-          <span className={styles.hint}>{t('weatherApiKeyHint')}</span>
-        </label>
-        <div className={styles.editRow}>
-          <input
-            id={inputId}
-            className={styles.input}
-            type="password"
-            autoComplete="new-password"
-            value={draft}
-            placeholder={configured ? '••••••••' : undefined}
-            onChange={(event) => setDraft(event.target.value)}
-            disabled={busy}
-            autoFocus
-          />
-          <button type="submit" className={styles.primaryButton} disabled={busy || !draft.trim()}>
-            {configured ? t('changeApiKey') : t('saveApiKey')}
-          </button>
-        </div>
+        <PreferenceTextField
+          label={t('weatherApiKey')}
+          hint={t('weatherApiKeyHint')}
+          value={draft}
+          onValueChange={setDraft}
+          type="password"
+          placeholder={configured ? '••••••••' : undefined}
+          disabled={busy}
+          autoFocus
+          action={
+            <PreferenceButton type="submit" disabled={busy || !draft.trim()}>
+              {t(configured ? 'changeApiKey' : 'saveApiKey')}
+            </PreferenceButton>
+          }
+        />
         {configured && (
           <DangerAction label={t('removeApiKey')} disabled={busy} onConfirm={() => save('')}>
             {t('removeApiKey')}
@@ -129,7 +115,7 @@ function ApiKeyEditor({ settings: p }: Pick<Props, 'settings'>) {
         )}
         <InlineNotices area="settings" codes={['secretStorageUnavailable']} />
       </form>
-    </PrefCard>
+    </PreferenceCard>
   );
 }
 
@@ -137,18 +123,17 @@ function QuickAppEditor({ onBack }: Pick<Props, 'onBack'>) {
   const p = useQuickApps();
   const { t } = useTranslation();
   const reduced = useReducedMotionPreference();
-  const inputId = useId();
   const add = (
-    <button
+    <PreferenceButton
       type="submit"
-      className={styles.primaryButton}
+
       disabled={p.quickAppMode === 'installed' && !p.selectedApplication}
     >
       {t('addApp')}
-    </button>
+    </PreferenceButton>
   );
   return (
-    <PrefCard>
+    <PreferenceCard>
       <form
         className={styles.prefStack}
         onSubmit={(event) => {
@@ -157,7 +142,7 @@ function QuickAppEditor({ onBack }: Pick<Props, 'onBack'>) {
         }}
       >
         <p className={styles.hint}>{t('quickAppEditorHint')}</p>
-        <PrefRow label={t('quickApps')}>
+        <PreferenceRow label={t('quickApps')}>
           <Select
             label={t('quickApps')}
             value={p.quickAppMode}
@@ -168,23 +153,17 @@ function QuickAppEditor({ onBack }: Pick<Props, 'onBack'>) {
               { value: 'url', label: t('urlShortcut') },
             ]}
           />
-        </PrefRow>
+        </PreferenceRow>
         <div className={styles.appSearch}>
-          <label className={styles.fieldLabel} htmlFor={`${inputId}-name`}>
-            {t('appName')}
-          </label>
-          <div className={styles.editRow}>
-            <input
-              id={`${inputId}-name`}
-              className={styles.input}
-              required
-              placeholder={t('quickAppNameHint')}
-              value={p.newQuickApp}
-              onChange={(event) => p.handleQuickAppInput(event.target.value)}
-              autoFocus
-            />
-            {p.quickAppMode === 'installed' && add}
-          </div>
+          <PreferenceTextField
+            label={t('appName')}
+            value={p.newQuickApp}
+            onValueChange={p.handleQuickAppInput}
+            required
+            placeholder={t('quickAppNameHint')}
+            autoFocus
+            action={p.quickAppMode === 'installed' ? add : undefined}
+          />
           <AnimatePresence initial={false}>
             {p.appSearchPending && (
               <motion.p
@@ -232,36 +211,25 @@ function QuickAppEditor({ onBack }: Pick<Props, 'onBack'>) {
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: reduced ? 0 : 0.2 }}
             >
-              <label className={styles.fieldLabel}>
-                {t('executablePath')}
-                <input
-                  className={styles.input}
-                  required
-                  value={p.executable}
-                  onChange={(event) => p.setExecutable(event.target.value)}
-                />
-              </label>
-              <label className={styles.fieldLabel}>
-                {t('arguments')}
-                <textarea
-                  className={`${styles.input} ${styles.argumentInput}`}
-                  placeholder={t('argumentsHint')}
-                  value={p.argumentLines}
-                  onChange={(event) => p.setArgumentLines(event.target.value)}
-                />
-              </label>
-              <label className={styles.fieldLabel} htmlFor={`${inputId}-directory`}>
-                {t('workingDirectory')}
-              </label>
-              <div className={styles.editRow}>
-                <input
-                  id={`${inputId}-directory`}
-                  className={styles.input}
-                  value={p.workingDirectory}
-                  onChange={(event) => p.setWorkingDirectory(event.target.value)}
-                />
-                {add}
-              </div>
+              <PreferenceTextField
+                label={t('executablePath')}
+                value={p.executable}
+                onValueChange={p.setExecutable}
+                required
+              />
+              <PreferenceTextField
+                label={t('arguments')}
+                value={p.argumentLines}
+                onValueChange={p.setArgumentLines}
+                multiline
+                placeholder={t('argumentsHint')}
+              />
+              <PreferenceTextField
+                label={t('workingDirectory')}
+                value={p.workingDirectory}
+                onValueChange={p.setWorkingDirectory}
+                action={add}
+              />
             </motion.div>
           )}
           {p.quickAppMode === 'url' && (
@@ -273,62 +241,57 @@ function QuickAppEditor({ onBack }: Pick<Props, 'onBack'>) {
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: reduced ? 0 : 0.2 }}
             >
-              <label className={styles.fieldLabel} htmlFor={`${inputId}-url`}>
-                {t('applicationUrl')}
-              </label>
-              <div className={styles.editRow}>
-                <input
-                  id={`${inputId}-url`}
-                  className={styles.input}
-                  type="url"
-                  required
-                  value={p.appUrl}
-                  onChange={(event) => p.setAppUrl(event.target.value)}
-                  placeholder="https://example.com"
-                />
-                {add}
-              </div>
+              <PreferenceTextField
+                label={t('applicationUrl')}
+                value={p.appUrl}
+                onValueChange={p.setAppUrl}
+                required
+                type="url"
+                placeholder="https://example.com"
+                action={add}
+              />
             </motion.div>
           )}
         </AnimatePresence>
         <InlineNotices area="quick-apps" />
       </form>
-    </PrefCard>
+    </PreferenceCard>
   );
 }
 
-function QuickAppNameEditor({ settings: p, detail }: Props) {
+function QuickAppNameEditor({ detail }: Pick<Props, 'detail'>) {
+  const { state, updateState } = useAppState();
   const { t } = useTranslation();
-  const inputId = useId();
   const index =
-    detail.page === 'quickAppName' ? p.quickApps.findIndex((app) => app.id === detail.appId) : -1;
-  const [draft, setDraft] = useState(p.quickApps[index]?.name ?? '');
+    detail.page === 'quickAppName'
+      ? state.quickApps.findIndex((app) => app.id === detail.appId)
+      : -1;
+  const [draft, setDraft] = useState(state.quickApps[index]?.name ?? '');
   return (
-    <PrefCard>
+    <PreferenceCard>
       <div className={styles.prefStack}>
-        <label className={styles.fieldLabel} htmlFor={inputId}>
-          {t('appName')}
-        </label>
-        <div className={styles.editRow}>
-          <input
-            id={inputId}
-            className={styles.input}
-            required
-            value={draft}
-            onChange={(event) => {
-              const value = event.target.value;
-              setDraft(value);
-              if (index >= 0 && value.trim()) p.renameQuickApp(index, value.trim());
-            }}
-            autoFocus
-          />
-        </div>
+        <PreferenceTextField
+          label={t('appName')}
+          value={draft}
+          required
+          autoFocus
+          onValueChange={(value) => {
+            setDraft(value);
+            if (index >= 0 && value.trim())
+              updateState({
+                quickApps: state.quickApps.map((app, i) =>
+                  i === index ? { ...app, name: value.trim() } : app,
+                ),
+              });
+          }}
+        />
       </div>
-    </PrefCard>
+    </PreferenceCard>
   );
 }
 
-export function SettingsEditor(props: Props) {
+export function SettingsEditor(input: Omit<Props, 'settings'>) {
+  const props = { ...input, settings: useSettingsContext() };
   const page = props.detail.page;
   return (
     <ElasticScrollArea id="settings-detail-container" className={styles.container}>
@@ -348,11 +311,7 @@ export function SettingsEditor(props: Props) {
           'aiCustomizations',
           'aiCustomization',
         ].includes(page) ? (
-        <AISettingsPage
-          controller={props.settings.aiConfiguration}
-          detail={props.detail}
-          navigate={props.onOpenDetail!}
-        />
+        <AISettingsPage detail={props.detail} navigate={props.onOpenDetail} />
       ) : page === 'weatherLocation' ? (
         <WeatherLocationEditor settings={props.settings} />
       ) : page === 'weatherApiKey' ? (

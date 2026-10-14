@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
-import { createContext, useContext } from 'react';
+import { type ReactNode, createContext, useContext } from 'react';
 
 import { useSettings } from '../hooks/useSettings';
-const SettingsContext = createContext<ReturnType<typeof useSettings> | null>(null);
+export type SettingsValues = ReturnType<typeof useSettings>;
+const SettingsContext = createContext<SettingsValues | null>(null);
 export function SettingsProvider({
   children,
   hasWeatherApiKey = false,

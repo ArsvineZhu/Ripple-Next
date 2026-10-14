@@ -2,9 +2,15 @@
 import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
-import { SettingsEditor, type SettingsFormProps } from '../src/renderer/features/SettingsEditor';
+import { SettingsEditor } from '../src/renderer/features/SettingsEditor';
+import type { SettingsValues } from '../src/renderer/components/SettingsProvider';
 import type { SettingsDetail } from '../src/renderer/lib/settingsDetails';
 import { defaultAppState } from '../src/shared/appState';
+
+const fixture = vi.hoisted(() => ({ settings: {} as SettingsValues }));
+vi.mock('../src/renderer/components/SettingsProvider', () => ({
+  useSettingsContext: () => fixture.settings,
+}));
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en' } }),
@@ -37,13 +43,14 @@ afterEach(async () => {
   host.remove();
   vi.unstubAllGlobals();
 });
-async function mount(page: SettingsDetail, settings: Partial<SettingsFormProps>) {
+async function mount(page: SettingsDetail, settings: Partial<SettingsValues>) {
+  fixture.settings = settings as SettingsValues;
   const back = vi.fn();
   await act(async () =>
     root.render(
       createElement(SettingsEditor, {
         detail: page,
-        settings: settings as SettingsFormProps,
+        onOpenDetail: vi.fn(),
         onBack: back,
       }),
     ),

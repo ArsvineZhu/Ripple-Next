@@ -70,3 +70,9 @@ About begins with the official icon, localized brand message and version. Metada
 
 Default typography uses Alibaba PuHuiTi 3, with System and OpenRunde alternatives. `lib/aiDisplay.ts` owns contiguous display numbers and displays the entered label or fallback directly; navigation, mutations and key storage continue to use original stable IDs. Use full list order for filtered selectors so their numbers match list and binding summaries.
 Settings consumers read the standard `settings` object and call `updateSettings`. The hook keeps only editor/runtime operations that need local state. State writes return a completion result after main applies native effects and persists; failed operations restore the committed state. `useWeather` shares the weather and automatic-address fetch lifecycle and suppresses stale results; the preferences object travels unchanged to main.
+
+## Reusable preference composition
+
+`components/preferences` owns the group, card, row, text/password/multiline field, number field, button, icon action, detail link and conditional reveal components and their shared stylesheet. Categories supply labels, values and operations; validation and draft state stay with their feature. Input actions occupy the shared field action slot. Switches, sliders, selects, native colors and the glass back button retain their specialized shared modules.
+
+SettingsTab only mounts the selected category or editor. General owns display discovery and time-zone options; Appearance owns background decoding; Pages owns order/visibility; Shortcuts owns its list operations. AI metadata loads in the AI views. SettingsApp owns navigation, transitions and scroll/focus history. The window-wide forwarding controller and workflow wrapper are removed. Detail identity keys reset each editor draft when its target changes.

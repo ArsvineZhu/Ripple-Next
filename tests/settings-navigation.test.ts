@@ -3,12 +3,13 @@ import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import SettingsApp from '../src/renderer/SettingsApp';
+import { defaultGlassPreferences } from '../src/shared/glassPreferences';
 import type { ElectronAPI } from '../src/shared/contracts';
 
 const preferences = vi.hoisted(() => ({ reduced: false }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
-vi.mock('../src/renderer/hooks/useSettingsWindowController', () => ({
-  useSettingsWindowController: () => ({}),
+vi.mock('../src/renderer/components/SettingsProvider', () => ({
+  useSettingsContext: () => ({ settings: defaultGlassPreferences }),
 }));
 vi.mock('../src/renderer/hooks/useReducedMotionPreference', () => ({
   useReducedMotionPreference: () => preferences.reduced,

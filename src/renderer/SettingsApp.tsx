@@ -3,7 +3,7 @@ import { flushSync } from 'react-dom';
 import { LayoutGroup, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { SettingsTab } from './features/SettingsTab';
-import { useSettingsWindowController } from './hooks/useSettingsWindowController';
+import { useSettingsContext } from './components/SettingsProvider';
 import { useOverlay } from './components/OverlayProvider';
 import { SETTINGS_CATEGORIES, type SettingsCategoryId } from './lib/settingsCategories';
 import styles from './styles/SettingsApp.module.css';
@@ -11,12 +11,10 @@ import { useReducedMotionPreference } from './hooks/useReducedMotionPreference';
 import { GlassBackButton } from './components/GlassBackButton';
 import { detailLabels, detailEntryId, type SettingsDetail } from './lib/settingsDetails';
 import { GlassPreferencesContext } from './components/liquidGlass/GlassPreferences';
-import { defaultGlassPreferences } from '../shared/glassPreferences';
 
 export default function SettingsApp() {
   const { t } = useTranslation();
-  const controller = useSettingsWindowController();
-  const glass = controller.settings ?? defaultGlassPreferences;
+  const glass = useSettingsContext().settings;
   const { setContainer, setOpenId } = useOverlay();
   const [category, setCategory] = useState<SettingsCategoryId>('guide');
   const [detail, setDetail] = useState<SettingsDetail | null>(null);
@@ -167,7 +165,6 @@ export default function SettingsApp() {
           )}
           <main className={styles.main}>
             <SettingsTab
-              {...controller}
               category={category}
               detail={detail}
               onOpenDetail={openDetail}
