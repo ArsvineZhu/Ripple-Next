@@ -37,3 +37,5 @@ Linux 窗口需等 renderer 就绪并确认首个 X11 `ShapeInput` 区域后显�
 偏好补丁在保存及广播前执行显示器／登录项操作，Island 创建时直接恢复保存的显示器。自启动适配归 platform/autostart 及三平台实现，Windows／macOS 拒绝开发构建注册并检查系统接受结果。天气接收 WeatherPreferences，仅在请求时生成服务查询。
 
 AI 配置、执行、协议流和提示词集中在 `ai/`。配置服务每次请求只解析一次当前模型和加密凭据；`ai/assistant.ts` 负责取消并返回一个完成／取消／错误结果，IPC 只向发起请求的 renderer 发送文本增量。`ai/stream.ts` 消费 SDK 文本流并直接使用其最终文本。流中途失败时保留已显示的回答并同时展示错误；重置会取消网络请求并忽略迟到输出。
+
+设备检测通过 `platform/devices.ts` 选择原生实现，各系统适配器拥有查询与缓存。`services/colorPicker.ts` 只管理对话框生命周期与所属窗口状态；`platform/colorPicker.ts` 校验和统一 RGB 结果，具体系统命令归各自适配器。Windows 使用支持取消的统一 PowerShell 入口。数据库初始化失败时，退出前显示本地化原生错误与数据位置，不重置数据库。

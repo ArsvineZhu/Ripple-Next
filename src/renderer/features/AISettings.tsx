@@ -114,7 +114,7 @@ export function AISettingsPage({
   const [credentialId, setCredentialId] = useState(0);
   const endpointOptions = p.ai.endpoints.map((item) => ({
     value: String(item.id),
-    label: aiDisplayLabel(p.ai.endpoints, item, protocolLabels[item.protocol], item.protocol),
+    label: aiDisplayLabel(p.ai.endpoints, item, protocolLabels[item.protocol]),
     description: item.baseUrl,
   }));
   const entry = (next: SettingsDetail, label: string, value?: string, hint?: string) => (
@@ -161,7 +161,7 @@ export function AISettingsPage({
             <div className={styles.compactItem} key={item.id}>
               {entry(
                 { page: 'aiEndpoint', id: item.id },
-                aiDisplayLabel(p.ai.endpoints, item, protocolLabels[item.protocol], item.protocol),
+                aiDisplayLabel(p.ai.endpoints, item, protocolLabels[item.protocol]),
                 protocolLabels[item.protocol],
                 item.baseUrl,
               )}
@@ -204,7 +204,7 @@ export function AISettingsPage({
             <div className={styles.compactItem} key={item.id}>
               {entry(
                 { page: 'aiCredential', id: item.id },
-                aiDisplayLabel(p.ai.credentials, item, t('apiKey'), 'API key'),
+                aiDisplayLabel(p.ai.credentials, item, t('apiKey')),
                 p.status[item.id] ? '••••••••' : t('notConfigured'),
                 `${t('baseUrlNumber', { count: aiDisplayNumber(p.ai.endpoints, item.endpointId) })}`,
               )}
@@ -244,7 +244,7 @@ export function AISettingsPage({
                   .filter((item) => item.endpointId === endpointId && p.status[item.id])
                   .map((item) => ({
                     value: String(item.id),
-                    label: aiDisplayLabel(p.ai.credentials, item, t('apiKey'), 'API key'),
+                    label: aiDisplayLabel(p.ai.credentials, item, t('apiKey')),
                   }))}
               />
             </PrefRow>
@@ -436,12 +436,7 @@ function ModelEditor({ controller: p, id }: { controller: Controller; id: number
             }}
             options={p.ai.endpoints.map((item) => ({
               value: String(item.id),
-              label: aiDisplayLabel(
-                p.ai.endpoints,
-                item,
-                protocolLabels[item.protocol],
-                item.protocol,
-              ),
+              label: aiDisplayLabel(p.ai.endpoints, item, protocolLabels[item.protocol]),
             }))}
           />
         </PrefRow>
@@ -458,7 +453,7 @@ function ModelEditor({ controller: p, id }: { controller: Controller; id: number
               .filter((item) => item.endpointId === endpointId && p.status[item.id])
               .map((item) => ({
                 value: String(item.id),
-                label: aiDisplayLabel(p.ai.credentials, item, t('apiKey'), 'API key'),
+                label: aiDisplayLabel(p.ai.credentials, item, t('apiKey')),
               }))}
           />
         </PrefRow>

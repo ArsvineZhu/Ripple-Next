@@ -7,9 +7,6 @@ export function aiDisplayLabel(
   entries: readonly { id: number }[],
   item: { id: number; label: string },
   fallback: string,
-  automaticPrefix?: string,
 ) {
-  const generated =
-    automaticPrefix !== undefined && item.label.match(/^(.*) #\d+$/)?.[1] === automaticPrefix;
-  return `#${aiDisplayNumber(entries, item.id)} · ${generated ? fallback : item.label || fallback}`;
+  return `#${aiDisplayNumber(entries, item.id)} · ${item.label || fallback}`;
 }

@@ -99,7 +99,7 @@ export const zhTW: Messages = {
   guideControlsHint: 'Enter／空白鍵啟用按鈕及開關。方向鍵選擇選單項，Esc 關閉選單並恢復焦點。',
   guideSliders: '調整滑桿',
   guideSlidersHint:
-    '方向鍵調整，按住 Shift 細調，Home／End 到兩端。拖曳連續取值，放開時靠近標記會輕微吸附。',
+    '方向鍵調整，按住 Shift 細調，Home／End 到兩端。拖曳時節點會吸引手柄，拉出吸附範圍即可繼續調整。',
   guideGestures: '橫向滾輪或觸控板手勢切換 Island 頁面，縱向捲動留在目前內容內。',
   guideSettings: '依你的習慣設定',
   guideSecrets: 'API 金鑰在本機加密，儲存後顯示圓點；僅輸入新值不會儲存，點擊變更才提交。',

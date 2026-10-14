@@ -103,7 +103,7 @@ export const ja: Messages = {
     'Enter／Space でボタンやスイッチを操作。矢印でメニューを選び、Esc で閉じてフォーカスを戻します。',
   guideSliders: 'スライダーを調整',
   guideSlidersHint:
-    '矢印で調整し、Shift で細かく変更します。Home／End は両端へ。ドラッグは連続的で、離した時に目盛りへ吸着します。',
+    '矢印で調整し、Shift で細かく変更します。Home／End は両端へ。ドラッグ中は目盛りがハンドルを引き寄せ、範囲外まで引くと調整を続けられます。',
   guideGestures:
     '横方向のホイールやトラックパッドで Island のページを切り替えます。縦スクロールは現在の内容をスクロールします。',
   guideSettings: '自分に合う設定に',

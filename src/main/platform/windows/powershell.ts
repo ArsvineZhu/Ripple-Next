@@ -20,7 +20,12 @@ export function powerShellLiteral(value: string): string {
 
 export async function runPowerShell(
   script: string,
-  options: { timeout?: number; maxBuffer?: number; apartment?: 'STA' | 'MTA' } = {},
+  options: {
+    timeout?: number;
+    maxBuffer?: number;
+    apartment?: 'STA' | 'MTA';
+    signal?: AbortSignal;
+  } = {},
 ): Promise<string> {
   const preamble =
     "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n$ErrorActionPreference = 'Stop'\n$ProgressPreference = 'SilentlyContinue'\n";

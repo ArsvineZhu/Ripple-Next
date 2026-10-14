@@ -84,3 +84,5 @@ Persisted `uiFont` is validated in shared/fonts.ts and applied per renderer by A
 ## Preference operations and weather
 
 Settings views use the shared settings object and one patch operation. Main applies display/autostart before persistence and broadcasts only the committed result. Island starts on the saved monitor without a renderer restore request. AppStateProvider coalesces pending patches and resolves their completion, so native toggles can remain busy until the operation finishes. The weather preference stores mode, city/region/country, unit and key source once; provider query assembly belongs to main. useWeather owns refresh and stale-result handling for both Overview and the location editor.
+
+Native devices and color selection are selected at the platform boundary. Device queries and dialog commands remain inside Windows/macOS/Linux adapters; the color service only manages its owning window and cancellation. Font preferences use exactly default/system/openrunde, and AI labels use the entered name or a fallback with current list numbering; old font aliases and generated-name parsing are removed.

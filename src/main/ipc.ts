@@ -32,9 +32,7 @@ import { openSettingsWindow } from './settingsWindow';
 import { createAppService } from './services/apps';
 import { setAutoLaunch } from './platform/autostart';
 import { createMediaService } from './services/media';
-import { getBluetoothStatus } from './services/getBluetoothStatus';
-import { getCameraStatus } from './services/getCameraStatus';
-import { getMicrophoneStatus } from './services/getMicrophoneStatus';
+import { devices } from './platform/devices';
 import { serializeDiagnosticError } from '../shared/diagnostics';
 import type { AssistantEvent, AssistantResult } from '../shared/contracts';
 import { RGB_HEX } from '../shared/color';
@@ -348,9 +346,9 @@ export function registerIPC(services: IPCServices) {
     if (id !== null) getText(id, 'Media session', 512);
     return media.selectSession(id);
   });
-  handle(services, 'get-bluetooth-status', (_event) => getBluetoothStatus());
-  handle(services, 'get-camera-status', (_event) => getCameraStatus());
-  handle(services, 'get-microphone-status', (_event) => getMicrophoneStatus());
+  handle(services, 'get-bluetooth-status', (_event) => devices.getBluetoothStatus());
+  handle(services, 'get-camera-status', (_event) => devices.getCameraStatus());
+  handle(services, 'get-microphone-status', (_event) => devices.getMicrophoneStatus());
   handle(services, 'control-system-media', (_event, command, sessionId) => {
     if (!['previous', 'playpause', 'next'].includes(command)) {
       throw new TypeError('Invalid media command');

@@ -12,8 +12,7 @@ const families = {
 
 export function SettingsFonts({ settings }: { settings: SettingsFormProps }) {
   const { t } = useTranslation();
-  const selectedFont =
-    settings.settings.uiFont === 'alibaba-puhuiti' ? 'default' : settings.settings.uiFont;
+  const selectedFont = settings.settings.uiFont;
   return (
     <section className={styles.page} aria-label={t('fontSettings')}>
       <p className={styles.intro}>{t('fontSettingsHint')}</p>

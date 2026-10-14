@@ -99,7 +99,7 @@ export const zhCN: Messages = {
   guideControlsHint: 'Enter／空格激活按钮与开关。方向键选择菜单项，Esc 关闭菜单并恢复焦点。',
   guideSliders: '调整滑杆',
   guideSlidersHint:
-    '方向键调整，按住 Shift 细调，Home／End 到达两端。拖动连续取值，松手靠近标记时轻微吸附。',
+    '方向键调整，按住 Shift 细调，Home／End 到达两端。拖动时节点会吸引手柄，拉出吸附范围即可继续调整。',
   guideGestures: '横向滚轮或触控板手势切换 Island 页面；纵向滚动留在当前内容内。',
   guideSettings: '按你的习惯设置',
   guideSecrets: 'API 密钥在本机加密，已保存时显示圆点；仅输入新值不会存储，点击更改才会提交。',

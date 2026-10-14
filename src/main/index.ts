@@ -1,7 +1,8 @@
-import { app, powerMonitor, safeStorage, screen } from 'electron';
+import { app, dialog, powerMonitor, safeStorage, screen } from 'electron';
 import os from 'node:os';
 import { configureApplicationProfile, requestApplicationInstanceLock } from './appProfile';
 import { defaultAppState } from '../shared/appState';
+import { messages, resolveLocale } from '../shared/i18n';
 import { registerIPC } from './ipc';
 import {
   closeInputConnection,
@@ -105,7 +106,23 @@ async function startApplication() {
     diagnosticsService.record(event);
   });
 
-  const stateStore = createAppStateStore(userDataPath);
+  let stateStore: ReturnType<typeof createAppStateStore>;
+  try {
+    stateStore = createAppStateStore(userDataPath);
+  } catch (error) {
+    diagnosticsService.recordError('application', error);
+    await app.whenReady();
+    const text = messages[resolveLocale('system', app.getLocale())];
+    await dialog.showMessageBox({
+      type: 'error',
+      title: app.getName(),
+      message: text.stateLoadFailed,
+      detail: `${error instanceof Error ? error.message : String(error)}\n${userDataPath}`,
+      buttons: [text.quit],
+    });
+    app.quit();
+    return;
+  }
   const secretStore = createSecretStore(stateStore, {
     isAsyncEncryptionAvailable: () => safeStorage.isAsyncEncryptionAvailable(),
     encryptStringAsync: (value) => safeStorage.encryptStringAsync(value),

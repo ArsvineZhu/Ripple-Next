@@ -1,10 +1,9 @@
 import { z } from 'zod';
 
-export const UiFontSchema = z.enum(['default', 'system', 'alibaba-puhuiti', 'openrunde']);
+export const UiFontSchema = z.enum(['default', 'system', 'openrunde']);
 export const uiFontLabels = {
   default: 'fontDefault',
   system: 'fontSystem',
-  'alibaba-puhuiti': 'fontDefault',
   openrunde: 'fontOpenRunde',
 } as const;
 

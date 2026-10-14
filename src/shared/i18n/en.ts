@@ -105,7 +105,7 @@ export const en = {
     'Enter/Space activate buttons and switches. Arrow keys navigate a menu; Escape closes it and restores focus.',
   guideSliders: 'Adjust sliders',
   guideSlidersHint:
-    'Arrow keys adjust; Shift makes finer changes. Home/End reach the two endpoints. Dragging keeps continuous values and snaps at marked stops on release.',
+    'Arrow keys adjust; Shift makes finer changes. Home/End reach the two endpoints. Marked stops attract the handle during dragging; pull past the attraction range to continue.',
   guideGestures:
     'Horizontal wheel or trackpad gestures switch Island pages. Vertical scrolling stays inside the current content.',
   guideSettings: 'Make it yours',
