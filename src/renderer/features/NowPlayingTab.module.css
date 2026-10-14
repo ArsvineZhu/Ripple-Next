@@ -58,6 +58,7 @@
 }
 .title,
 .artist {
+  font-weight: 400;
   width: max-content;
   white-space: nowrap;
 }

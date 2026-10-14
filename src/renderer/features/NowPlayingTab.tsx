@@ -46,7 +46,7 @@ function TrackText({
 }) {
   const { ref, width } = useClipWidth();
   const reduced = useReducedMotion();
-  const distance = measureTextWidth(text, artist ? 13 : 18);
+  const distance = measureTextWidth(text, artist ? 13 : 18, artist ? 400 : 600);
   const scroll = marquee && distance > width && !reduced;
   return (
     <div ref={ref} className={styles.textClip} data-marquee={scroll}>

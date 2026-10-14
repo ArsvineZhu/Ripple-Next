@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useIslandInteraction } from './useIslandInteraction';
-import { useLayoutEffect, useReducer } from 'react';
+import { useEffect, useLayoutEffect, useReducer } from 'react';
 
 import { measureTextWidth } from '../lib/text';
+import { COMPACT_MEDIA_CHROME_WIDTH } from '../lib/compactMediaLayout';
 import { useAssistant } from './useAssistant';
 import { useClipboard } from './useClipboard';
 import { useOverview } from './useOverview';
@@ -21,6 +22,21 @@ import { freeIslandPosition } from '../lib/islandPosition';
 export function useIslandController() {
   const { t } = useTranslation();
   const { state: appState } = useAppState();
+  const [, remeasureFont] = useReducer((revision: number) => revision + 1, 0);
+  useEffect(() => {
+    let active = true;
+    const refresh = () => {
+      if (active) remeasureFont();
+    };
+    const frame = requestAnimationFrame(refresh);
+    document.fonts?.addEventListener('loadingdone', refresh);
+    void document.fonts?.ready.then(refresh);
+    return () => {
+      active = false;
+      cancelAnimationFrame(frame);
+      document.fonts?.removeEventListener('loadingdone', refresh);
+    };
+  }, [appState.settings.uiFont]);
   const [requestedMode, setMode] = useReducer(modeReducer, 'still');
   const {
     batteryAlerts: batteryAlertsEnabled,
@@ -122,10 +138,16 @@ export function useIslandController() {
   const trackArtist = mediaTrack ? mediaTrack.artist || t('unknownArtist') : '';
   const music = appState.settings.music;
   const nowPlayingText = mediaTrack
-    ? trackTitle + (mode === 'still' && !music.idleArtist ? '' : ` • ${trackArtist}`)
+    ? trackTitle + (music.idleArtist ? ` • ${trackArtist}` : '')
     : '';
-  const textWidth = measureTextWidth(nowPlayingText) || nowPlayingText.length * 7;
-  const nowPlayingWidth = Math.min(300, Math.max(122, Math.ceil(textWidth + 82)));
+  const textWidth =
+    measureTextWidth(trackTitle) +
+      (music.idleArtist ? measureTextWidth(` • ${trackArtist}`, 13, 400) : 0) ||
+    nowPlayingText.length * 7;
+  const nowPlayingWidth = Math.min(
+    300,
+    Math.max(122, Math.ceil(textWidth + COMPACT_MEDIA_CHROME_WIDTH)),
+  );
   const hasMediaFeedback = Boolean(mediaActionError || (mediaTrack && mediaSnapshot.error));
   const getExpandedTabSize = (id: string, answerHeight = 0) => {
     const size = islandPages.size(id, {

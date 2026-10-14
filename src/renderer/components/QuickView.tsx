@@ -1,4 +1,5 @@
 import styles from './QuickView.module.css';
+import { COMPACT_MEDIA_CHROME_WIDTH } from '../lib/compactMediaLayout';
 import typography from '../styles/typography.module.css';
 import { useTranslation } from 'react-i18next';
 import { localeForFormatting } from '../../shared/i18n';
@@ -82,8 +83,9 @@ export function QuickView({
 }: Props) {
   const { t, i18n } = useTranslation();
   const reduced = useReducedMotion();
-  const scroll = music.marquee && !reduced && textWidth > nowPlayingWidth - 82;
-  const showArtist = mode !== 'still' || music.idleArtist;
+  const scroll =
+    music.marquee && !reduced && textWidth > nowPlayingWidth - COMPACT_MEDIA_CHROME_WIDTH;
+  const showArtist = music.idleArtist;
   const number = (value: number | string | null) =>
     value === null || value === ''
       ? '??'
@@ -161,12 +163,12 @@ export function QuickView({
                           paddingRight: scroll ? 30 : 0,
                         }}
                       >
-                        {trackTitle}{' '}
+                        {trackTitle}
                         {showArtist && <span className={styles['artist']}> • {trackArtist}</span>}
                       </span>
                       {scroll && (
                         <span className={styles['trackRepeat']}>
-                          {trackTitle}{' '}
+                          {trackTitle}
                           {showArtist && (
                             <span className={styles['artistRepeat']}> • {trackArtist}</span>
                           )}
