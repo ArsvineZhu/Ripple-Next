@@ -27,11 +27,15 @@ export function ElasticScrollArea({ children, className, onContentSizeChange, ..
       if (frame !== null) return;
       frame = requestAnimationFrame(() => {
         frame = null;
+        viewport.dataset.overflow = String(
+          viewport.clientHeight > 0 && viewport.scrollHeight > viewport.clientHeight + 1,
+        );
         onContentSizeChangeRef.current?.(content.scrollHeight);
       });
     };
     const resizeObserver = new ResizeObserver(updateContentSize);
     resizeObserver.observe(content);
+    resizeObserver.observe(viewport);
     const mutationObserver = new MutationObserver(updateContentSize);
     mutationObserver.observe(content, {
       childList: true,

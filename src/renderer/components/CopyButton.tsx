@@ -1,3 +1,4 @@
+import { ActionButton } from './content';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './CopyButton.module.css';
@@ -18,7 +19,9 @@ export function CopyButton({
     [],
   );
   return (
-    <button
+    <ActionButton
+      tone="secondary"
+      size="small"
       className={`${styles.button} ${className}`}
       data-copied={status === 'copied'}
       onClick={async (event) => {
@@ -34,6 +37,6 @@ export function CopyButton({
       }}
     >
       {t(status)}
-    </button>
+    </ActionButton>
   );
 }

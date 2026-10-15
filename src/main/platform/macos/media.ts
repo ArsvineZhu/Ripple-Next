@@ -1,6 +1,7 @@
+import { DiagnosticError } from '../../../shared/diagnosticError';
 import { z } from 'zod';
 import { runCommand } from '../../services/processes';
-import type { MediaCommand, MediaSession } from '../../../shared/contracts';
+import type { MediaCommand, MediaSession } from '../../../shared/media';
 async function runningPlayers() {
   const names = (await runCommand('/bin/ps', ['-A', '-o', 'comm=']))
     .split('\n')
@@ -49,7 +50,7 @@ return (current application's NSString's alloc()'s initWithData:data encoding:4)
     artist: info.artist,
     album: info.album,
     state: info.state,
-    artwork_url: info.artwork || null,
+    artworkUrl: info.artwork || null,
     capabilities: { previous: null, next: null, play: true, pause: true, toggle: true },
   };
 }
@@ -58,6 +59,15 @@ export async function getMediaSessions() {
   const results = await Promise.allSettled(players.map(readPlayer));
   return {
     sessions: results.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : [])),
+    errors: results.flatMap((result, index) =>
+      result.status === 'rejected'
+        ? [
+            new DiagnosticError(players[index] + ' media query failed', [], {
+              cause: result.reason,
+            }),
+          ]
+        : [],
+    ),
     failedIds: results.flatMap((result, index) =>
       result.status === 'rejected' ? [players[index]] : [],
     ),
@@ -68,7 +78,7 @@ export async function controlSystemMedia(
   session: MediaSession,
 ): Promise<void> {
   if (!['Spotify', 'Music'].includes(session.id) || !(await runningPlayers()).includes(session.id))
-    throw new Error('Media session unavailable');
+    throw new DiagnosticError('Media session unavailable');
   const operation = command === 'playpause' ? 'playpause' : command + ' track';
   await runCommand('/usr/bin/osascript', [
     '-e',
@@ -77,6 +87,6 @@ export async function controlSystemMedia(
 }
 export async function openMediaSession(session: MediaSession): Promise<void> {
   if (!['Spotify', 'Music'].includes(session.id) || !(await runningPlayers()).includes(session.id))
-    throw new Error('Media session unavailable');
+    throw new DiagnosticError('Media session unavailable');
   await runCommand('/usr/bin/open', ['-a', session.id]);
 }

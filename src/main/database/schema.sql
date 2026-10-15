@@ -1,0 +1,31 @@
+PRAGMA journal_mode = WAL;
+PRAGMA synchronous = FULL;
+PRAGMA busy_timeout = 5000;
+
+CREATE TABLE IF NOT EXISTS app_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS tasks (
+  position INTEGER PRIMARY KEY,
+  content TEXT NOT NULL
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS workflows (
+  position INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  urls_json TEXT NOT NULL
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS quick_apps (
+  position INTEGER PRIMARY KEY,
+  id TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  target_json TEXT NOT NULL
+) STRICT;
+
+CREATE TABLE IF NOT EXISTS secrets (
+  key TEXT PRIMARY KEY,
+  ciphertext BLOB NOT NULL
+) STRICT;

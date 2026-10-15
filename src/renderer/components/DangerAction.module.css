@@ -1,0 +1,66 @@
+.trigger {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--settings-danger, #ff3b30);
+  font: inherit;
+}
+.trigger:hover {
+  background: var(--settings-danger-soft, rgb(255 59 48 / 10%));
+}
+.trigger:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.dialog {
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  width: min(360px, calc(100vw - 48px));
+  padding: 24px;
+  color: var(--settings-fg);
+  background: var(--settings-panel);
+  border: 1px solid var(--settings-border);
+  border-radius: 24px;
+  box-shadow: 0 20px 64px rgb(0 0 0 / 32%);
+}
+.dialog::backdrop {
+  background: rgb(0 0 0 / 45%);
+}
+.dialog h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+.dialog p {
+  max-height: min(180px, 35vh);
+  overflow: auto;
+  margin: 0 0 20px;
+  overflow-wrap: anywhere;
+}
+
+.actions button:focus-visible {
+  outline: 2px solid var(--settings-fg);
+  outline-offset: 2px;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.actions button {
+  padding: 8px 16px;
+  color: inherit;
+  background: var(--control-bg);
+  border: 1px solid var(--control-border);
+  border-radius: 12px;
+  font: inherit;
+}
+.actions .confirm {
+  color: var(--settings-danger, #ff3b30);
+  background: var(--settings-danger-soft, rgb(255 59 48 / 10%));
+}

@@ -1,95 +1,12 @@
+import type { RendererDiagnostic } from './diagnostics';
+import type { MediaCommand, MediaSnapshot, MediaOperationResult } from './media';
+import type { Application, LaunchTarget, LaunchResult } from './launch';
 import type { Locale } from './i18n';
+import type { WeatherSnapshot, WeatherPreferences } from './weather';
+import type { AIMutation } from './aiConfiguration';
+import type { LicenseMetadata, LicenseRecord } from './licenses';
 import type { AppState, AppStatePatch } from './appState';
 import { z } from 'zod';
-export interface MediaTrack {
-  name: string;
-  artist: string;
-  album?: string;
-  artwork_url?: string | null;
-  state: string;
-  source: string;
-}
-export interface MediaSession extends MediaTrack {
-  id: string;
-  playerName: string;
-  state: 'playing' | 'paused' | 'stopped' | 'unknown';
-  capabilities: {
-    previous: boolean | null;
-    play: boolean | null;
-    pause: boolean | null;
-    next: boolean | null;
-    toggle: boolean | null;
-  };
-  isCurrent?: boolean;
-  stale?: boolean;
-}
-export type MediaError =
-  | 'mediaReadFailed'
-  | 'mediaSessionGone'
-  | 'mediaCommandUnsupported'
-  | 'mediaCommandFailed'
-  | 'mediaOpenFailed';
-export interface MediaSnapshot {
-  sessions: MediaSession[];
-  activeSessionId: string | null;
-  manualSessionId: string | null;
-  status: 'ready' | 'idle' | 'error';
-  lastSuccessfulReadAt: number | null;
-  error: MediaError | null;
-}
-export interface MediaOperationResult {
-  snapshot: MediaSnapshot;
-  error: MediaError | null;
-}
-export const QuickAppTargetSchema = z.discriminatedUnion('kind', [
-  z
-    .object({
-      kind: z.literal('desktop-entry'),
-      desktopFile: z.string().min(1),
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.literal('command'),
-      executable: z.string().min(1),
-      args: z.array(z.string()).max(128),
-      workingDirectory: z.string().min(1).optional(),
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.literal('platform-app'),
-      platform: z.enum(['win32', 'darwin']),
-      identifier: z.string().min(1),
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.literal('url'),
-      url: z.url().refine((value) => ['http:', 'https:'].includes(new URL(value).protocol)),
-    })
-    .strict(),
-]);
-export type QuickAppTarget = z.infer<typeof QuickAppTargetSchema>;
-
-export const QuickAppSchema = z
-  .object({
-    id: z.string().min(1),
-    name: z.string().min(1),
-    target: QuickAppTargetSchema,
-  })
-  .strict();
-export type QuickApp = z.infer<typeof QuickAppSchema>;
-
-export const AppEntrySchema = z
-  .object({ name: z.string().min(1), target: QuickAppTargetSchema })
-  .strict();
-export type AppEntry = z.infer<typeof AppEntrySchema>;
-
-export const WorkflowSchema = z
-  .object({ name: z.string().min(1), urls: z.array(z.string()) })
-  .strict();
-export type Workflow = z.infer<typeof WorkflowSchema>;
 export interface DisplayInfo {
   id: number;
   label: string;
@@ -102,7 +19,6 @@ export interface InputRect {
   height: number;
   scaleFactor: number;
 }
-export type MediaCommand = 'previous' | 'playpause' | 'next';
 export type IslandMode = 'still' | 'quick' | 'large';
 export const ScrollGestureStartSchema = z
   .object({ at: z.number().finite().nonnegative() })
@@ -111,10 +27,11 @@ export type ScrollGestureStart = z.infer<typeof ScrollGestureStartSchema>;
 export type NoticeCode =
   | 'appLaunchFailed'
   | 'autoLaunchFailed'
-  | 'backgroundModeFailed'
+  | 'showTrayFailed'
   | 'stateSaveFailed'
   | 'stateLoadFailed'
   | 'diagnosticsFolderOpenFailed'
+  | 'colorPickerFailed'
   | 'inputShapeFailed'
   | 'windowLoadFailed'
   | 'missingApiKey'
@@ -147,9 +64,10 @@ export function noticeAreaForCode(code: NoticeCode): NoticeArea {
     case 'searchOpenFailed':
       return 'browser-search';
     case 'autoLaunchFailed':
-    case 'backgroundModeFailed':
+    case 'showTrayFailed':
     case 'stateSaveFailed':
     case 'diagnosticsFolderOpenFailed':
+    case 'colorPickerFailed':
     case 'secretStorageUnavailable':
       return 'settings';
     case 'stateLoadFailed':
@@ -174,27 +92,40 @@ export interface AppNotice {
   area: NoticeArea;
   detail?: string;
 }
-export type AssistantEvent =
-  | { requestId: string; kind: 'delta'; content: string }
-  | { requestId: string; kind: 'done' }
-  | { requestId: string; kind: 'error'; code: NoticeCode; detail?: string };
+export interface AssistantEvent {
+  requestId: string;
+  content: string;
+}
+export type AssistantResult =
+  | { status: 'complete'; text: string }
+  | { status: 'cancelled' }
+  | { status: 'error'; code: NoticeCode; detail?: string };
 interface AppBootstrap {
   state: AppState;
-  hasApiKey: boolean;
+  hasWeatherApiKey: boolean;
 }
 export interface InvokeMap {
+  'list-third-party-licenses': { args: []; result: LicenseMetadata[] };
+  'read-third-party-license': { args: [id: string]; result: LicenseRecord };
+  'ai-configuration-status': { args: []; result: Record<number, boolean> };
+  'mutate-ai-configuration': { args: [mutation: AIMutation]; result: AppState };
+  'save-ai-credential': { args: [id: number, key: string]; result: Record<number, boolean> };
+  'get-weather': { args: [preferences: WeatherPreferences]; result: WeatherSnapshot };
+  'save-weather-api-key': { args: [key: string]; result: void };
   'get-app-bootstrap': { args: []; result: AppBootstrap };
   'open-diagnostics-folder': { args: []; result: void };
+  'show-color-picker': { args: [initialColor: string]; result: string | null };
   'read-clipboard-text': { args: []; result: string };
   'write-clipboard-text': { args: [text: string]; result: void };
   'update-app-state': { args: [patch: AppStatePatch]; result: AppState };
-  'save-api-key': { args: [key: string]; result: void };
-  'launch-quick-app': { args: [id: string]; result: void };
-  'discover-apps': { args: [query: string]; result: AppEntry[] };
+  'set-island-preview': { args: [active: boolean]; result: void };
+  'get-island-preview': { args: []; result: boolean };
+  'launch-targets': { args: [targets: LaunchTarget[]]; result: LaunchResult };
+  'discover-apps': { args: [query: string]; result: Application[] };
   'renderer-ready': { args: []; result: void };
   'start-assistant': {
     args: [requestId: string, prompt: string];
-    result: string | null;
+    result: AssistantResult;
   };
   'cancel-assistant': { args: [requestId: string]; result: void };
   'get-system-locale': { args: []; result: string };
@@ -204,7 +135,10 @@ export interface InvokeMap {
     result: void;
   };
   'get-system-media': { args: []; result: MediaSnapshot };
-  'select-media-session': { args: [id: string | null]; result: MediaOperationResult };
+  'select-media-session': {
+    args: [id: string | null];
+    result: MediaOperationResult;
+  };
   'open-media-session': { args: [id: string]; result: MediaOperationResult };
   'get-bluetooth-status': { args: []; result: boolean };
   'get-camera-status': { args: []; result: boolean };
@@ -214,26 +148,39 @@ export interface InvokeMap {
     result: MediaOperationResult;
   };
   'open-external': { args: [url: string]; result: void };
-  'launch-app': { args: [name: string]; result: void };
-  'build-app-cache': { args: []; result: void };
   'get-displays': { args: []; result: DisplayInfo[] };
-  'set-display': { args: [id: string | number]; result: void };
-  'set-auto-launch': { args: [enable: boolean]; result: void };
   'focus-window': { args: []; result: void };
+  'open-settings': { args: []; result: void };
+  'quit-app': { args: []; result: void };
 }
 export interface ElectronAPI {
+  systemEventCapabilities: { media: boolean; devices: boolean };
+  reportDiagnostic(event: RendererDiagnostic): void;
+  onMediaSnapshotChanged(callback: (snapshot: MediaSnapshot) => void): () => void;
+  onDevicesChanged(callback: () => void): () => void;
+  listThirdPartyLicenses(): Promise<LicenseMetadata[]>;
+  readThirdPartyLicense(id: string): Promise<LicenseRecord>;
+  aiConfigurationStatus(): Promise<Record<number, boolean>>;
+  mutateAIConfiguration(mutation: AIMutation): Promise<AppState>;
+  saveAICredential(id: number, key: string): Promise<Record<number, boolean>>;
+  getWeather(preferences: WeatherPreferences): Promise<WeatherSnapshot>;
+  saveWeatherApiKey(key: string): Promise<void>;
+  showColorPicker(initialColor: string): Promise<string | null>;
   getAppBootstrap(): Promise<AppBootstrap>;
   openDiagnosticsFolder(): Promise<void>;
   readClipboardText(): Promise<string>;
   writeClipboardText(text: string): Promise<void>;
   updateAppState(patch: AppStatePatch): Promise<AppState>;
-  saveApiKey(key: string): Promise<void>;
-  launchQuickApp(id: string): Promise<void>;
-  discoverApps(query: string): Promise<AppEntry[]>;
+  setIslandPreview(active: boolean): Promise<void>;
+  getIslandPreview(): Promise<boolean>;
+  onIslandPreviewChanged(callback: (active: boolean) => void): () => void;
+  launchTargets(targets: LaunchTarget[]): Promise<LaunchResult>;
+  discoverApps(query: string): Promise<Application[]>;
   rendererReady(): Promise<void>;
-  startAssistant(requestId: string, prompt: string): Promise<string | null>;
+  startAssistant(requestId: string, prompt: string): Promise<AssistantResult>;
   cancelAssistant(requestId: string): Promise<void>;
   onAppNotice(callback: (notice: AppNotice) => void): () => void;
+  onAppStateChanged(callback: (state: AppState) => void): () => void;
   onAssistantEvent(callback: (event: AssistantEvent) => void): () => void;
   onScrollGestureStart(callback: (event: ScrollGestureStart) => void): () => void;
   getSystemLocale(): Promise<string>;
@@ -249,10 +196,8 @@ export interface ElectronAPI {
   getMicrophoneStatus(): Promise<boolean>;
   controlSystemMedia(command: MediaCommand, sessionId: string): Promise<MediaOperationResult>;
   openExternal(url: string): Promise<void>;
-  launchApp(name: string): Promise<void>;
-  buildAppCache(): Promise<void>;
   getDisplays(): Promise<DisplayInfo[]>;
-  setDisplay(id: string | number): Promise<void>;
-  setAutoLaunch(enable: boolean): Promise<void>;
   focusWindow(): Promise<void>;
+  openSettings(): Promise<void>;
+  quitApp(): Promise<void>;
 }

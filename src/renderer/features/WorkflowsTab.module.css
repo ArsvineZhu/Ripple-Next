@@ -1,22 +1,3 @@
-.appButton:hover {
-  transform: scale(1.2);
-  z-index: 1;
-  box-shadow: 0 0 35px rgba(0, 0, 0, 0.22);
-}
-
-.appButton:active {
-  transform: scale(1.15);
-}
-
-.workflowButton:hover {
-  padding: 20px 17px;
-  filter: brightness(1.1);
-}
-
-.workflowButton:active {
-  transform: scale(0.98);
-}
-
 .container {
   display: flex;
   flex-direction: column;
@@ -43,34 +24,40 @@
   gap: 10px;
 }
 
+.workflowList[data-empty] :global(.scroll-content) {
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
 .emptyState {
-  text-align: center;
-  font-size: 13px;
-  margin-top: 20px;
+  width: 100%;
+  padding: 12px 20px;
 }
 
 .workflowButton {
-  transition:
-    transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    filter 0.5s ease,
-    padding 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    box-shadow 0.5s ease;
-  cursor: pointer;
-  user-select: none;
-  border: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
   padding: 10px 15px;
-  will-change: transform;
   width: 96%;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
   text-align: left;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   align-self: center;
   margin-bottom: 2px;
 }
 
+.workflowName {
+  display: -webkit-box;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
 .itemCount {
+  flex-shrink: 0;
   opacity: 0.6;
   font-weight: 400;
   margin-left: 5px;
@@ -96,21 +83,21 @@
   padding: 0 15px;
 }
 
+.quickAppStrip[data-standalone] {
+  margin: auto 0;
+}
+
+.quickAppStrip[data-standalone] .quickAppList {
+  margin: 0 auto;
+}
+
 .appButton {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 15px;
-  font-size: 17px;
-  font-weight: 500;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   margin-right: 2px;
-  transition:
-    transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    box-shadow 0.4s ease;
-  cursor: pointer;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.148);
-  z-index: 0;
-  user-select: none;
-  will-change: transform;
   flex-shrink: 0;
 }
 
@@ -127,17 +114,7 @@
   max-width: 220px;
 }
 
-.launchError {
-  color: #ffa6a6;
-  font-size: 11px;
-  line-height: 1.4;
-  margin: 6px 4px 0;
-  overflow-wrap: anywhere;
-  text-align: center;
-}
-
-.appButton:disabled,
-.workflowButton:disabled {
-  opacity: 0.6;
-  cursor: wait;
+.quickAppStrip:not([data-standalone]) {
+  border-top: 1px solid color-mix(in srgb, var(--island-text-color), transparent 90%);
+  background: color-mix(in srgb, var(--island-text-color), transparent 98%);
 }

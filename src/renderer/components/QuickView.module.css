@@ -1,4 +1,7 @@
 .playing {
+  position: absolute;
+  top: 0;
+  height: 40px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -23,6 +26,8 @@
 }
 
 .trackClip {
+  display: flex;
+  align-items: center;
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -31,7 +36,9 @@
 }
 
 .trackText {
-  display: inline-block;
+  width: max-content;
+  display: block;
+  line-height: 1.35;
   white-space: nowrap;
   font-size: 13px;
   font-weight: 600;
@@ -42,37 +49,15 @@
   opacity: 0.7;
   font-weight: 400;
 }
-
-.trackRepeat {
-  padding-right: 30px;
-}
-
-.artistRepeat {
-  opacity: 0.7;
-  font-weight: 400;
-}
-
 .playButton {
-  background: none;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 1px;
+  width: 30px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  margin-left: 1px;
   flex-shrink: 0;
   overflow: hidden;
   z-index: 100;
-  will-change: opacity, width;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-}
-.playButton:disabled {
-  opacity: 0.3;
-  cursor: default;
+  will-change: opacity;
 }
 
 .status {
@@ -112,13 +97,4 @@
   display: flex;
   align-items: center;
   gap: 2px;
-}
-.actionError {
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #ffa6a6;
-  font-size: 11px;
-  margin: 0 8px;
 }

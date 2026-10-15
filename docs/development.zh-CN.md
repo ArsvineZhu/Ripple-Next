@@ -1,8 +1,8 @@
-[English](development.md)
+[English](development.md) · [架构](architecture.zh-CN.md)
 
-# 开发指南
+# 开发
 
-使用 [.node-version](../.node-version) 中的 Node `22.23.3`，并使用 `package.json` 固定的 pnpm `12.9.1`。当前工具链要求 Node 22.13 或更新版本。Linux 打包需要 `dpkg`、`fakeroot`、`rpm` 和构建工具；可选系统功能使用 `bluetoothctl` 与 `fuser`。麦克风检测使用 `pactl`；缺少此工具时，在 PipeWire 系统上切换到 `pw-dump`，读取正在运行的音频采集流。选中的检测后端保持到应用重启，命令或连接失败仍记录为诊断错误。Windows MSI 需要 WiX Toolset，macOS 打包需要 Xcode Command Line Tools。在对应系统运行原生 maker。
+使用 [.node-version](../.node-version) 的 Node `22.23.3` 和 package.json 的 pnpm `12.9.1`，按提交的锁文件安装。原生打包在对应主机运行：Linux 使用 cc、dpkg、fakeroot、rpm，Windows MSI 使用 WiX，macOS 使用 Xcode 命令行工具。
 
 ```sh
 pnpm install --frozen-lockfile
@@ -13,48 +13,37 @@ pnpm package
 pnpm make
 ```
 
-Linux 开发时可能需要与 Electron 构建匹配、root 所有且权限为 `4755` 的 Chromium sandbox helper。如果安装了相同构建的 Ripple Next，可在启动 Forge 时设置 `CHROME_DEVEL_SANDBOX=/usr/lib/ripple-next/chrome-sandbox`。
+Linux 开发需要有效 Chromium 沙盒，可通过 `CHROME_DEVEL_SANDBOX` 指定匹配的已安装 helper，其所有者为 root、权限为 4755。Forge 使用 X11／XWayland 运行透明窗口；修改主进程／preload 后重启应用。
 
-## 工具职责
+## 命令与配置
 
-工具配置集中在 [.config](../.config/README.zh-CN.md)，由 package scripts 显式选择。
+| 命令                     | 用途                                              |
+| ------------------------ | ------------------------------------------------- |
+| `start`                  | Forge／Vite 开发及原生资源生成                    |
+| `typecheck`              | 主进程、preload、界面、工具的严格 TypeScript 项目 |
+| `lint`                   | Oxlint 正确性、Hooks 与分层边界，警告视为失败     |
+| `format`／`format:check` | Prettier 写入／只读检查                           |
+| `deadcode`               | Knip 入口、导出及依赖                             |
+| `duplicates`             | JSCPD 生产源码重复分析                            |
+| `check`                  | 全部只读静态检查                                  |
+| `test`                   | 递归 Vitest `.test.ts`／`.test.tsx`               |
+| `build:native`           | 对应主机的监听器／窗口模块构建                    |
+| `package`／`make`        | 可运行目录／原生安装程序及归档                    |
 
-| 命令                      | 契约                                                                                           |
-| ------------------------- | ---------------------------------------------------------------------------------------------- |
-| `typecheck`               | 严格检查 main/preload/renderer/工具 TS 项目，Vite 仅转译                                       |
-| `lint`                    | Oxlint 检查 TS/React/Hooks 正确性和导入边界，warning 使 CI 失败                                |
-| `format` / `format:check` | Prettier 写入/检查配置的 2 空格、LF、单引号及 100 列风格                                       |
-| `deadcode`                | Knip 检查入口、导出和依赖；Forge 构造器显式引用动态 makers/plugins                             |
-| `duplicates`              | JSCPD 按项目阈值扫描生产 TS/TSX                                                                |
-| `check`                   | 聚合上述只读静态检查                                                                           |
-| `test`                    | Vitest 覆盖状态持久化、安全密钥存储、IPC、AI 流式响应、交互状态、国际化、平台命令及 Linux 几何 |
+[.config](../.config/README.zh-CN.md) 管理可移动工具配置。根清单、锁文件、pnpm-workspace.yaml 和编辑器／Git 发现文件保留在工具要求的位置。Vite 转译，独立编译器项目检查类型；共享层不依赖运行服务，界面不导入 Node、Electron 或主进程／preload。
 
-Oxlint 关闭 `react/set-state-in-effect`，因为 OS 遥测和偏好 effect 会有意驱动状态。Renderer 不导入 Node、Electron 或 main/preload；shared 不依赖运行时服务。类型检查以 TypeScript 为准。
+## 配置、状态与原生集成
 
-## 运行架构
+开发使用 `Ripple Next Development`，安装版本使用 Electron app-data 下的 `Ripple Next`；数据、缓存、凭据分别保存，原生锁维持一个实例。Linux 在 home 配置目录解析锁，再次启动打开设置。
 
-Main 拥有应用生命周期、托盘、透明窗口、系统能力和 typed IPC。服务拥有状态持久化、安全凭据、通知、AI 请求、应用发现/启动和自动启动；平台适配器封装系统差异。Preload 暴露 typed `electronAPI`，shared Zod schema 验证状态文件和启动目标。Renderer 拥有视图和交互；XState 管理鼠标离开、几何重入、焦点、菜单与拖动状态。
+SQLite schema 和预编译语句归 appStateStore，主进程校验唯一已提交快照并原子更新变化的行／列表，AI 图与关联加密凭据共享事务。读写失败保留数据，界面通过桥接初始化并提交类型化 patch。
 
-状态服务使用新用户数据目录中的 `ripple-next.sqlite` 保存设置、任务、工作流、快捷应用和已加密的 API key。编号 schema migration 位于 `src/main/database/migrations/`，命名查询位于 `src/main/database/queries/`，全部使用 `.sql` 文件；TypeScript 只绑定参数并控制事务。Renderer 在显示界面前读取状态快照，再通过 typed patch 更新；设置和功能数据不使用 `localStorage`。API key 使用 Electron `safeStorage` 加密，且不会返回 renderer。Linux 缺少 OS 密钥存储时拒绝保存密钥。Ripple Next 不读取或迁移旧 Ripple 数据目录。Linux 自启动优先使用绝对路径 `XDG_CONFIG_HOME/autostart`，否则使用 `~/.config/autostart`。
+Windows 媒体／设备使用常驻执行器；Linux 媒体／蓝牙使用内置 D-Bus 客户端，PipeWire 使用 `pw-dump --monitor --no-colors`，仅有 PulseAudio 时使用 `pactl subscribe`，V4L2 使用内置 inotify 程序并在事件后通过 `fuser` 读取。Forge 构建 Linux 程序与目标架构 macOS 窗口模块，作为原生资源分发。
 
-AI SDK 的 `streamText` 与 OpenAI 兼容 provider 在 main 实现流式对话。默认 system prompt 保存在 `src/main/prompts/default-assistant.md`，并随 main bundle 打包。`xstate` 和 `@xstate/react` 管理可取消的交互延迟与重入门控。Linux 快捷应用从 XDG 桌面入口发现并通过 `gio launch` 启动；自定义命令通过 `spawn` 接收参数数组，不经过 shell。
+## 验证与拍摄
 
-浏览器搜索地址模板保存在设置中，必须包含 `{query}`；直接输入 HTTP(S) 地址仍会作为网址打开。时钟和日期使用当前语言，并可跟随系统时区或指定 IANA 时区。错误会路由到所属功能区行内展示；`InlineNotices` 沿用 Island 的 Motion 淡入与模糊过渡。长内容区使用系统原生纵向滚动，横向页签使用可接续的连续动画与有界回弹；AI 回答会随内容增长，并限制在当前屏幕可用高度内。设置页滑块由对应 CSS Module 统一管理主题轨道、滑块和焦点样式。
+测试按[平台、功能及公共契约](../tests/README.zh-CN.md)归类，可用 `pnpm test tests/platform/linux` 或 `pnpm test tests/features/media` 选择范围。内核测试跳过不支持的主机，私有 broker 和夹具隔离系统／播放器操作。
 
-## 本地诊断
+拍摄使用独立配置与演示内容，实际录制英文界面，中文表达演示使用对应语言，逐张／逐段检查。临时工具与中间资料保存在忽略的 out/，原始字体、供应方算法和声明保持完整。
 
-平台适配检查结果、诊断字段和平台验收边界见 [Windows 适配与诊断](platform-compatibility.zh-CN.md)。CI 在 Ubuntu、Windows 和 macOS 上执行检查与测试；更换系统时，从锁文件重新安装依赖。
-
-Ripple Next 将 `ripple-next.log` 写入 `<userData>/diagnostics/`，Electron minidump 保存在其中的 `crashes/` 子目录。可在设置页的“诊断”区域选择“打开诊断文件夹”。日志传输大小上限为 5 MiB；每次启动时会清理超过 30 天的崩溃报告，并只保留最新的 10 份。
-
-崩溃报告不会上传。AI 日志记录请求 ID、阶段耗时、增量数量和回答字符数，不记录提示词或回答正文。错误记录包含错误类型和堆栈帧，不包含自由格式的错误消息。minidump 是二进制进程快照，应作为敏感的本机诊断数据处理。
-
-Linux 使用透明 XWayland 窗口，并限制在所选显示器的工作区内，以保留桌面面板。仅让 X11 `ShapeInput` 跟随动画中的 Island；修改 `ShapeBounding` 可能出现黑边。X11 客户端保持静态导入并打入安装包。后台模式通过同一 X11 客户端请求 `_NET_WM_STATE_SKIP_TASKBAR`。窗口需等 renderer ready 且首次输入区域得到确认后才显示。边界说明见[主进程](../src/main/README.zh-CN.md)、[preload](../src/preload/README.zh-CN.md)和[renderer](../src/renderer/README.zh-CN.md)。
-
-Forge 在启动和打包前清理 `.vite`；`.vite`、`out`、报告和 `node_modules` 不纳入 Git。各类读者的说明见[文档目录](INDEX.zh-CN.md)。
-
-## 正式版工作
-
-`pnpm package` 生成可运行目录，`pnpm make` 同时执行配置的原生安装包／归档 maker。[发布指南](release.zh-CN.md)维护版本／标签流程和运行验收。修改主进程或 preload 后重启整个应用，renderer 热更新只替换界面代码。截图数据与会改变状态的运行验证使用独立配置。
-
-[四语产品 README](INDEX.zh-CN.md)介绍功能，本指南维护工具链命令。行为变化时同步双语技术指南与界面截图；演示数据规则见[拍摄说明（英语）](assets/screenshots/README.md)。
+见[使用](../instructions.zh-CN.md)、[平台支持](platform-compatibility.zh-CN.md)、[原生监听](native-observation.zh-CN.md)、[诊断](diagnostics.zh-CN.md)和[发布](release.zh-CN.md)。

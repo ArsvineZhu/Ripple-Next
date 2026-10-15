@@ -1,50 +1,36 @@
 import { isInteractiveTarget } from '../lib/interactions';
 import type { PointerEvent, Dispatch, SetStateAction } from 'react';
-import type { MediaTrack, IslandMode } from '../../shared/contracts';
-import { normalizeHiddenTabs, SETTINGS_TAB_ID } from '../../shared/appState';
-import { visibleTabIds, nextTabId } from '../lib/navigation';
+import type { IslandMode } from '../../shared/contracts';
+import { nextTabId } from '../lib/navigation';
+import { islandPages } from '../lib/tabs';
+import { defaultPageLayoutContext } from '../lib/tabGeometry';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
-import { TABS } from '../lib/tabs';
 import { useAppState } from '../components/AppStateProvider';
 export function useNavigation({
-  mediaTrack,
-  mediaAvailable = !!mediaTrack,
+  mediaAvailable,
   mode,
   isDragging,
   setMode,
 }: {
-  mediaTrack: MediaTrack | null;
-  mediaAvailable?: boolean;
+  mediaAvailable: boolean;
   mode: IslandMode;
   isDragging: boolean;
   setMode: Dispatch<SetStateAction<IslandMode>>;
 }) {
-  const { state, updateState } = useAppState();
+  const { state } = useAppState();
   const { tabOrder, hiddenTabs, defaultTabId } = state.settings;
-  const setDefaultTabId = (defaultTabId: number) => updateState({ settings: { defaultTabId } });
-  const moveTabOrder = (fromIdx: number, toIdx: number) => {
-    if (toIdx < 0 || toIdx >= tabOrder.length) return;
-    const newOrder = [...tabOrder];
-    const [moved] = newOrder.splice(fromIdx, 1);
-    if (moved !== undefined) newOrder.splice(toIdx, 0, moved);
-    updateState({ settings: { tabOrder: newOrder } });
-  };
-  const toggleTabVisibility = (id: number) => {
-    if (id === SETTINGS_TAB_ID) return;
-    const currentHiddenTabs = normalizeHiddenTabs(hiddenTabs);
-    const newHidden = currentHiddenTabs.includes(id)
-      ? currentHiddenTabs.filter((tab) => tab !== id)
-      : [...currentHiddenTabs, id];
-    if (newHidden.length < TABS.length) updateState({ settings: { hiddenTabs: newHidden } });
-  };
   const isMusicActive = mediaAvailable;
   const visibleTabs = useMemo(
-    () => visibleTabIds(tabOrder, hiddenTabs, isMusicActive),
+    () =>
+      islandPages.visible(tabOrder, hiddenTabs, {
+        ...defaultPageLayoutContext,
+        mediaAvailable: isMusicActive,
+      }),
     [tabOrder, hiddenTabs, isMusicActive],
   );
-  const [[currentTabId, direction], setTabState] = useState<[number, number]>(() => {
-    const id = visibleTabs.includes(defaultTabId) ? defaultTabId : (visibleTabs[0] ?? 0);
+  const [[currentTabId, direction], setTabState] = useState<[string, number]>(() => {
+    const id = visibleTabs.includes(defaultTabId) ? defaultTabId : visibleTabs[0]!;
     return [id, 0];
   });
   const currentTab = currentTabId;
@@ -70,10 +56,15 @@ export function useNavigation({
     [mode, setMode, visibleTabs],
   );
   const selectTab = useCallback(
-    (id: number, direction?: number) => {
+    (id: string, direction?: number) => {
       if (!visibleTabs.includes(id)) return;
       setTabState((previous) =>
-        previous[0] === id ? previous : [id, direction ?? (id > previous[0] ? 1 : -1)],
+        previous[0] === id
+          ? previous
+          : [
+              id,
+              direction ?? (visibleTabs.indexOf(id) > visibleTabs.indexOf(previous[0]) ? 1 : -1),
+            ],
       );
     },
     [visibleTabs],
@@ -148,12 +139,15 @@ export function useNavigation({
         moveTab(1);
       } else if (e.key === 'ArrowLeft') {
         moveTab(-1);
-      } else if (e.ctrlKey && e.key >= '1' && e.key <= '8') {
+      } else if (e.ctrlKey && /^[1-9]$/.test(e.key)) {
         const idx = parseInt(e.key) - 1;
         if (visibleTabs[idx] !== undefined) {
           const targetId = visibleTabs[idx];
           setMode('large');
-          setTabState([targetId, targetId > currentTabId ? 1 : -1]);
+          setTabState([
+            targetId,
+            visibleTabs.indexOf(targetId) > visibleTabs.indexOf(currentTabId) ? 1 : -1,
+          ]);
         }
       }
     };
@@ -163,12 +157,6 @@ export function useNavigation({
     };
   }, [moveTab, currentTabId, visibleTabs, setMode]);
   return {
-    tabOrder,
-    hiddenTabs,
-    defaultTabId,
-    setDefaultTabId,
-    moveTabOrder,
-    toggleTabVisibility,
     currentTabId,
     direction,
     currentTab,

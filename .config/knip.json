@@ -5,14 +5,15 @@
     "src/preload/index.ts",
     ".config/forge.config.ts",
     ".config/vite.*.config.mts",
-    "tests/**/*.test.ts"
+    "tests/**/*.test.{ts,tsx}"
   ],
   "project": [
     "src/**/*.{ts,tsx}",
     "scripts/**/*.ts",
-    "tests/**/*.ts",
+    "tests/**/*.{ts,tsx}",
     ".config/**/*.ts",
     ".config/**/*.mts"
   ],
+  "ignore": ["src/renderer/components/liquidGlass/vendor/**"],
   "ignoreBinaries": ["gio"]
 }

@@ -15,11 +15,11 @@
 }
 
 .warning {
-  color: #f0bc55;
+  color: var(--notice-warning-color, #f0bc55);
 }
 
 .error {
-  color: #ffa6a6;
+  color: var(--notice-error-color, #ffa6a6);
 }
 
 .message {

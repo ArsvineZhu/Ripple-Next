@@ -1,92 +1,63 @@
-[简体中文](instructions.zh-CN.md) · [Product overview](README.md)
+[简体中文](instructions.zh-CN.md) · [Product tour](README.md)
 
 # Using Ripple Next
 
-Ripple Next puts eight small tools in a floating Island. Start with Overview, open a song in your music player, then add the apps and websites you use together as a workflow. The [README](README.md) includes screenshots; this guide explains the controls and the data they use.
+Ripple Next keeps seven daily-action pages in a floating Island and configuration in a separate Settings window. Launching the application opens Settings; closing that window leaves the Island running. Launching again or using the tray opens the existing settings window.
 
-## Find your way around
+## Expand, glance and navigate
 
-Hover over the Island to reveal **Quick** mode. Click a non-interactive part of it to expand **Large** mode. **Still** is the compact idle state. Buttons and input fields perform their own action instead of toggling the Island.
+Hover for quick view; click a noninteractive part of the Island to expand. Buttons and fields perform their own action. Leaving the pointer collapses according to your delay, unless focus, an open menu, a drag or standby behavior keeps it open.
 
-| Action                     | Control                                                                                  |
-| -------------------------- | ---------------------------------------------------------------------------------------- |
-| Move between feature pages | Left/Right outside interactive controls, or a horizontal wheel/trackpad gesture          |
-| Jump to a visible page     | Ctrl+1 through Ctrl+8, in your configured visible-page order                             |
-| Scroll a long page         | Vertical wheel/trackpad scrolling                                                        |
-| Choose a music source      | Vertical scrolling in Now Playing; click A/a dot; focus the music area and press Up/Down |
-| First/last music page      | Home/End while the music area has focus                                                  |
-| Use a dropdown             | Arrow keys and Enter; Escape closes it and returns focus                                 |
-| Recover a hidden Island    | Tray menu → Show                                                                         |
+| Action                 | Input                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| Switch feature page    | Left/Right outside text editing, or horizontal wheel/trackpad gesture          |
+| Jump to a page         | Ctrl+1 through Ctrl+7 outside interactive controls, in your visible-page order |
+| Read longer content    | Native vertical scrolling                                                      |
+| Choose a player        | Vertical scroll, A/player indicator, or focused Up/Down                        |
+| Player first/last page | Focused Home/End                                                               |
+| Operate menus          | Arrow keys, Enter, Escape                                                      |
+| Operate controls       | Tab focus, Enter/Space, native pointer input                                   |
 
-Settings lets you reorder and hide feature pages and choose a default. Now Playing becomes available when Ripple detects a supported media session. Settings remains available even when other pages are hidden. One continuous horizontal gesture moves one feature page; feature navigation wraps around. Music source navigation stops at the first and last card.
+Feature pages wrap horizontally; player pages stop at their vertical boundaries. One continuous stroke changes one page. Settings can reorder/hide pages and select the default; Overview remains reachable if every available page is hidden. The music page appears when a supported session or media error is available.
 
-## Search and open addresses
+Search/task drafts survive page changes and collapse. Enter submits search, a task or an AI question; Shift+Enter adds an assistant-input line. IME confirmation does not submit.
 
-Enter a query in Browser Search and submit it to open your system default browser. HTTP(S) addresses open directly. In Settings, configure a search URL template containing `{query}`; Ripple substitutes the encoded query into that placeholder.
+## Search, workflows and quick apps
 
-A workflow entry such as `localhost:3000/` or `127.0.0.1:3000/admin?view=usage#today` is recognized as a local website and opens with HTTP. Prefer an explicit `http://` or `https://` address for other hosts or when choosing the scheme matters. Opening an address does not start a server: the service must already be listening on that port. Firefox opens when Firefox is your system default browser.
+Search text uses the configured HTTP(S) template containing `{query}`; direct HTTP(S) addresses open in the system browser. Workflow local addresses such as `localhost:3000/` receive HTTP automatically. Opening a URL does not start its server.
 
-## Build a workflow and pin quick apps
+Create a workflow in Shortcuts & Workflows: enter a name and one target per row, + adds a row, × removes it. Commas inside addresses remain part of the address. A valid name/first target creates the entry automatically; later valid edits save as entered. Launching runs targets in order, reports each failure at its owner and continues subsequent targets.
 
-In Settings, give a workflow a name and enter its application/website targets. Separate targets with commas or semicolons; Chinese comma, enumeration comma and semicolon are also accepted. Select the workflow on the Workflows page to launch its targets in order. A failed target shows an error on that workflow, and later targets are still attempted. Retrying clears the old message.
+Quick apps hold an installed application, HTTP(S) shortcut or executable with one argument per line and an optional working directory. They launch independently of workflows; a workflow can reuse a saved quick app's native identity or command data.
 
-For example, an **API gateway** workflow can contain `localhost:3000/`. A **Reading** workflow can contain two documentation URLs. A workflow is a launch list; it does not execute conditional steps or schedule jobs.
+## Music and overview
 
-Quick Apps are individual launch buttons on the same page. Choose one of three target types:
+Start playback in a supported player. Idle displays a shorter track capsule without a playback slot; hover quick view grows, adds play/pause and always shows the artist. Music settings controls idle artist visibility, 3D artwork/intensity and long-text scrolling. Expanded music shows artwork and previous/play/next, and the cover activates its player.
 
-| Type                  | What to enter                                                           |
-| --------------------- | ----------------------------------------------------------------------- |
-| Installed application | Select an app discovered on this operating system                       |
-| Custom command        | An executable, one argument per line, and an optional working directory |
-| Website               | An HTTP(S) URL                                                          |
+With multiple players, A selects Automatic and each indicator selects a player for this run until it exits. Automatic prefers active playback. Controls address the displayed session; a departed player cannot redirect an old command to another one. A missing cover uses the music placeholder. Long text resumes after returning to a hidden page.
 
-Custom commands use separate arguments without a shell. Put arguments in the argument field, not inside the executable path; shell operators such as `&&` are not interpreted. Linux installed apps use desktop entries; Windows uses Start Menu shortcuts and Store identifiers; macOS uses application bundles. Re-select installed-app targets if you move your setup to another OS.
+Overview shows time, date, battery and configured weather. Set clock cycle, period display, time zone, Celsius/Fahrenheit and automatic/manual location. Automatic location uses network IP and may reflect VPN/proxy routing; a blank manual location hides weather. Weather credentials use the built-in source or your saved key.
 
-## Control the right music player
+## AI, clipboard and tasks
 
-Start playback in a supported app, then open Now Playing. Ripple reads song title, artist, cover and available controls from the player. Click the cover to bring the player forward when its platform integration supports opening it. Previous/Play/Pause/Next availability depends on the session's reported capabilities.
+In Integrations, add a Base URL, choose Chat Completions/Responses/Anthropic, save a credential and bind the exact model identifier. Models have their own system prompt, ordered enabled injections, reasoning/temperature/output settings and local character limit. Select a default model or switch in the assistant.
 
-With multiple players, the right edge **inside** the Island contains **A** for Automatic and one dot per player. Each page shows the player's name in small text. Click an indicator, scroll vertically, or use the focused music area's Up/Down keys to switch. Each continuous scroll gesture changes at most one card, including its momentum tail. Horizontal gestures still switch feature pages. Cards slide vertically without making the Island taller; the carousel respects reduced-motion preferences.
+Submit a question to stream Markdown and copy code using native clipboard actions. Ask another starts a new exchange. Partial failures retain received content; cancellation belongs to the active request. Requests go to your configured service. AI context awareness is unavailable and does not collect desktop content.
 
-Automatic prefers an actively playing session, then preserves a suitable playing or paused selection. A player card locks selection to that player for this run until it disappears. Select A to restore automatic choice. With one player in automatic mode, indicators are hidden. With one manually selected player, A and its dot remain so you can return to automatic mode.
+Clipboard history collects nonempty text for this run, at most 100 entries/one million characters. Repeats move to the front; the copy button writes the exact entry. Tasks persist until marked complete; completing removes the entry without a completed-task archive.
 
-While selection is being confirmed, playback controls are disabled. Rapid choices retain the latest requested target; displayed controls always carry that card's session ID. If a player closes, its dot disappears and selection falls back to a valid session. Selection errors stay on the music page.
+## Settings, fonts and glass
 
-Covers appear in both the expanded page and QuickView. Missing, unsupported or undecodable images use the music placeholder; changing the player or cover retries loading. Linux supports MPRIS artwork, including extensionless PNG/JPEG/GIF/WebP local files within the 5 MiB limit. Windows uses GSMTC. macOS currently supports running Spotify and Music; Music artwork is not retrieved by the current adapter. See [platform support](docs/platform-compatibility.md) for the limits of each integration.
+Settings begins with the keyboard-first guide and actual recordings. Chevron rows open editors; the back button restores scroll and focus. Valid ordinary edits save automatically. Credentials require Save/Change; deletion/clearing requires confirmation. A failed native preference operation retains the committed value.
 
-## Ask your own AI service
+Choose Default, Sleek Black or Windows 95; adjust colors/background, display, snap/free placement, corners, borders and behavior. Appearance displays a live Island preview. Native RGB selection preserves alpha and Cancel retains the color. Windows/Linux keep the tray visible; macOS offers menu-bar visibility.
 
-In Settings, enter an OpenAI-compatible **Base URL**, the provider's exact **model** name and your **API key**, then save the key. Use the endpoint and credentials supplied by your provider or local gateway. Ripple does not include a paid AI subscription.
+General → Font offers Alibaba PuHuiTi 3, System and OpenRunde. Explicit Simplified Chinese reveals Standard/Microsoft Chinese/Apple Chinese expression. Playful wording covers contextual hints and empty states, with ordinary technical/critical labels and zh-CN date/number formatting. User content and AI answers are not translated.
 
-Submit a question on AI Assistant. Output streams into the Island with Markdown formatting and copy buttons for code blocks. **Ask another** cancels/resets the current exchange. This is a single-question assistant; it does not save a conversation history. Errors appear on the assistant page.
+Appearance & Position → Liquid Glass (Exp) shows a sticky live preview. Pressed handles become clear lenses, held switches change across the midpoint, and dragging near stops attracts the actual value. Disable Settings glass for ordinary controls. Island glass is unavailable.
 
-Questions are sent to the configured service. The API key is encrypted using OS-backed secure storage; its ciphertext is saved in Ripple's database, and the saved key is never sent back to the renderer. On Linux, saving fails if secure encryption is unavailable. The settings field cannot reveal a previously stored key; save an empty key to remove it. The [diagnostics guide](docs/platform-compatibility.md) explains what local logs contain.
+## Data and support
 
-## Overview, clipboard and tasks
+Preferences, tasks, workflows, quick apps and encrypted credential records live in `ripple-next.sqlite` in the Ripple Next user-data directory. The whole database is not encrypted. Back it up with the application closed; encrypted keys may require re-entry on a different machine/OS. Linux key saving requires OS-backed encryption.
 
-**Overview** displays the clock, localized date, current weather and battery state. Settings provides 12/24-hour time, system or IANA time zone, weather location and Celsius/Fahrenheit. Weather needs network access to WeatherAPI; battery details depend on the OS and hardware. The minute-only clock updates at minute boundaries.
-
-**Clipboard** collects text during the current run and lets you copy an item back to the system clipboard. It checks every two seconds and when Ripple gains focus. Empty and image-only clipboard values are skipped. Very brief changes between checks may not be captured. History stays in memory and disappears on restart; it continues collecting while the Island is collapsed.
-
-**Tasks** keeps a small persistent task list. Add a task, then mark it complete to remove it from the list. It is intended for the next few things you want to do, without a separate completed-task archive.
-
-## Make the Island yours
-
-Settings groups appearance, interaction and feature configuration in one scrollable page:
-
-- Choose **Default**, **Sleek Black** or **Windows 95**, then adjust text/background colors, a local or remote background image, and the border.
-- Choose the display and snap/free positioning. Position changes keep Settings open. In free mode, save your edited coordinates.
-- **Standby** keeps Quick mode visible; **Large Standby** keeps the expanded view. Inactive hiding conceals the idle Island. Background mode reduces taskbar/Dock presence while retaining the tray controls.
-- Set the pointer-leave delay from **0–2000 ms**. Re-entering, focusing an input, opening a menu or dragging prevents an unintended collapse.
-- Configure launch at login, battery alerts, idle information, weather, search, workflows, quick apps and AI.
-- In **General → Language**, choose Follow system, 简体中文, English, 繁體中文 or 日本語. The interface and tray update immediately; preferences and input drafts survive a language switch. User text and AI responses are not translated.
-
-A failed background image shows feedback beside its setting. A launch failure stays beside its app/workflow. Device notifications preserve a page you have expanded.
-
-## Data, troubleshooting and updates
-
-Preferences, workflows, quick apps and tasks are stored in `ripple-next.sqlite` in the **Ripple Next** user-data directory. Only the API-key blob uses secure encryption; the whole database is not encrypted. Ripple Next starts with its own profile and does not import the older Ripple directory. Back up the database with the application closed; encrypted keys may need to be entered again on another machine or OS.
-
-Open **Settings → Diagnostics → Open diagnostics folder** when investigating a failure. Local crash dumps may contain process memory, so inspect them before sharing. See [platform compatibility and troubleshooting](docs/platform-compatibility.md) for missing Linux commands, permissions, browser launches and media support.
-
-Use the [Ripple Next release list](https://github.com/ArsvineZhu/Ripple-Next/releases) and select a `RippleNext-…` package for your OS. The [4.0.0 release notes](docs/releases/4.0.0.en.md) describe this stable version and its history.
+Settings → Diagnostics opens bounded local logs and crash data. Inspect crash dumps before sharing because they can contain process memory. See [platform support](docs/platform-compatibility.md), [diagnostics](docs/diagnostics.md) and the [release page](https://github.com/ArsvineZhu/Ripple-Next/releases).

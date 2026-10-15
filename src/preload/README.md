@@ -1,17 +1,11 @@
-[简体中文](README.zh-CN.md)
+[简体中文](README.zh-CN.md) · [Shared contracts](../shared/README.md)
 
 # Preload bridge
 
-Media reads return a session snapshot. `selectMediaSession` chooses Automatic or a known session, and `controlSystemMedia` requires that displayed session's ID; both return refreshed state and an operation error. `openMediaSession` uses the known session identity to activate its player without waiting for another metadata read, and returns the current snapshot plus an operation error. The renderer has no raw D-Bus or PowerShell access.
+The sandbox-compatible CommonJS bundle exposes a typed electronAPI through contextBridge. Every operation uses a named method; renderer code receives neither raw ipcRenderer nor arbitrary channel access.
 
-Preload exposes the isolated `electronAPI` through explicit `contextBridge` methods. It maps typed calls and events to named IPC channels from [shared contracts](../shared/README.md); renderer code never receives raw `ipcRenderer` access.
+The bridge covers application bootstrap/committed updates, feature patches, validated AI graph/credential operations, assistant stream events, weather, native launch/media/device operations, clipboard, color picker, window input/preview and diagnostics. Main validates window identity and operation payloads.
 
-The bridge covers app-state bootstrap and patches, secure API-key save/removal, quick-app discovery and launch, AI stream events and cancellation, notices, locale, media, autostart, display and window input shape. API-key material is sent to main for storage and is absent from the bootstrap response.
+Media events deliver the same snapshot/selection to both windows. Device events wake one observer; capability flags describe the selected native backend. Every event method returns an unsubscribe function. Scroll gesture events and renderer diagnostic payloads are bounded schemas.
 
-Keep this bundle sandbox-compatible and keep each bridge method aligned with its shared request, response and event contract.
-
-See the [developer guide](../../docs/development.md) and [repository map](../../INDEX.md).
-
-The bridge also exposes `readClipboardText()` and `writeClipboardText(text)` so desktop clipboard operations use Electron's native API without browser focus/permission assumptions.
-
-`onScrollGestureStart(callback)` delivers validated native touchpad start timestamps through `scroll-gesture-start` and returns an unsubscribe function. It exposes no raw input events or pointer/key data.
+Settings alone edits AI configuration/credentials, requests the native color dialog and controls the transient Island preview. Credential plaintext never returns through bootstrap/status. See [architecture](../../docs/architecture.md) and [development](../../docs/development.md).

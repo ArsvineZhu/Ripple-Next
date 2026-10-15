@@ -1,172 +1,53 @@
-import type { ChangeEvent } from 'react';
-import { useCallback, useState } from 'react';
-import type { AppSettings, PositionMode } from '../../shared/appState';
+import { useCallback, useRef, useState } from 'react';
+import type { AppSettings } from '../../shared/appState';
 import type { DisplayInfo } from '../../shared/contracts';
-import type { LanguagePreference } from '../../shared/i18n';
-import { changeLanguagePreference } from '../i18n';
 import { useAppState } from '../components/AppStateProvider';
 import { useNotifications } from '../components/NotificationProvider';
 
-export function useSettings(initialHasApiKey: boolean) {
+export function useSettings(initialHasWeatherApiKey = false) {
   const { state, updateState } = useAppState();
   const { notify } = useNotifications();
-  const settings = state.settings;
   const [displays, setDisplays] = useState<DisplayInfo[]>([]);
-  const [manualPosition, setManualPosition] = useState({
-    x: settings.islandX,
-    y: settings.islandY,
-  });
-  const [hasApiKey, setHasApiKey] = useState(initialHasApiKey);
+  const [hasWeatherApiKey, setHasWeatherApiKey] = useState(initialHasWeatherApiKey);
+  const [autoLaunchPending, setAutoLaunchPending] = useState(false);
+  const autoLaunchRequest = useRef(false);
   const updateSettings = useCallback(
-    (patch: Partial<AppSettings>) => updateState({ settings: patch }),
+    (settings: Partial<AppSettings>) => updateState({ settings }),
     [updateState],
   );
-
-  const handleLanguageChange = (value: LanguagePreference) => {
-    updateSettings({ language: value });
-    void changeLanguagePreference(value);
-  };
-  const handleBatteryAlertsChange = (input: string) =>
-    updateSettings({ batteryAlerts: input === 'true' });
-  const handleIslandBorderChange = (input: string) =>
-    updateSettings({ islandBorder: input === 'true' });
-  const handleStandbyChange = (input: string) => updateSettings({ standbyMode: input === 'true' });
-  const handleLargeStandbyChange = (input: string) =>
-    updateSettings({ largeStandbyMode: input === 'true' });
-  const handleHourFormatChange = (input: string) =>
-    updateSettings({ hourFormat: input === '12-hr' ? '12-hr' : '24-hr' });
-  const handleTimeZoneChange = (timeZone: string) => updateSettings({ timeZone });
-  const handleAutoLaunchChange = async (input: string) => {
-    const enable = input === 'true';
-    try {
-      await window.electronAPI?.setAutoLaunch(enable);
-      updateSettings({ autoLaunch: enable });
-    } catch (error) {
-      notify({
-        severity: 'error',
-        code: 'autoLaunchFailed',
-        area: 'settings',
-        detail: error instanceof Error ? error.message : String(error),
-      });
-    }
-  };
-  const handleBackgroundModeChange = (input: string) =>
-    updateSettings({ backgroundMode: input === 'true' });
-  const handlehideNotActiveIslandChange = (input: string) =>
-    updateSettings({ hideIslandWhenInactive: input === 'true' });
-  const handleShowInfoWhenIdleChange = (input: string) =>
-    updateSettings({ showInfoWhenIdle: input === 'true' });
-  const handleWeatherUnitChange = (input: string) =>
-    updateSettings({ weatherUnit: input === 'c' ? 'c' : 'f' });
-  const handleBgColorChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    updateSettings({ backgroundColor: event.target.value });
-  const handleTextColorChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    updateSettings({ textColor: event.target.value });
-  const handleDisplayChange = (displayId: string) => {
-    updateSettings({ displayId });
-    void window.electronAPI?.setDisplay(displayId).catch(() => {});
-  };
-  const handleIslandXChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setManualPosition((position) => ({ ...position, x: Number(event.target.value) }));
-  const handleIslandYChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setManualPosition((position) => ({ ...position, y: Number(event.target.value) }));
-  const savePosition = () =>
-    updateSettings({ islandX: manualPosition.x, islandY: manualPosition.y });
-  const handleBgImageChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    updateSettings({ backgroundImage: event.target.value });
-  const setTheme = (theme: string) => {
-    if (theme === 'sleek-black') {
-      updateSettings({
-        theme: 'sleek-black',
-        backgroundColor: 'rgba(0, 0, 0, 0.64)',
-        textColor: 'rgba(255, 255, 255)',
-      });
-    } else if (theme === 'win95') {
-      updateSettings({
-        theme: 'win95',
-        backgroundColor: 'rgba(195, 195, 195)',
-        textColor: 'rgba(0, 0, 0)',
-      });
-    } else {
-      updateSettings({ theme: 'default', backgroundColor: '#000000', textColor: '#FFFFFF' });
-    }
-  };
-  const setPositionMode = (positionMode: string) =>
-    updateSettings({ positionMode: positionMode as PositionMode });
-  const handleApiBaseUrlChange = (aiBaseUrl: string) => updateSettings({ aiBaseUrl });
-  const handleAiModelChange = (aiModel: string) => updateSettings({ aiModel });
-  const saveApiKey = async (key: string): Promise<boolean> => {
-    try {
-      await window.electronAPI?.saveApiKey(key.trim());
-      setHasApiKey(Boolean(key.trim()));
-      return true;
-    } catch (error) {
-      notify({
-        severity: 'error',
-        code: 'secretStorageUnavailable',
-        area: 'settings',
-        detail: error instanceof Error ? error.message : String(error),
-      });
-      return false;
-    }
-  };
-
   return {
-    language: settings.language,
-    searchUrlTemplate: settings.searchUrlTemplate,
-    setSearchUrlTemplate: (searchUrlTemplate: string) => updateSettings({ searchUrlTemplate }),
-    handleLanguageChange,
-    batteryAlertsEnabled: settings.batteryAlerts,
-    islandBorderEnabled: settings.islandBorder,
-    standbyBorderEnabled: settings.standbyMode,
-    largeStandbyEnabled: settings.largeStandbyMode,
-    hideNotActiveIslandEnabled: settings.hideIslandWhenInactive,
-    showInfoWhenIdleEnabled: settings.showInfoWhenIdle,
-    hourFormat: settings.hourFormat === '12-hr',
-    timeZone: settings.timeZone,
-    handleTimeZoneChange,
-    weatherUnit: settings.weatherUnit,
-    theme: settings.theme,
-    setTheme,
-    bgColor: settings.backgroundColor,
-    textColor: settings.textColor,
-    bgImage: settings.backgroundImage,
+    settings: state.settings,
+    updateSettings,
     displays,
     setDisplays,
-    currentDisplayId: settings.displayId || '',
-    weatherLocation: settings.weatherLocation,
-    setWeatherLocation: (weatherLocation: string) => updateSettings({ weatherLocation }),
-    autoLaunchEnabled: settings.autoLaunch,
-    backgroundModeEnabled: settings.backgroundMode,
-    handleBackgroundModeChange,
-    positionMode: settings.positionMode,
-    setPositionMode,
-    islandX: manualPosition.x,
-    islandY: manualPosition.y,
-    leaveDelayMs: settings.leaveDelayMs,
-    hasApiKey,
-    aiBaseUrl: settings.aiBaseUrl,
-    aiModel: settings.aiModel,
-    saveApiKey,
-    handleApiBaseUrlChange,
-    handleAiModelChange,
-    handleLeaveDelayChange: (input: string) =>
-      updateSettings({ leaveDelayMs: Math.max(0, Math.min(2000, Number(input))) }),
-    handleBatteryAlertsChange,
-    handleIslandBorderChange,
-    handleStandbyChange,
-    handleLargeStandbyChange,
-    handleHourFormatChange,
-    handleAutoLaunchChange,
-    handlehideNotActiveIslandChange,
-    handleShowInfoWhenIdleChange,
-    handleWeatherUnitChange,
-    handleBgColorChange,
-    handleTextColorChange,
-    handleDisplayChange,
-    handleIslandXChange,
-    handleIslandYChange,
-    savePosition,
-    handleBgImageChange,
+    hasWeatherApiKey,
+    autoLaunchPending,
+    async setAutoLaunch(enable: boolean) {
+      if (autoLaunchRequest.current) return;
+      autoLaunchRequest.current = true;
+      setAutoLaunchPending(true);
+      await updateSettings({ autoLaunch: enable });
+      autoLaunchRequest.current = false;
+      setAutoLaunchPending(false);
+    },
+    setTheme(theme: AppSettings['theme']) {
+      const colors =
+        theme === 'sleek-black'
+          ? { backgroundColor: 'rgba(0, 0, 0, 0.64)', textColor: 'rgba(255, 255, 255)' }
+          : theme === 'win95'
+            ? { backgroundColor: 'rgba(195, 195, 195)', textColor: 'rgba(0, 0, 0)' }
+            : { backgroundColor: '#000000', textColor: '#FFFFFF' };
+      return updateSettings({ theme, ...colors });
+    },
+    async saveWeatherApiKey(key: string) {
+      try {
+        await window.electronAPI.saveWeatherApiKey(key.trim());
+        setHasWeatherApiKey(Boolean(key.trim()));
+        return true;
+      } catch {
+        notify({ severity: 'error', code: 'secretStorageUnavailable', area: 'settings' });
+        return false;
+      }
+    },
   };
 }

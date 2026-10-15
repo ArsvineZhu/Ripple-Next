@@ -1,8 +1,8 @@
-[简体中文](development.zh-CN.md)
+[简体中文](development.zh-CN.md) · [Architecture](architecture.md)
 
 # Development
 
-Use Node `22.23.3` from [.node-version](../.node-version) and pnpm `12.9.1` from `package.json`. The current toolchain requires Node 22.13 or newer. Linux packaging needs `dpkg`, `fakeroot`, `rpm` and build tools. Optional system features use `bluetoothctl` and `fuser`. Microphone detection uses `pactl`; when it is missing, Ripple switches to `pw-dump` on PipeWire systems and reads active audio capture streams. The chosen backend is retained until restart. Command/connection failures remain diagnostic errors. Windows MSI creation needs WiX Toolset; macOS packaging needs Xcode Command Line Tools. Run native makers on their matching host.
+Use Node `22.23.3` from [.node-version](../.node-version) and pnpm `12.9.1` from package.json. Install with the committed lockfile. Native packaging runs on the corresponding host: Linux uses cc, dpkg, fakeroot and rpm; Windows MSI uses WiX; macOS uses Xcode Command Line Tools.
 
 ```sh
 pnpm install --frozen-lockfile
@@ -13,48 +13,37 @@ pnpm package
 pnpm make
 ```
 
-On Linux, development may need a matching Chromium sandbox helper owned by root with mode `4755`. If Ripple Next is installed from the same Electron build, set `CHROME_DEVEL_SANDBOX=/usr/lib/ripple-next/chrome-sandbox` when starting Forge.
+Linux development requires a working Chromium sandbox. A matching installed helper can be supplied through `CHROME_DEVEL_SANDBOX`; the helper is root-owned with mode 4755. Forge starts the transparent window through X11/XWayland. Restart the application after main/preload changes.
 
-## Tool ownership
+## Commands and configuration
 
-Tool configuration is centralized in [.config](../.config/README.md); package scripts select each file explicitly.
+| Command                   | Purpose                                                       |
+| ------------------------- | ------------------------------------------------------------- |
+| `start`                   | Forge/Vite development and native resource generation         |
+| `typecheck`               | Strict main, preload, renderer and tools TypeScript projects  |
+| `lint`                    | Oxlint correctness, Hooks and layer boundaries; warnings fail |
+| `format` / `format:check` | Prettier write/read-only verification                         |
+| `deadcode`                | Knip entries, exports and dependencies                        |
+| `duplicates`              | JSCPD production-source duplicate analysis                    |
+| `check`                   | All read-only static checks                                   |
+| `test`                    | Recursive Vitest `.test.ts`/`.test.tsx` suites                |
+| `build:native`            | Host-native listener/window module build                      |
+| `package` / `make`        | Runnable package/native installers and archives               |
 
-| Command                   | Contract                                                                                                                                            |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `typecheck`               | Strict main/preload/renderer/tool TypeScript projects; Vite only transpiles                                                                         |
-| `lint`                    | Oxlint TS/React/Hooks correctness and import boundaries; warnings fail                                                                              |
-| `format` / `format:check` | Prettier writes / checks the configured two-space, LF, single-quote and 100-column style                                                            |
-| `deadcode`                | Knip entries, exports and dependencies; Forge constructors expose dynamic makers/plugins                                                            |
-| `duplicates`              | JSCPD scans production TS/TSX with the configured threshold                                                                                         |
-| `check`                   | All read-only static checks above                                                                                                                   |
-| `test`                    | Vitest covers state persistence, secure key storage, IPC, AI streaming, interaction transitions, localization, platform commands and Linux geometry |
+[.config](../.config/README.md) owns movable tool configuration. Root manifests, lockfile, pnpm-workspace.yaml and editor/Git discovery files remain at their required locations. Vite transpiles; the scoped compiler projects perform type checking. Runtime-neutral shared modules cannot import runtime services; renderer cannot import Node, Electron or main/preload.
 
-Oxlint disables `react/set-state-in-effect` for intentional OS telemetry and preference effects. Renderer imports cannot cross into Node, Electron or main/preload; shared modules cannot depend on runtime services. TypeScript remains the type-checking authority.
+## Profiles, state and native integrations
 
-## Runtime architecture
+Development uses `Ripple Next Development`; installed builds use `Ripple Next` under Electron app-data. State, caches and credentials are separate, while the native lock keeps one application instance. Linux resolves the lock through the home-based configuration directory. Launching again opens Settings.
 
-Main owns application lifecycle, tray, the transparent window, system effects and typed IPC. Services own state persistence, secure credentials, notifications, AI requests, app discovery/launch and autostart. Platform adapters own native differences. Preload exposes the typed `electronAPI`; shared Zod schemas validate persisted state and launch targets. Renderer owns views and interaction, with XState managing pointer departure, geometry re-entry, focus, menus and drag guards.
+The current SQLite schema and prepared statements belong to appStateStore. Main reads a validated committed snapshot and atomically updates affected rows/lists. Related AI graph and encrypted credential changes share a transaction. Read/write failures preserve durable data. Renderer initializes from the bridge and submits typed patches.
 
-The state service stores settings, tasks, workflows, quick apps, and encrypted API-key ciphertext in `ripple-next.sqlite` under the Ripple Next user-data directory. Numbered schema migrations live in `src/main/database/migrations/`; named runtime statements live in `src/main/database/queries/` as `.sql` files. Keep SQL text in those resources and bind values from TypeScript. Renderer loads a state snapshot before rendering and sends typed patches; it does not use `localStorage` for settings or feature data. API keys use Electron `safeStorage` and are never returned to renderer. Linux refuses to save keys when OS-backed encryption is unavailable. Ripple Next does not read or migrate the old Ripple data directory. Linux autostart uses `$XDG_CONFIG_HOME/autostart` when it is an absolute path, otherwise `~/.config/autostart`.
+Windows media/devices use the persistent native executor. Linux media/Bluetooth use the bundled D-Bus client; PipeWire uses `pw-dump --monitor --no-colors`, PulseAudio-only systems use `pactl subscribe`, and V4L2 events use the bundled inotify executable with event-triggered `fuser` reads. Forge compiles the Linux executable and target-architecture macOS window addon and ships them as native resources.
 
-Vercel AI SDK's `streamText` and OpenAI-compatible provider implement streaming chat in main. The default system prompt is maintained in `src/main/prompts/default-assistant.md` and bundled with the main process. `xstate` and `@xstate/react` implement cancellable interaction delays and re-entry gates. Linux quick apps discover XDG desktop entries and launch them through `gio launch`; custom commands use `spawn` with an argument array and no shell.
+## Validation and capture
 
-The browser search URL template is persisted in settings and must contain `{query}`; direct HTTP(S) addresses still open as URLs. Clock and date formatting use the selected locale and either the system time zone or a saved IANA zone. Renderer errors are routed to their owning feature and rendered inline; `InlineNotices` uses the Island's existing Motion fade-and-blur transition. Long vertical panels use native scrolling; the AI answer panel grows with its content up to the available screen height. Range controls use the settings CSS Module for themed tracks, thumbs and focus states.
+Tests follow [platform, feature and shared ownership](../tests/README.md). Use `pnpm test tests/platform/linux` or `pnpm test tests/features/media` for a focused suite. Kernel-only cases skip unsupported hosts; private brokers and fixtures isolate system/player operations.
 
-## Local diagnostics
+Use a separate profile and reserved demo content for recordings. Capture actual renderer flows in English, except Chinese-expression demonstrations, and review each image/video. Temporary capture tools and intermediates belong under ignored out/. Preserve font bytes, vendor algorithms and their original notices.
 
-Cross-platform findings, diagnostic fields and native feedback rules are documented in [platform compatibility](platform-compatibility.md). CI checks/tests run on Ubuntu, Windows and macOS. Reinstall dependencies from the lockfile when changing operating systems.
-
-Ripple Next writes `ripple-next.log` under `<userData>/diagnostics/` and stores Electron minidumps in its `crashes/` subdirectory. In Settings, open **Diagnostics** and choose **Open diagnostics folder** to view them. The log transport has a 5 MiB size limit; on startup, crash reports older than 30 days and all but the 10 newest reports are removed.
-
-Crash-report uploads are disabled. Assistant logs record request IDs, lifecycle timing, delta counts and answer length, but never the prompt or answer text. Error records contain the error type and stack frames, not the free-form error message. Treat minidumps as sensitive local data because they are binary process snapshots.
-
-Linux uses a transparent XWayland window sized to the selected display's work area so desktop panels remain visible. Only X11 `ShapeInput` follows the animated Island rectangle; changing `ShapeBounding` can introduce black flashes. The X11 client remains statically imported and bundled. Background mode requests `_NET_WM_STATE_SKIP_TASKBAR` through the existing X11 client. The window is shown only after renderer readiness and confirmation of the first input region. See [main](../src/main/README.md), [preload](../src/preload/README.md) and [renderer](../src/renderer/README.md).
-
-Forge cleans `.vite` before starting and packaging. Generated `.vite`, `out`, reports and `node_modules` are excluded from Git. The [documentation catalog](INDEX.md) links guides for each audience.
-
-## Working on a release
-
-`pnpm package` produces a runnable directory; `pnpm make` also runs the configured native installer/archive makers. The [release guide](release.md) owns the version/tag process and runtime acceptance. Restart the full application after main or preload changes; renderer hot updates only replace renderer code. Use a separate profile for capture fixtures and disruptive runtime checks.
-
-The [four product READMEs](INDEX.md) introduce features; this guide owns toolchain commands. Update paired technical guides and visible screenshots when behavior changes. [Capture notes](assets/screenshots/README.md) describe the demo-data policy.
+See [usage](../instructions.md), [platform support](platform-compatibility.md), [native observation](native-observation.md), [diagnostics](diagnostics.md) and [release](release.md).

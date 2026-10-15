@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 
+.playwright-cli
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -28,3 +30,7 @@ out/
 coverage/
 reports/
 *.tsbuildinfo
+
+# Native addon build products (generated; rebuild with `node scripts/build-native.mjs`)
+native/macos-window/build/
+*.node

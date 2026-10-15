@@ -1,15 +1,21 @@
 import * as Popover from '@radix-ui/react-popover';
 import { Command } from 'cmdk';
-import { Check, ChevronDown, Search } from 'lucide-react';
-import { useEffect, useId, useRef } from 'react';
+import { Check, ChevronsUpDown, Search } from 'lucide-react';
+import { useEffect, useId, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 
 import { useOverlay } from './OverlayProvider';
 import styles from './SearchableSelect.module.css';
+import { GlassPanel } from './liquidGlass/GlassPanel';
+import panel from './liquidGlass/GlassPanel.module.css';
+import { MenuHighlight } from './liquidGlass/MenuHighlight';
+import { useGlassPreferences } from './liquidGlass/GlassPreferences';
 
 interface SearchableOption {
   value: string;
   label: string;
   keywords?: string[];
+  description?: string;
 }
 
 interface Props {
@@ -32,9 +38,22 @@ export function SearchableSelect({
   disabled,
 }: Props) {
   const id = useId();
+  const glass = useGlassPreferences();
   const inputRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [space, setSpace] = useState<number | null>(null);
   const { container, openId, setOpenId, suppressShellClick } = useOverlay();
   const open = openId === id;
+  const [present, setPresent] = useState(false);
+  useEffect(() => {
+    if (open) {
+      setPresent(true);
+      return;
+    }
+    const timer = setTimeout(() => setPresent(false), 160);
+    return () => clearTimeout(timer);
+  }, [open]);
 
   useEffect(
     () => () => {
@@ -44,27 +63,48 @@ export function SearchableSelect({
   );
 
   return (
-    <Popover.Root modal={false} open={open} onOpenChange={(next) => setOpenId(next ? id : null)}>
+    <Popover.Root
+      modal={false}
+      open={open}
+      onOpenChange={(next) => {
+        if (next && triggerRef.current && container) {
+          const trigger = triggerRef.current.getBoundingClientRect();
+          const boundary = container.getBoundingClientRect();
+          setSpace(
+            Math.max(
+              44,
+              Math.max(trigger.top - boundary.top, boundary.bottom - trigger.bottom) - 18,
+            ),
+          );
+        }
+        setOpenId(next ? id : null);
+      }}
+    >
       <Popover.Trigger asChild>
         <button
+          ref={triggerRef}
           type="button"
           className={styles.trigger}
           aria-label={label}
           disabled={disabled}
           data-island-interactive
+          data-glass-enabled={glass.settingsGlassEnabled}
         >
           <span data-select-value>
             {options.find((option) => option.value === value)?.label ?? label}
           </span>
           <span className={styles.chevron}>
-            <ChevronDown size={14} />
+            <ChevronsUpDown size={14} />
           </span>
         </button>
       </Popover.Trigger>
-      {container && (
+      {container && (open || present) && (
         <Popover.Portal container={container}>
           <Popover.Content
-            className={styles.content}
+            data-glass-enabled={glass.settingsGlassEnabled}
+            ref={menuRef}
+            style={space ? ({ '--glass-menu-space': `${space}px` } as CSSProperties) : undefined}
+            className={`${styles.content} ${panel.menu}`}
             side="bottom"
             sideOffset={6}
             align="end"
@@ -85,7 +125,9 @@ export function SearchableSelect({
             onClick={(event) => event.stopPropagation()}
             onKeyDown={(event) => event.stopPropagation()}
           >
-            <Command label={label} loop className={styles.command}>
+            <GlassPanel />
+            <MenuHighlight menuRef={menuRef} />
+            <Command label={label} loop className={`${styles.command} ${panel.text}`}>
               <div className={styles.searchBox}>
                 <Search size={14} aria-hidden="true" />
                 <Command.Input
@@ -97,18 +139,27 @@ export function SearchableSelect({
               </div>
               <Command.List className={styles.list}>
                 <Command.Empty className={styles.empty}>{emptyLabel}</Command.Empty>
-                {options.map((option) => (
+                {options.map((option, index) => (
                   <Command.Item
                     key={option.value}
                     value={option.value}
                     keywords={option.keywords}
+                    aria-label={option.label}
+                    aria-describedby={option.description ? `${id}-${index}-description` : undefined}
                     onSelect={() => {
                       onValueChange(option.value);
                       setOpenId(null);
                     }}
                     className={styles.item}
                   >
-                    <span>{option.label}</span>
+                    <span className={styles.itemText}>
+                      <span>{option.label}</span>
+                      {option.description && (
+                        <span id={`${id}-${index}-description`} className={styles.description}>
+                          {option.description}
+                        </span>
+                      )}
+                    </span>
                     <span className={styles.indicator} aria-hidden="true">
                       {value === option.value && <Check size={14} />}
                     </span>

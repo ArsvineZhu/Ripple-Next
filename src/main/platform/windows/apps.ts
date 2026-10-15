@@ -1,4 +1,5 @@
-import type { AppEntry } from '../../../shared/contracts';
+import { DiagnosticError } from '../../../shared/diagnosticError';
+import type { Application } from '../../../shared/launch';
 import fs from 'node:fs/promises';
 import { shell } from 'electron';
 import { parseCommand } from './commands';
@@ -6,7 +7,7 @@ import { powerShellLiteral, runPowerShell } from './powershell';
 import { spawnDetached } from '../../services/processes';
 
 // Keep shortcuts intact: their arguments and working directory belong to Windows.
-export async function buildCache(): Promise<AppEntry[]> {
+async function buildCache(): Promise<Application[]> {
   const output = await runPowerShell(
     String.raw`
 $shell = New-Object -ComObject WScript.Shell
@@ -32,24 +33,56 @@ ConvertTo-Json -InputObject @($results.ToArray()) -Compress
     { timeout: 30_000, maxBuffer: 5 * 1024 * 1024 },
   );
   const items: unknown = JSON.parse(output);
-  if (!Array.isArray(items)) throw new TypeError('Invalid Windows application discovery response');
+  if (!Array.isArray(items))
+    throw new DiagnosticError('Invalid Windows application discovery response');
   const seen = new Set<string>();
   return items
-    .flatMap((item): AppEntry[] => {
+    .flatMap((item): Application[] => {
       if (!item || typeof item.name !== 'string' || typeof item.identifier !== 'string') {
-        throw new TypeError('Invalid Windows application entry');
+        throw new DiagnosticError('Invalid Windows application entry');
       }
       const key = item.identifier.toLowerCase();
       if (seen.has(key)) return [];
       seen.add(key);
       return [
         {
+          kind: 'application',
           name: item.name,
-          target: { kind: 'platform-app', platform: 'win32', identifier: item.identifier },
+          native: { platform: 'win32', identifier: item.identifier },
         },
       ];
     })
     .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function windowsApplications(cacheMs: number) {
+  let catalog: { expiresAt: number; value: Promise<Application[]> } | undefined;
+  const discover = async (query: string) => {
+    if (!catalog || Date.now() >= catalog.expiresAt) {
+      const value = buildCache();
+      catalog = { expiresAt: Date.now() + cacheMs, value };
+      void value.catch(() => {
+        if (catalog?.value === value) catalog = undefined;
+      });
+    }
+    const needle = query.trim().toLocaleLowerCase();
+    return (await catalog.value)
+      .filter((entry) => entry.name.toLocaleLowerCase().includes(needle))
+      .slice(0, 20);
+  };
+  return {
+    discover,
+    async launch(target: Application) {
+      if (target.native) return launchWindowsEntry(target.native.identifier);
+      if (!/[\\/]/.test(target.name)) {
+        const entry = (await discover(target.name)).find(
+          (item) => item.name.toLocaleLowerCase() === target.name.toLocaleLowerCase(),
+        );
+        if (entry?.native) return launchWindowsEntry(entry.native.identifier);
+      }
+      return launchWindows(target.name);
+    },
+  };
 }
 
 export async function launchWindowsEntry(identifier: string): Promise<void> {

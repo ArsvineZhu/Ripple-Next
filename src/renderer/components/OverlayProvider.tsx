@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../shared/diagnosticError';
 import { createContext, useContext, useState, useRef } from 'react';
 import type { ReactNode, Dispatch, SetStateAction } from 'react';
 const OverlayContext = createContext<{
@@ -42,6 +43,6 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
 }
 export function useOverlay() {
   const context = useContext(OverlayContext);
-  if (!context) throw new Error('OverlayProvider is missing');
+  if (!context) throw new DiagnosticError('OverlayProvider is missing');
   return context;
 }

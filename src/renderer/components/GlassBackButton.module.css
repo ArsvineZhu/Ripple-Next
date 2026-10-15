@@ -1,0 +1,29 @@
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 36px;
+  flex: 0 0 60px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 18px;
+  color: var(--settings-fg);
+  cursor: pointer;
+}
+.button.button {
+  corner-shape: round;
+}
+.button[data-glass-enabled='false'] {
+  background: var(--control-bg);
+  border: 1px solid var(--control-border);
+}
+.button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.icon {
+  position: relative;
+}

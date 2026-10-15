@@ -64,15 +64,6 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
-.addButton:hover {
-  filter: brightness(0.9);
-  transform: scale(1.02);
-}
-
-.addButton:active {
-  transform: scale(0.95);
-}
-
 .container {
   display: flex;
   flex-direction: column;
@@ -84,7 +75,6 @@
 }
 
 .emptyState {
-  text-align: center;
   margin-top: 30px;
 }
 
@@ -100,22 +90,6 @@
 }
 
 .input {
-  min-width: 0;
   width: 0;
-  font-family: inherit;
-  font-size: 14px;
-  transition: 0.2s;
-  border-radius: 12px;
-  padding: 8px 12px;
-  outline: none;
   flex: 1;
-}
-
-.addButton {
-  transition: 0.2s;
-  border: none;
-  border-radius: 12px;
-  padding: 8px 16px;
-  font-weight: 600;
-  cursor: pointer;
 }

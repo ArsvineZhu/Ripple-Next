@@ -1,20 +1,21 @@
-import type { ReactNode } from 'react';
-import { createContext, useContext } from 'react';
+import { DiagnosticError } from '../../shared/diagnosticError';
+import { type ReactNode, createContext, useContext } from 'react';
 
 import { useSettings } from '../hooks/useSettings';
-const SettingsContext = createContext<ReturnType<typeof useSettings> | null>(null);
+export type SettingsValues = ReturnType<typeof useSettings>;
+const SettingsContext = createContext<SettingsValues | null>(null);
 export function SettingsProvider({
   children,
-  hasApiKey,
+  hasWeatherApiKey = false,
 }: {
   children: ReactNode;
-  hasApiKey: boolean;
+  hasWeatherApiKey?: boolean;
 }) {
-  const settings = useSettings(hasApiKey);
+  const settings = useSettings(hasWeatherApiKey);
   return <SettingsContext.Provider value={settings}>{children}</SettingsContext.Provider>;
 }
 export function useSettingsContext() {
   const settings = useContext(SettingsContext);
-  if (!settings) throw new Error('SettingsProvider is missing');
+  if (!settings) throw new DiagnosticError('SettingsProvider is missing');
   return settings;
 }

@@ -9,6 +9,7 @@
     "*.mts",
     "../scripts/**/*.ts",
     "../tests/**/*.ts",
+    "../tests/**/*.tsx",
     "../src/main/x11.d.ts",
     "../src/renderer/env.d.ts"
   ]

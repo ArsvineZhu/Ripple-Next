@@ -2,14 +2,18 @@
 
 # 仓库地图
 
-- [文档目录](docs/INDEX.zh-CN.md)：开发、发布与使用说明。
-- [主进程](src/main/README.zh-CN.md)：生命周期、托盘、窗口、IPC 和平台服务。
-- [Preload](src/preload/README.zh-CN.md)：隔离的 renderer 桥接层。
-- [Renderer](src/renderer/README.zh-CN.md)：Island 外壳、功能视图、hooks 和设置所有者。
-- [共享契约](src/shared/README.zh-CN.md)：IPC/领域类型和输入区域几何计算。
-- [工具配置](.config/README.zh-CN.md)：构建、分析和测试配置。
-- [贡献规范](CONTRIBUTING.zh-CN.md)：开发流程及文档同步。
+| 范围       | 归属与入口                                                                                                                    |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 产品       | [README](README.zh-CN.md)、[使用](instructions.zh-CN.md)、[贡献](CONTRIBUTING.zh-CN.md)                                       |
+| 文档       | [目录](docs/INDEX.zh-CN.md)、[架构](docs/architecture.zh-CN.md)、[发布](docs/release.zh-CN.md)                                |
+| 主进程     | [生命周期、服务、平台与持久化](src/main/README.zh-CN.md)                                                                      |
+| Preload    | [类型化沙盒桥接](src/preload/README.zh-CN.md)                                                                                 |
+| 界面       | [Island、设置、功能和公共控件](src/renderer/README.zh-CN.md)                                                                  |
+| 共享       | [Schema、领域契约与纯策略](src/shared/README.zh-CN.md)                                                                        |
+| 原生       | [Linux 事件与 macOS 窗口模块](native/README.zh-CN.md)                                                                         |
+| 测试       | [平台、功能与公共测试](tests/README.zh-CN.md)                                                                                 |
+| 配置       | [Forge、Vite、Vitest 和静态检查](.config/README.zh-CN.md)                                                                     |
+| 素材       | [实机截图](docs/assets/screenshots/README.md)、[指南录像](src/assets/guide/README.md)                                         |
+| 字体与玻璃 | [原始字体资源](src/assets/fonts/alibaba-puhuiti/README.md)、[玻璃与声明](src/renderer/components/liquidGlass/README.zh-CN.md) |
 
-`src/assets` 保存字体和图标；`scripts` 保存开发启动器；`.config` 保存 Forge/Vite 和安装包模板。`.vite`、`out`、报告和依赖均是生成物，不纳入 Git。
-
-产品入口：[简体中文](README.zh-CN.md)、[繁體中文](README.zh-TW.md)、[English](README.md)、[日本語](README.ja.md)。[发布说明](docs/releases/4.0.0.zh-CN.md)汇集 4.0.0 更新；[截图说明（英语）](docs/assets/screenshots/README.md)记录界面素材与更新方法。
+依赖、.vite、out、报告和临时拍摄文件不进入 Git。已发布版本说明保留对应记录，维护中的指南描述当前状态。

@@ -1,23 +1,11 @@
-.container h3 {
-  font-size: 15px;
-  width: 100%;
-  max-width: 100%;
-  white-space: pre-wrap;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-
 .row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   width: 100%;
-  background: color-mix(in srgb, var(--island-text-color), transparent 96%);
-  border-radius: 12px;
   padding: 12px;
   margin-bottom: 15px;
   gap: 10px;
-  border: 1px solid color-mix(in srgb, var(--island-text-color), transparent 95%);
   position: relative;
 }
 
@@ -36,8 +24,6 @@
 }
 
 .emptyState {
-  opacity: 0.5;
-  text-align: center;
   margin-top: 30px;
 }
 

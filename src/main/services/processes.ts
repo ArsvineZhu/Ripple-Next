@@ -1,9 +1,11 @@
 import { execFile, spawn } from 'node:child_process';
+import path from 'node:path';
+import { DiagnosticError } from '../../shared/diagnosticError';
 
 export function runCommand(
   executable: string,
   args: string[],
-  options: { timeout?: number; maxBuffer?: number } = {},
+  options: { timeout?: number; maxBuffer?: number; signal?: AbortSignal } = {},
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     execFile(
@@ -14,8 +16,13 @@ export function runCommand(
         if (error)
           reject(
             Object.assign(
-              new Error(
-                'System command failed (' + (error.code ?? error.signal ?? 'unknown') + ')',
+              new DiagnosticError(
+                'System command failed: ' +
+                  path.win32.basename(executable) +
+                  ' (' +
+                  (error.code ?? error.signal ?? 'unknown') +
+                  ')',
+                [],
                 { cause: error },
               ),
               { code: error.code, signal: error.signal, killed: error.killed, stderr },

@@ -2,43 +2,19 @@ import type {
   MediaCommand,
   MediaError,
   MediaOperationResult,
-  MediaSession,
   MediaSnapshot,
-} from '../../shared/contracts';
+} from '../../shared/media';
 import {
   emptyMediaSnapshot,
   mediaCommandSupported,
   selectAutomaticSession,
 } from '../../shared/media';
-import * as windows from '../platform/windows/media';
-import * as macos from '../platform/macos/media';
-import * as linux from '../platform/linux/media';
+import { nativeMedia } from '../platform/media';
+import type { MediaBackend } from '../platform/media';
 import { serializeDiagnosticError } from '../../shared/diagnostics';
 
-export interface MediaBackend {
-  getMediaSessions(): Promise<{
-    sessions: MediaSession[];
-    failedIds: string[];
-    errors?: unknown[];
-  }>;
-  controlSystemMedia(command: MediaCommand, session: MediaSession): Promise<void>;
-  openMediaSession(session: MediaSession): Promise<void>;
-  close?(): void;
-}
 export function createMediaService(
-  backend: MediaBackend = process.platform === 'win32'
-    ? {
-        getMediaSessions: windows.getMediaSessions,
-        controlSystemMedia: windows.controlSystemMedia,
-        openMediaSession: windows.openMediaSession,
-      }
-    : process.platform === 'darwin'
-      ? {
-          getMediaSessions: macos.getMediaSessions,
-          controlSystemMedia: macos.controlSystemMedia,
-          openMediaSession: macos.openMediaSession,
-        }
-      : linux,
+  backend: MediaBackend = nativeMedia,
   reportError: (error: unknown) => void = () => {},
 ) {
   let snapshot: MediaSnapshot = { ...emptyMediaSnapshot };
@@ -46,6 +22,24 @@ export function createMediaService(
   let closed = false;
   let queue = Promise.resolve();
   const reported = new Map<string, number>();
+  const listeners = new Set<(snapshot: MediaSnapshot) => void>();
+  const publish = () => {
+    if (!closed) listeners.forEach((listener) => listener(snapshot));
+  };
+  let dirty = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let watching = false;
+  const poll = async () => {
+    await getSnapshot();
+    if (!closed && watching && !backend.subscribe) {
+      timer = setTimeout(() => void poll(), 5000);
+      timer.unref();
+    }
+  };
+  const unsubscribe = backend.subscribe?.(() => {
+    dirty = true;
+    void getSnapshot();
+  });
   function reportOnce(error: unknown) {
     const signature = JSON.stringify(serializeDiagnosticError(error));
     const now = Date.now();
@@ -90,10 +84,6 @@ export function createMediaService(
             : selected
               ? 'ready'
               : 'idle',
-        lastSuccessfulReadAt:
-          selected?.stale || (failedIds.length && !sessions.length)
-            ? snapshot.lastSuccessfulReadAt
-            : Date.now(),
         error:
           selected?.stale || (failedIds.length && !selected)
             ? 'mediaReadFailed'
@@ -111,18 +101,26 @@ export function createMediaService(
         error: 'mediaReadFailed',
       };
     }
+    publish();
     return snapshot;
   }
   function getSnapshot() {
     if (closed) return Promise.resolve(snapshot);
     if (!pending)
-      pending = enqueue(read).finally(() => {
+      pending = enqueue(async () => {
+        do {
+          dirty = false;
+          await read();
+        } while (dirty && !closed);
+        return snapshot;
+      }).finally(() => {
         pending = undefined;
+        if (dirty && !closed) void getSnapshot();
       });
     return pending;
   }
-  async function selectSession(id: string | null): Promise<MediaOperationResult> {
-    await read();
+  function selectSession(id: string | null): MediaOperationResult {
+    if (closed) return { snapshot, error: 'mediaReadFailed' };
     if (id !== null && !snapshot.sessions.some((session) => session.id === id))
       return { snapshot, error: 'mediaSessionGone' };
     const selected =
@@ -135,11 +133,11 @@ export function createMediaService(
       status: selectedSession?.stale ? 'error' : selectedSession ? 'ready' : 'idle',
       error: selectedSession?.stale ? 'mediaReadFailed' : selectedSession ? null : snapshot.error,
     };
+    publish();
     return { snapshot, error: null };
   }
   async function control(command: MediaCommand, id: string): Promise<MediaOperationResult> {
     if (closed) return { snapshot, error: 'mediaReadFailed' };
-    await read();
     const session = snapshot.sessions.find((item) => item.id === id);
     let error: MediaError | null = !session
       ? 'mediaSessionGone'
@@ -148,18 +146,28 @@ export function createMediaService(
         : !mediaCommandSupported(session, command)
           ? 'mediaCommandUnsupported'
           : null;
-    if (!error && session) {
-      try {
-        await backend.controlSystemMedia(command, session);
-      } catch (failure) {
-        reportOnce(failure);
-        error = 'mediaCommandFailed';
-      }
+    if (error || !session) return { snapshot, error };
+    try {
+      await backend.controlSystemMedia(command, session);
+    } catch (failure) {
+      reportOnce(failure);
+      error = 'mediaCommandFailed';
     }
     await read();
     return { snapshot, error };
   }
   return {
+    start() {
+      if (watching || closed) return;
+      watching = true;
+      void poll();
+    },
+    subscribe(listener: (snapshot: MediaSnapshot) => void) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
     getSnapshot,
     openSession: async (id: string): Promise<MediaOperationResult> => {
       if (closed) return { snapshot, error: 'mediaReadFailed' };
@@ -174,10 +182,13 @@ export function createMediaService(
         return { snapshot, error: 'mediaOpenFailed' };
       }
     },
-    selectSession: (id: string | null) => enqueue(() => selectSession(id)),
+    selectSession,
     control: (command: MediaCommand, id: string) => enqueue(() => control(command, id)),
     close: () => {
       closed = true;
+      if (timer) clearTimeout(timer);
+      unsubscribe?.();
+      listeners.clear();
       backend.close?.();
     },
   };

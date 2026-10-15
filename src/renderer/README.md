@@ -1,45 +1,27 @@
-[简体中文](README.zh-CN.md)
+[简体中文](README.zh-CN.md) · [Architecture](../../docs/architecture.md)
 
 # Renderer
 
-The renderer owns Island presentation, interaction and feature feedback. OS access stays behind the [preload bridge](../preload/README.md). `Island.tsx` composes feature views and QuickView; `useIslandController` composes the feature hooks.
+Island presents seven daily-action pages; Settings is a separate configuration/editor window. Both renderers receive the main-owned committed snapshot through AppStateProvider and the typed preload API. OS access never crosses through a raw renderer channel.
 
-## State, language and style
+## Composition
 
-`AppStateProvider` loads the main-owned snapshot before rendering and sends typed patches. Settings and saved feature data live in the main state service. `SettingsProvider` owns the renderer language preference; bundled i18n initializes before rendering and synchronizes the resolved language to the tray. `Intl` formats dates/numbers in the selected locale and system or saved IANA time zone.
+`components/content` owns shared buttons, text entry, surfaces, empty states and feedback. `components/preferences` composes those controls into reusable preference groups, rows, fields and actions. Specialized sliders, switches, colors and selectors own their shared interaction. Feature files own layout, drafts and domain operations.
 
-`styles/base.css` owns the transparent document, fonts and shared animation; `styles/tokens.css` owns theme/font tokens. Island, shared controls and feature views own their CSS Modules. Keep static presentation there and runtime color/geometry and Motion values with their owners. `OverlayProvider` mounts Select menus inside the Island; `useIslandInteraction` owns movement, focus, pointer departure and menu guards.
+LaunchButton serializes row activation and indexed errors. MediaControl binds commands/capabilities to the visible session. MediaArtwork owns decoding fallback and hover. MediaMarquee measures real text/clip sizes and font changes; CSS loops restart after hidden-page restoration. MediaTransition keeps one keyed current layer with a 200ms fade/blur entrance. MarkdownContent owns streamed answer presentation and native-copy actions.
 
-Select uses nonmodal radio menus. Settings remains scrollable with a menu open; dismissal inside Island preserves expansion. Position commits keep settings content and scroll intact. The clock schedules minute boundaries and refreshes after focus/visibility returns. Battery/device notices preserve an expanded page.
+## State and lifecycle
 
-## Feature navigation and scrolling
+The page registry owns stable IDs, order/visibility, geometry and rendering. Tasks/search/editor drafts stay with their feature. React Activity preserves Island drafts while pausing hidden page effects. Media/device/clipboard observation and active assistant work remain above that lifecycle.
 
-`ElasticScrollArea` owns native vertical overflow and a stable content node. It observes content size without a permanent animation loop. `TabPanels` owns horizontal feature navigation and uses continuous circular page position, stable keys and inert inactive controls. New requests retarget the ongoing transition. Blur and size interpolate with it; the elastic motion tracks input with a spring and returns along a platform-derived release curve, retaining its current position and velocity when retargeted.
+The interaction machine owns hover, expansion, focus, menus, dragging and collapse delay. Geometry follows visible dimensions and page transitions. TabPanels owns horizontal feature navigation; MediaSessionCarousel owns vertical player navigation. Native vertical scroll and momentum boundaries retain their respective inputs.
 
-`wheelGesture.ts` classifies normalized CSS-pixel deltas. Horizontal samples tolerate the greater of 2 pixels or 25% cross-axis drift; stronger diagonal/accumulated vertical movement transfers ownership to content. Once a stroke is vertical, residual horizontal ticks keep that ownership until a fresh boundary or quiet gap. Nested horizontal controls retain their scroll until the boundary.
+SettingsApp owns category/detail navigation, transitions and scroll/focus restoration. Ordinary fields commit valid edits automatically. Credentials use explicit Save/Change, destructive actions require confirmation, and failed system effects restore committed settings. Appearance activates a main-owned Island preview.
 
-A continuous stream selects at most one circular neighbor. Additional distance gives bounded elastic displacement rather than another page. Native ScrollBegin/FlingCancel signals separate fresh gestures and paired signals are coalesced. Without native boundaries, a 150 ms gap or sustained decayed-tail/rising-run detection starts another gesture. Keyboard repeats use the latest state.
+## Music, language and guide
 
-## Media ownership
+Idle omits the playback slot; hover quick view adds its width and always shows the artist, independent of the idle artist setting. Expanded and compact cards share controls, artwork, text animation and a separate error band.
 
-`useMedia` reads immediately and every five seconds without overlapping polls. It refreshes after controls and ignores polls superseded by an action. Read errors retain stale metadata with disabled controls; operation failures stay in the media page. Capabilities distinguish true, false and unknown: unknown controls can be attempted; false/stale controls are disabled.
+Every surface uses the persisted uiFont. Complete en/zh-CN/zh-TW/ja catalogs share interpolation contracts; authored Microsoft/Apple Chinese overlays alter contextual prose and inherit technical fields, errors and critical actions. Formatting uses a valid regional locale.
 
-`useMediaPaging` and `MediaSessionCarousel` own finite vertical source pages identified by Automatic or session ID. Track changes update the card without rebuilding its page identity. Session order remains stable while the carousel is mounted; new sessions append and closed sessions disappear. A + player dots sit inside the right edge. Single automatic sessions hide the indicators; a manual single session retains A and its dot.
-
-Click, Up/Down/Home/End and vertical wheel gestures select pages. Each continuous stroke advances at most once using native boundaries and the shared quiet-gap/tail rules; pure horizontal input still reaches feature navigation. Noncurrent cards are inert. The carousel respects reduced-motion preference.
-
-`useMedia` serializes selection and retains the latest queued target during an operation. Pending confirmation disables controls; commands carry the displayed session ID. Service snapshots determine the valid selection after errors or session removal.
-
-`MediaArtwork` owns decoding failure and hover for each expanded/QuickView cover. Failure shows a music placeholder; a changed session or URL resets failure. Hover changes remain local to the cover component.
-
-## Launching, clipboard and feedback
-
-`lib/launch.ts` classifies workflow targets and browser input. Bare localhost/IPv4 addresses, including a trailing slash, are classified before path targets. Explicit URLs and app/file targets use their corresponding bridge calls. Workflows await launches in order, pause briefly between targets and continue after failures. Quick-app targets use the typed installed-app/command/URL contract.
-
-Clipboard text uses validated native reads/writes. The hook polls every two seconds and on focus; empty/image-only values are skipped. History remains in renderer memory for the current run. Copy buttons own their success/failure state. Clipboard and device polling continues while Island is collapsed.
-
-`InlineNotices` places feedback at its owning feature using the existing fade-and-blur transition. Launch errors belong to their app/workflow row; media errors belong to music; search errors belong to BrowserSearchTab; settings errors belong to their field. Settings ranges use themed CSS tracks/thumbs/focus states.
-
-`useBackgroundImage` accepts remote URLs or local paths, checks decoding after input settles, ignores stale completions and safely quotes CSS URLs. Main serves configured local images through a dedicated protocol; background errors remain beside the setting.
-
-See [development](../../docs/development.md), [platform support](../../docs/platform-compatibility.md) and the [repository map](../../INDEX.md).
+SettingsGuide uses genuine English flow recordings, plus Chinese-specific demonstrations. Playback is user-controlled, one video at a time, and pauses offscreen/hidden/unmounted. Prose remains selectable. See [capture provenance](../assets/guide/README.md), [glass](components/liquidGlass/README.md) and [development](../../docs/development.md).

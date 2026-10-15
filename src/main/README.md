@@ -1,24 +1,23 @@
-[简体中文](README.zh-CN.md)
+[简体中文](README.zh-CN.md) · [Architecture](../../docs/architecture.md)
 
 # Main process
 
-`services/media.ts` owns media-session selection, serialized queries/commands and stale/error snapshots. Automatic mode prefers an actively playing system session, then preserves a playing or paused selection; manual choice lasts for this run until the session disappears. Commands carry the displayed session ID and never fall back to another player. Windows reads GSMTC controls and artwork through a cached typed CLR bridge; macOS queries only running Spotify/Music dictionaries independently; Linux uses the bundled D-Bus client and MPRIS unique owner names, including capabilities and local artwork. Opening a session uses its cached main-owned application identity/path on Windows, the running application on macOS, or MPRIS Raise on Linux; it does not wait for another metadata query. No cloud music API is used.
-Local MPRIS artwork with an unrecognized filename extension is identified by PNG/JPEG/GIF/WebP signatures and served as a data URL, subject to the existing 5 MiB limit. Missing or unsupported artwork does not discard the media session.
+Main owns application lifetime, windows, tray, native effects and durable state. `index.ts` initializes the application profile, diagnostics, SQLite and secure store before renderer bootstrap. A native lock keeps one instance; launching again opens Settings. Development and installed builds use separate data/cache profiles.
 
-Main owns the app lifecycle, tray, transparent window, IPC validation and system effects. `index.ts` sets Ripple Next's user-data directory and loads typed state and secure credential storage before opening the renderer.
+`ipc.ts` validates sender roles and payloads, applies system effects before preference commits and broadcasts committed state. Settings owns editor/credential writes; Island owns daily interaction. `appStateStore.ts` owns the SQLite schema, prepared statements and transactions. Read errors remain errors; related AI graph and credential deletion is atomic.
 
-`services/backgroundImage.ts` serves the configured local background through `ripple-background:` in development and packaged builds. It accepts absolute paths and file URLs, encodes filenames through `pathToFileURL`, and limits file requests to the current configured image. Network images remain direct renderer resources.
+## Domain services
 
-Services own atomic state persistence, encrypted API keys, notices, AI requests, app discovery and launch, and autostart. Platform adapters contain Linux, macOS and Windows behavior. `ipc.ts` validates sender identity and payloads against [shared contracts](../shared/README.md).
+- Apps executes one ordered LaunchTarget array and returns indexed results. Platform adapters own native application discovery, preparation and activation.
+- Media owns automatic/manual selection, serialized commands, stale/error snapshots and shared observation. Controls and activation carry the visible session ID; metadata and cover work do not precede a control.
+- AI configuration owns graph IDs and bindings; streaming resolves model prompts/injections and delegates Chat Completions, Responses or Anthropic to the SDK. Cancellation and terminal results belong to the request.
+- Weather owns provider query assembly, protected credentials, request coalescing and a bounded cache. Local background images use the dedicated protocol restricted to the configured resource.
+- Color picker owns its helper lifetime and Settings window. Diagnostics owns bounded readable logs, operation correlation, native failure codes and source-map resolution. Licenses returns known bundled records.
 
-`services/processes.ts` owns bounded command execution and confirmed detached spawn. Windows uses encoded Windows PowerShell scripts and a shared WinRT async bridge. IPC diagnostics record operation outcomes and safe error metadata; operational launch feedback belongs to the renderer control. Native clipboard text reads/writes use explicit validated bridge methods. See [platform compatibility](../../docs/platform-compatibility.md).
+## Native boundaries
 
-The bundled system prompt lives in `prompts/default-assistant.md`. Before each AI request, `prompts/injections.ts` resolves `{{product}}`, `{{developer}}`, `{{version}}`, `{{license}}`, `{{repository}}`, `{{issues}}`, `{{timezone}}` and `{{current_time}}`. Static metadata comes from `package.json`; `{{version}}` uses Electron's `app.getVersion()`. Time values follow the configured time zone, with `system` resolved from the operating system; `{{current_time}}` uses `YYYY-MM-DD HH:mm:ss`. Unknown variables remain unchanged, and user prompts are sent without template expansion.
+Windows uses the supervised persistent MTA executor for media/device events and native commands. Linux uses D-Bus signals, PipeWire/PulseAudio streams and the bundled inotify camera executable; property changes update cached metadata before generation-guarded local artwork. macOS owns player dictionaries, application activation and native window behavior.
 
-On Linux, the window waits for renderer readiness and the first confirmed X11 `ShapeInput` region. Keep the X11 client statically bundled; input shaping uses `ShapeInput`.
+Linux window input changes ShapeInput only, and first-show waits for input-region confirmation. The X11 client is statically bundled. Native discovery/caches stay within their adapters, and faults remain local to the corresponding device/session.
 
-See the [developer guide](../../docs/development.md) and [repository map](../../INDEX.md).
-
-`services/scrollGestures.ts` forwards Chromium's fresh touchpad gesture boundary (`gestureScrollBegin` / `gestureFlingCancel`, coalescing paired signals) to preload with a timestamp only. Its listeners retain the WebContents reference and are removed on destruction and window closure. It does not forward key contents, pointer coordinates or wheel payloads.
-
-Linux capture detection in `platform/linux/devices.ts` starts with `pactl`. Missing-command errors switch to `pw-dump` and the backend remains selected until restart. Active PipeWire capture is a running `Stream/Input/Audio` node; connection/command errors propagate to diagnostics.
+See [native observation](../../docs/native-observation.md), [platform support](../../docs/platform-compatibility.md), [diagnostics](../../docs/diagnostics.md) and [development](../../docs/development.md).

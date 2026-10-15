@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import type { MediaSession } from '../../shared/contracts';
+import type { MediaSession } from '../../shared/media';
 
 export function useMediaArtwork(session: MediaSession | null) {
-  const source = JSON.stringify([session?.id, session?.artwork_url]);
+  const source = JSON.stringify([session?.id, session?.artworkUrl]);
   const [failedSource, setFailedSource] = useState<string | null>(null);
   const [hovered, setHovered] = useState(false);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
@@ -20,7 +20,7 @@ export function useMediaArtwork(session: MediaSession | null) {
     return () => window.removeEventListener('blur', reset);
   }, []);
   return {
-    url: failedSource === source ? null : session?.artwork_url,
+    url: failedSource === source ? null : session?.artworkUrl,
     onError: () => setFailedSource(source),
     hovered,
     setHovered,

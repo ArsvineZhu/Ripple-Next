@@ -1,15 +1,21 @@
 import { useTranslation } from 'react-i18next';
+import { localeForFormatting } from '../../shared/i18n';
 import styles from './OverviewTab.module.css';
 import typography from '../styles/typography.module.css';
 import { WeatherIcon } from '../components/WeatherIcon';
-import { formatDateShort } from '../lib/date';
-import type { IslandController } from '../hooks/useIslandController';
+import type { useOverview } from '../hooks/useOverview';
+import type { useBattery } from '../hooks/useBattery';
 import type { CSSProperties } from 'react';
-type Props = Pick<
-  IslandController,
-  'charging' | 'percent' | 'weather' | 'textColor' | 'time' | 'timeZone'
->;
-export function OverviewTab({ charging, percent, weather, textColor, time, timeZone }: Props) {
+type Props = Omit<ReturnType<typeof useOverview>, 'time'> &
+  ReturnType<typeof useBattery> & { textColor: string };
+export function OverviewTab({
+  charging,
+  percent,
+  weather,
+  textColor,
+  overviewTime,
+  overviewDate,
+}: Props) {
   const { i18n } = useTranslation();
   const batteryPercent =
     typeof percent === 'number' && Number.isFinite(percent)
@@ -18,7 +24,7 @@ export function OverviewTab({ charging, percent, weather, textColor, time, timeZ
   const number = (value: number | string | null) =>
     value === null || value === ''
       ? '??'
-      : new Intl.NumberFormat(i18n.language).format(Number(value));
+      : new Intl.NumberFormat(localeForFormatting(i18n.language)).format(Number(value));
   return (
     <>
       <div className={styles.statusRow}>
@@ -50,10 +56,8 @@ export function OverviewTab({ charging, percent, weather, textColor, time, timeZ
         </div>
       </div>
       <div className={styles.date} id="date">
-        <h1 className={[typography['text'], styles.time].join(' ')}>{time}</h1>
-        <h2 className={[typography['text'], styles.dateText].join(' ')}>
-          {formatDateShort(i18n.language, undefined, timeZone)}
-        </h2>
+        <h1 className={[typography['text'], styles.time].join(' ')}>{overviewTime}</h1>
+        <h2 className={[typography['text'], styles.dateText].join(' ')}>{overviewDate}</h2>
       </div>
     </>
   );

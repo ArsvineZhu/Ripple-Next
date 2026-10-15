@@ -1,16 +1,15 @@
 import { z } from 'zod';
-import { QuickAppSchema, WorkflowSchema } from './contracts';
-import type { QuickApp, Workflow } from './contracts';
+import { QuickAppSchema, WorkflowSchema } from './launch';
+import type { QuickApp, Workflow } from './launch';
 import type { LanguagePreference } from './i18n';
-
-export const SETTINGS_TAB_ID = 7 as const;
-
-export function normalizeHiddenTabs(hiddenTabs: readonly number[]): number[] {
-  return hiddenTabs.filter((id) => id !== SETTINGS_TAB_ID);
-}
+import { DEFAULT_PAGE_ID, DEFAULT_PAGE_IDS, PageIdSchema } from './pages';
+import { AIConfigurationSchema, defaultAIConfiguration } from './aiConfiguration';
+import { GlassPreferencesSchema, defaultGlassPreferences } from './glassPreferences';
+import { UiFontSchema } from './fonts';
+import { WeatherPreferencesSchema, defaultWeatherPreferences } from './weather';
+import { MusicPreferencesSchema, defaultMusicPreferences } from './musicPreferences';
 
 const HourFormatSchema = z.enum(['12-hr', '24-hr']);
-const WeatherUnitSchema = z.enum(['f', 'c']);
 const IslandThemeSchema = z.enum(['default', 'sleek-black', 'win95']);
 const PositionModeSchema = z.enum([
   'top-left',
@@ -21,7 +20,6 @@ const PositionModeSchema = z.enum([
   'bottom-right',
   'free',
 ]);
-export type PositionMode = z.infer<typeof PositionModeSchema>;
 
 function isValidTimeZone(value: string) {
   if (value === 'system') return true;
@@ -35,47 +33,51 @@ function isValidTimeZone(value: string) {
 
 const AppSettingsSchema = z
   .object({
-    language: z.enum(['system', 'en', 'zh-CN', 'zh-TW', 'ja']),
+    ...GlassPreferencesSchema.shape,
+    language: z.enum(['system', 'en', 'zh-CN', 'zh-TW', 'ja', 'zh-ms', 'zh-apple']),
+    uiFont: UiFontSchema.default('default'),
+    music: MusicPreferencesSchema.default(() => ({ ...defaultMusicPreferences })),
     searchUrlTemplate: z.string().max(2048).default('https://www.google.com/search?q={query}'),
-    aiBaseUrl: z.string().max(2048),
-    aiModel: z.string(),
+    ai: AIConfigurationSchema.default(defaultAIConfiguration),
     autoLaunch: z.boolean(),
-    backgroundMode: z.boolean(),
+    showTray: z.boolean(),
     batteryAlerts: z.boolean(),
     islandBorder: z.boolean(),
+    islandCornerRadius: z.number().finite().min(0).max(60).default(30),
     standbyMode: z.boolean(),
     largeStandbyMode: z.boolean(),
     hideIslandWhenInactive: z.boolean(),
     showInfoWhenIdle: z.boolean(),
     hourFormat: HourFormatSchema,
+    showAmPm: z.boolean().default(false),
     timeZone: z.string().min(1).max(128).refine(isValidTimeZone).default('system'),
-    weatherUnit: WeatherUnitSchema,
+    weather: WeatherPreferencesSchema.default(() => structuredClone(defaultWeatherPreferences)),
     theme: IslandThemeSchema,
     backgroundColor: z.string(),
     textColor: z.string(),
     backgroundImage: z.string(),
     displayId: z.string().nullable(),
-    weatherLocation: z.string(),
+    secretRevision: z.number().int().nonnegative().default(0),
     positionMode: PositionModeSchema,
     islandX: z.number().finite().min(0).max(100),
     islandY: z.number().finite().min(0).max(2000),
-    defaultTabId: z.number().int().min(0).max(7),
+    defaultTabId: PageIdSchema,
     tabOrder: z
-      .array(z.number().int().min(0).max(7))
-      .length(8)
+      .array(PageIdSchema)
+      .min(1)
+      .max(128)
       .refine((values) => new Set(values).size === values.length),
     hiddenTabs: z
-      .array(z.number().int().min(0).max(7))
+      .array(PageIdSchema)
+      .max(128)
       .refine((values) => new Set(values).size === values.length),
-    leaveDelayMs: z.number().int().min(0).max(2000).multipleOf(50),
-    welcomeShown: z.boolean(),
+    leaveDelayMs: z.number().finite().min(0).max(2000),
   })
   .strict();
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
 
-const AppStateSchema = z
+export const AppStateSchema = z
   .object({
-    schemaVersion: z.literal(1),
     settings: AppSettingsSchema,
     tasks: z.array(z.string()),
     workflows: z.array(WorkflowSchema),
@@ -84,7 +86,7 @@ const AppStateSchema = z
   .strict();
 export type AppState = z.infer<typeof AppStateSchema>;
 
-const AppStatePatchSchema = z
+export const AppStatePatchSchema = z
   .object({
     settings: AppSettingsSchema.partial().optional(),
     tasks: z.array(z.string()).optional(),
@@ -95,37 +97,39 @@ const AppStatePatchSchema = z
 export type AppStatePatch = z.infer<typeof AppStatePatchSchema>;
 
 export const defaultAppState: AppState = {
-  schemaVersion: 1,
   settings: {
+    ...defaultGlassPreferences,
     language: 'system' satisfies LanguagePreference,
+    uiFont: 'default',
+    music: { ...defaultMusicPreferences },
     searchUrlTemplate: 'https://www.google.com/search?q={query}',
-    aiBaseUrl: 'https://api.openai.com/v1',
-    aiModel: '',
+    ai: defaultAIConfiguration(),
     autoLaunch: false,
-    backgroundMode: false,
+    showTray: true,
     batteryAlerts: true,
     islandBorder: false,
+    islandCornerRadius: 30,
     standbyMode: false,
     largeStandbyMode: false,
     hideIslandWhenInactive: false,
     showInfoWhenIdle: false,
     hourFormat: '12-hr',
+    showAmPm: false,
     timeZone: 'system',
-    weatherUnit: 'f',
+    weather: defaultWeatherPreferences,
     theme: 'default',
     backgroundColor: '#000000',
     textColor: '#FFFFFF',
     backgroundImage: 'none',
     displayId: null,
-    weatherLocation: '',
+    secretRevision: 0,
     positionMode: 'free',
     islandX: 50,
     islandY: 20,
-    defaultTabId: 2,
-    tabOrder: [0, 1, 2, 3, 4, 5, 6, 7],
+    defaultTabId: DEFAULT_PAGE_ID,
+    tabOrder: [...DEFAULT_PAGE_IDS],
     hiddenTabs: [],
     leaveDelayMs: 400,
-    welcomeShown: false,
   },
   tasks: [],
   workflows: [] as Workflow[],
@@ -134,11 +138,6 @@ export const defaultAppState: AppState = {
 
 export function isAppState(value: unknown): value is AppState {
   return AppStateSchema.safeParse(value).success;
-}
-
-export function parseAppState(value: unknown): AppState | null {
-  const result = AppStateSchema.safeParse(value);
-  return result.success ? result.data : null;
 }
 
 export function isAppStatePatch(value: unknown): value is AppStatePatch {

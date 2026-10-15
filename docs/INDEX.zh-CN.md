@@ -2,30 +2,27 @@
 
 # 文档目录
 
-## 使用 Ripple Next
+## 使用应用
 
-- 产品介绍：[简体中文](../README.zh-CN.md)、[繁體中文](../README.zh-TW.md)、[English](../README.md)、[日本語](../README.ja.md)。
-- [使用指南](../instructions.zh-CN.md)：导航、八个页面、设置与数据。
-- [平台支持与排障](platform-compatibility.zh-CN.md)：原生集成、恢复方法与本地诊断。
-- [4.0.0 正式版说明](releases/4.0.0.zh-CN.md)：正式版完整功能与历史。
-- [截图画廊与拍摄说明（英语）](assets/screenshots/README.md)：真实界面、演示数据与更新方法。
+- [产品介绍](../README.zh-CN.md)：功能、截图与下载。
+- [使用指南](../instructions.zh-CN.md)：页面、设置、键位与数据。
+- [平台支持](platform-compatibility.zh-CN.md)：原生能力和排障。
+- [诊断](diagnostics.zh-CN.md)：本地日志与反馈。
+- [截图](assets/screenshots/README.md)和[指南录像](../src/assets/guide/README.md)：当前拍摄和来源。
 
 ## 开发与发布
 
-- [设计原则](design-principles.zh-CN.md)：交互与视觉方向。
-- [开发指南](development.zh-CN.md)：运行环境、架构、命令与工具归属。
-- [发布验收](release.zh-CN.md)：软件包、发布流程与原生运行检查。
-- [仓库地图](../INDEX.zh-CN.md)：源码归属与构建区域。
-- [贡献规范](../CONTRIBUTING.zh-CN.md)：检查、文档与语言同步。
+- [架构](architecture.zh-CN.md)：完整能力及运行归属。
+- [设计原则](design-principles.zh-CN.md)：交互、公共视觉与措辞。
+- [开发](development.zh-CN.md)：环境、命令与工具。
+- [测试](../tests/README.zh-CN.md)：平台、功能及公共测试。
+- [发布](release.zh-CN.md)：确认、CI、打包及发布。
+- [贡献](../CONTRIBUTING.zh-CN.md)与[仓库地图](../INDEX.zh-CN.md)。
+- [原生监听](native-observation.zh-CN.md)：媒体／设备事件、并发与生命周期。
 
-## 已发布版本
+## 版本发布记录
 
-- 4.0.0-beta.2：[简体中文](releases/4.0.0-beta.2.zh-CN.md)、[English](releases/4.0.0-beta.2.en.md)。
-- 4.0.0-beta.1：[简体中文](releases/4.0.0-beta.1.zh-CN.md)、[English](releases/4.0.0-beta.1.en.md)。
-
-## 设计记录
-
-- [本地诊断设计](superpowers/specs/2026-10-06-local-diagnostics-design.zh-CN.md)：原始提案与决策。
-- [本地诊断实施计划](superpowers/plans/2026-10-06-local-diagnostics.zh-CN.md)：该提案的实施顺序。
-
-设计记录保留当时的背景；维护中的指南说明当前行为和验证方法。
+- 4.1.0-beta.1：[English](releases/4.1.0-beta.1.en.md)、[简体中文](releases/4.1.0-beta.1.zh-CN.md)。
+- 4.0.0：[English](releases/4.0.0.en.md)、[简体中文](releases/4.0.0.zh-CN.md)。
+- 4.0.0-beta.2：[English](releases/4.0.0-beta.2.en.md)、[简体中文](releases/4.0.0-beta.2.zh-CN.md)。
+- 4.0.0-beta.1：[English](releases/4.0.0-beta.1.en.md)、[简体中文](releases/4.0.0-beta.1.zh-CN.md)。

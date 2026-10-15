@@ -1,0 +1,79 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.intro {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--settings-muted);
+  text-wrap: pretty;
+  max-width: 65ch;
+}
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.choice {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  border: 1px solid var(--settings-border);
+  border-radius: 16px;
+  padding: 18px;
+  background: var(--settings-card);
+  cursor: pointer;
+}
+.choice[data-selected='true'] {
+  border-color: var(--settings-fg);
+}
+.choice > input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.choice:has(input:focus-visible) {
+  outline: 2px solid var(--settings-fg);
+  outline-offset: 3px;
+}
+.copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+}
+.copy > strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.copy > span {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--settings-muted);
+}
+.sample {
+  margin: 12px 0 0;
+  font-size: 22px;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+.numbers {
+  margin: 0;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.check {
+  flex: 0 0 auto;
+  opacity: 0;
+}
+.choice[data-selected='true'] .check {
+  opacity: 1;
+}

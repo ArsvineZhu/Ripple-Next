@@ -1,17 +1,15 @@
-[简体中文](README.zh-CN.md)
+[简体中文](README.zh-CN.md) · [Architecture](../../docs/architecture.md)
 
 # Shared contracts
 
-`MediaSnapshot` describes all sessions, automatic/manual selection, freshness and errors. `MediaSession` includes playback state and nullable control capabilities. `media.ts` owns pure automatic selection and capability rules. The control IPC requires a session ID; selection and control return a refreshed snapshot plus a domain error instead of treating failure as an empty player list.
+Shared contains runtime-neutral serializable data, validation schemas and pure policies consumed by main, preload and renderer. Native discovery, filesystem access, provider requests and UI state belong to their owning runtime layers.
 
-`backgroundImage.ts` normalizes background settings and encodes local paths into the dedicated image URL without CSS backslash escaping. It performs no file access.
+Application/LaunchTarget describes installed apps, HTTP(S) shortcuts and command argv/working directories. MediaSession/MediaSnapshot describes capabilities, automatic/manual selection, freshness and bounded operation errors; commands require the displayed session ID. Stable page IDs and layout policies are independent of navigation order.
 
-Shared defines serializable IPC and domain contracts, Zod schemas for persisted app state and quick-app targets, and pure input-geometry helpers. Main, preload and renderer consume these definitions; runtime services stay in their owning layers.
+AppState owns persisted defaults and preferences, including weather, fonts, music and the structured AI graph. AI schemas validate stable IDs, bindings, model customization and ordered injections. Credentials are named secure-store records owned by main. Related graph/credential changes share the durable transaction.
 
-`contracts.ts` owns request, response, notice and assistant-stream shapes. `appState.ts` owns the persisted schema and fresh defaults. `i18n/` owns locale types, language resolution and bundled catalogs; renderer initializes i18next, while main uses the catalog for tray labels.
+Input geometry handles fractional scales and viewport limits. Background/color policies normalize resources and preserve alpha. Diagnostic schemas accept bounded operation/view/error metadata; clipboard text and native protocol payloads are not diagnostic event fields.
 
-See the [developer guide](../../docs/development.md) and [repository map](../../INDEX.md).
+Bundled en/zh-CN/zh-TW/ja catalogs have matching keys/interpolation variables. Contextual Microsoft/Apple Chinese overlays inherit ordinary technical and critical wording, and private i18next variants map to standard zh-CN for Intl formatting.
 
-`diagnostics.ts` defines safe error metadata and structured IPC, capability and lifecycle events. Native clipboard methods are explicit members of the shared IPC contract; diagnostics never include their text payloads.
-
-`ScrollGestureStartSchema` validates the native touchpad boundary's timestamp-only payload. Main produces it, preload validates it, and renderer uses it to separate fresh gestures from older momentum.
+See [development](../../docs/development.md), [tests](../../tests/README.md) and the [repository map](../../INDEX.md).

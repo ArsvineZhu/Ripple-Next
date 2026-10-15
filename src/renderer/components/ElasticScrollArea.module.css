@@ -3,8 +3,12 @@
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-y: contain;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   scrollbar-color: color-mix(in srgb, var(--island-text-color), transparent 58%) transparent;
+}
+
+.viewport.viewport[data-overflow='true']:not([data-empty='true']) {
+  scrollbar-width: thin;
 }
 
 .content {
@@ -12,6 +16,11 @@
 }
 
 .viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.viewport[data-overflow='true']:not([data-empty='true'])::-webkit-scrollbar {
+  display: block;
   width: 4px;
   height: 4px;
 }

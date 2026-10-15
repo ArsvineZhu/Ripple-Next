@@ -1,153 +1,146 @@
+import { DiagnosticError, validationProblems } from '../../shared/diagnosticError';
 import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
-import {
-  defaultAppState,
-  isAppState,
-  isAppStatePatch,
-  normalizeHiddenTabs,
-  parseAppState,
-  SETTINGS_TAB_ID,
-} from '../../shared/appState';
+import { defaultAppState, AppStateSchema, AppStatePatchSchema } from '../../shared/appState';
 import type { AppState, AppStatePatch } from '../../shared/appState';
-import { migrateDatabase } from '../database/migrations';
-import { queries } from '../database/queries';
-
-type SettingRow = { key: string; value: string };
-type TaskRow = { content: string };
-type WorkflowRow = { name: string; urls_json: string };
-type QuickAppRow = { id: string; name: string; target_json: string };
-type SecretRow = { ciphertext: Buffer };
-
-const DATABASE_FILENAME = 'ripple-next.sqlite';
+import schema from '../database/schema.sql?raw';
 
 export function createAppStateStore(userDataPath: string) {
   fs.mkdirSync(userDataPath, { recursive: true, mode: 0o700 });
   fs.chmodSync(userDataPath, 0o700);
-
-  const filePath = path.join(userDataPath, DATABASE_FILENAME);
+  const filePath = path.join(userDataPath, 'ripple-next.sqlite');
   const database = new Database(filePath);
-  fs.chmodSync(filePath, 0o600);
-  database.exec(queries.connectionConfiguration);
-
   try {
-    migrateDatabase(database);
+    fs.chmodSync(filePath, 0o600);
+    database.exec(schema);
   } catch (error) {
     database.close();
     throw error;
   }
 
-  const settingUpsert = database.prepare(queries.upsertSetting);
-  const insertTask = database.prepare(queries.insertTask);
-  const insertWorkflow = database.prepare(queries.insertWorkflow);
-  const insertQuickApp = database.prepare(queries.insertQuickApp);
-
-  const writeState = (state: AppState) => {
-    database.exec(queries.clearState);
-    for (const [key, value] of Object.entries(state.settings)) {
-      settingUpsert.run({ key, value: JSON.stringify(value) });
-    }
-    for (const [position, content] of state.tasks.entries()) {
-      insertTask.run({ position, content });
-    }
-    for (const [position, workflow] of state.workflows.entries()) {
-      insertWorkflow.run({
-        position,
-        name: workflow.name,
-        urls_json: JSON.stringify(workflow.urls),
-      });
-    }
-    for (const [position, quickApp] of state.quickApps.entries()) {
-      insertQuickApp.run({
-        position,
-        id: quickApp.id,
-        name: quickApp.name,
-        target_json: JSON.stringify(quickApp.target),
-      });
-    }
-  };
-
-  const stateExists = database.prepare(queries.selectStateExists);
-  if (!stateExists.get()) {
-    database.transaction(() => writeState(defaultAppState))();
+  const settingUpsert = database.prepare(
+    'INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+  );
+  const taskInsert = database.prepare('INSERT INTO tasks (position, content) VALUES (?, ?)');
+  const workflowInsert = database.prepare(
+    'INSERT INTO workflows (position, name, urls_json) VALUES (?, ?, ?)',
+  );
+  const quickAppInsert = database.prepare(
+    'INSERT INTO quick_apps (position, id, name, target_json) VALUES (?, ?, ?, ?)',
+  );
+  const taskClear = database.prepare('DELETE FROM tasks');
+  const workflowClear = database.prepare('DELETE FROM workflows');
+  const quickAppClear = database.prepare('DELETE FROM quick_apps');
+  const secretRead = database.prepare('SELECT ciphertext FROM secrets WHERE key = ?');
+  const secretWrite = database.prepare(
+    'INSERT INTO secrets (key, ciphertext) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET ciphertext = excluded.ciphertext',
+  );
+  const secretDelete = database.prepare('DELETE FROM secrets WHERE key = ?');
+  const secretExists = database.prepare('SELECT 1 FROM secrets WHERE key = ?');
+  const persist = database.transaction(
+    (patch: AppStatePatch, removedSecrets: readonly string[]) => {
+      for (const [key, value] of Object.entries(patch.settings ?? {})) {
+        settingUpsert.run(key, JSON.stringify(value));
+      }
+      if (patch.tasks) {
+        taskClear.run();
+        for (const [position, content] of patch.tasks.entries()) taskInsert.run(position, content);
+      }
+      if (patch.workflows) {
+        workflowClear.run();
+        for (const [position, workflow] of patch.workflows.entries())
+          workflowInsert.run(position, workflow.name, JSON.stringify(workflow.targets));
+      }
+      if (patch.quickApps) {
+        quickAppClear.run();
+        for (const [position, quickApp] of patch.quickApps.entries())
+          quickAppInsert.run(position, quickApp.id, quickApp.name, JSON.stringify(quickApp.target));
+      }
+      for (const name of removedSecrets) secretDelete.run(name);
+    },
+  );
+  if (!database.prepare('SELECT 1 FROM app_settings LIMIT 1').get()) {
+    persist.immediate(defaultAppState, []);
   }
 
-  const readState = (): AppState => {
+  // Main is the only writer. Read SQLite once; publish a new snapshot only after commit.
+  let current: AppState | null = null;
+  const snapshot = () => {
+    if (current) return current;
     const settings: Record<string, unknown> = { ...defaultAppState.settings };
-    for (const row of database.prepare(queries.selectSettings).all() as SettingRow[]) {
-      settings[row.key] = JSON.parse(row.value) as unknown;
+    for (const row of database.prepare('SELECT key, value FROM app_settings').all() as {
+      key: string;
+      value: string;
+    }[]) {
+      if (Object.hasOwn(defaultAppState.settings, row.key))
+        settings[row.key] = JSON.parse(row.value) as unknown;
     }
-    const tasks = (database.prepare(queries.selectTasks).all() as TaskRow[]).map(
-      (row) => row.content,
-    );
-    const workflows = (database.prepare(queries.selectWorkflows).all() as WorkflowRow[]).map(
-      (row) => ({ name: row.name, urls: JSON.parse(row.urls_json) as string[] }),
-    );
-    const quickApps = (database.prepare(queries.selectQuickApps).all() as QuickAppRow[]).map(
-      (row) => ({
-        id: row.id,
-        name: row.name,
-        target: JSON.parse(row.target_json) as AppState['quickApps'][number]['target'],
-      }),
-    );
-    const state = parseAppState({ schemaVersion: 1, settings, tasks, workflows, quickApps });
-    if (!state) throw new TypeError('Ripple Next database state does not match its schema');
-    if (state.settings.hiddenTabs.includes(SETTINGS_TAB_ID)) {
-      state.settings.hiddenTabs = normalizeHiddenTabs(state.settings.hiddenTabs);
-      settingUpsert.run({ key: 'hiddenTabs', value: JSON.stringify(state.settings.hiddenTabs) });
-    }
-    return state;
+    const tasks = (
+      database.prepare('SELECT content FROM tasks ORDER BY position').all() as { content: string }[]
+    ).map((row) => row.content);
+    const workflows = (
+      database.prepare('SELECT name, urls_json FROM workflows ORDER BY position').all() as {
+        name: string;
+        urls_json: string;
+      }[]
+    ).map((row) => ({ name: row.name, targets: JSON.parse(row.urls_json) as unknown }));
+    const quickApps = (
+      database.prepare('SELECT id, name, target_json FROM quick_apps ORDER BY position').all() as {
+        id: string;
+        name: string;
+        target_json: string;
+      }[]
+    ).map((row) => ({
+      id: row.id,
+      name: row.name,
+      target: JSON.parse(row.target_json) as unknown,
+    }));
+    const parsed = AppStateSchema.safeParse({ settings, tasks, workflows, quickApps });
+    if (!parsed.success)
+      throw new DiagnosticError(
+        'Ripple Next database state does not match its schema',
+        validationProblems(parsed.error.issues),
+      );
+    current = parsed.data;
+    return current;
   };
 
-  const persistState = database.transaction((state: AppState) => writeState(state));
-  let loadError: unknown = null;
-
   return {
-    filePath,
-    getLoadError: () => loadError,
-    load: async (): Promise<AppState> => {
-      try {
-        const state = readState();
-        loadError = null;
-        return structuredClone(state);
-      } catch (error) {
-        loadError = error;
-        return structuredClone(defaultAppState);
-      }
-    },
-    update: async (patch: AppStatePatch): Promise<AppState> => {
-      if (!isAppStatePatch(patch)) throw new TypeError('Invalid Ripple Next app state update');
-      const normalizedPatch = patch.settings?.hiddenTabs
-        ? {
-            ...patch,
-            settings: {
-              ...patch.settings,
-              hiddenTabs: normalizeHiddenTabs(patch.settings.hiddenTabs),
-            },
-          }
-        : patch;
-      const previous = readState();
-      const next: AppState = {
+    load: async (): Promise<AppState> => structuredClone(snapshot()),
+    update: async (
+      patch: AppStatePatch,
+      removedSecrets: readonly string[] = [],
+    ): Promise<AppState> => {
+      const parsedPatch = AppStatePatchSchema.safeParse(patch);
+      if (!parsedPatch.success)
+        throw new DiagnosticError(
+          'Invalid Ripple Next app state update',
+          validationProblems(parsedPatch.error.issues),
+        );
+      const previous = snapshot();
+      const result = AppStateSchema.safeParse({
         ...previous,
-        ...normalizedPatch,
-        settings: { ...previous.settings, ...normalizedPatch.settings },
-      };
-      if (!isAppState(next)) throw new TypeError('Invalid Ripple Next app state');
-      persistState.immediate(next);
-      loadError = null;
+        ...patch,
+        settings: { ...previous.settings, ...patch.settings },
+      });
+      if (!result.success)
+        throw new DiagnosticError(
+          'Invalid Ripple Next app state',
+          validationProblems(result.error.issues),
+        );
+      const next = result.data;
+      persist.immediate(patch, removedSecrets);
+      current = next;
       return structuredClone(next);
     },
     getSecretCiphertext: (key: string): Buffer | null => {
-      const row = database.prepare(queries.selectSecret).get(key) as SecretRow | undefined;
+      const row = secretRead.get(key) as { ciphertext: Buffer } | undefined;
       return row ? Buffer.from(row.ciphertext) : null;
     },
-    setSecretCiphertext: (key: string, ciphertext: Buffer) => {
-      database.prepare(queries.upsertSecret).run(key, ciphertext);
-    },
-    deleteSecret: (key: string) => {
-      database.prepare(queries.deleteSecret).run(key);
-    },
-    hasSecret: (key: string): boolean => database.prepare(queries.hasSecret).get(key) !== undefined,
+    setSecretCiphertext: (key: string, ciphertext: Buffer) => secretWrite.run(key, ciphertext),
+    deleteSecret: (key: string) => secretDelete.run(key),
+    hasSecret: (key: string): boolean => secretExists.get(key) !== undefined,
     close: () => {
       if (database.open) database.close();
     },

@@ -1,68 +1,38 @@
-[简体中文](release.zh-CN.md)
+[简体中文](release.zh-CN.md) · [Development](development.md)
 
-# Packaging and release acceptance
+# Release procedure
 
-The product identity is **Ripple Next**, package name `ripple-next`, and macOS bundle ID `com.arsvinezhu.ripple-next`. Use the pinned Node/pnpm toolchain from the [developer guide](development.md).
+Ripple Next 4.1.0-beta.1 is published from the merged commit of [PR #14](https://github.com/ArsvineZhu/Ripple-Next/pull/14). Version notes, screenshots and recordings describe the delivered application.
 
-## Build a package
+## CI and publication
+
+The workflow checks Linux, Windows and macOS. PR #14 builds Linux x64, Windows x64 and macOS x64/arm64 artifacts for review. The release job runs after that PR merges into main, checks out its exact merge commit, reruns verification/builds and creates `v4.1.0-beta.1` with a GitHub prerelease and its artifacts. Closing without merging does not publish.
+
+Tag pushes matching package.json also run the release path. Ordinary PR builds have no release write permission. Publication uses the trusted merged commit, consumes both English/Simplified Chinese notes and resolves repository links to the release tag through `scripts/release-notes.mjs`. Repeated delivery keeps an existing release's original artifacts.
+
+## Commands and artifacts
 
 ```sh
 pnpm check
 pnpm test
 pnpm package
 pnpm make
+node scripts/release-notes.mjs v4.1.0-beta.1
 ```
 
-`package` creates a runnable application directory in `out`; `make` creates distributable installers/archives in `out/make`. Run the matching native makers on their host. Linux needs DEB/RPM tooling, Windows MSI needs WiX, and macOS needs Xcode Command Line Tools. Installer prerequisites belong in the developer guide.
+`package` produces a runnable directory. `make` creates native installers and portable archives on the matching host. Linux needs `cc`, dpkg, fakeroot and rpm; Windows MSI needs WiX; macOS needs Xcode Command Line Tools. Forge builds/ships Linux's inotify executable and the target-architecture macOS window addon. macOS packages use an ad-hoc signature.
 
-| Build             | Distribution           |
-| ----------------- | ---------------------- |
-| Linux x64         | DEB, RPM, portable ZIP |
-| Windows x64       | MSI, portable ZIP      |
-| macOS x64 / arm64 | DMG, portable ZIP      |
-
-Installers and Actions artifacts use `RippleNext-<platform>` names. Keep generated output out of Git.
-
-## Prepare and publish a version
-
-1. Distill the integrated changes into matching `docs/releases/<version>.en.md` and `.zh-CN.md` notes. [4.0.0](releases/4.0.0.en.md) is an example. Keep previously published notes tied to their packages.
-2. Set the intended package version, verify dependency/lockfile consistency, and synchronize the four product READMEs, screenshots and affected guides.
-3. Run checks, tests and the applicable package/runtime acceptance below.
-4. Push `v<version>` only when publication is intended. The tag must match `package.json`.
-
-Pull requests to `main`/`master` run checks/tests on Ubuntu, Windows and macOS. A matching `v*` tag runs the Linux x64, Windows x64 and macOS x64/arm64 packaging matrix, then creates the GitHub Release. A version suffix such as `-beta.2` produces a prerelease. Manual workflow dispatch on a matching version tag can retry the workflow.
-
-When both versioned language-note files exist, CI combines them. If neither exists, it uses GitHub-generated notes. A single note file fails publication. The English/Simplified Chinese beta.1 and beta.2 notes are listed in the [catalog](INDEX.md). Direct users to the Ripple Next release/tag: GitHub's Latest pointer may still identify an older Ripple version.
+Names follow `RippleNext-<OS>[-<macOS arch>]-v<version>[-Portable].<ext>` for DEB/RPM, MSI, DMG and ZIP. Artifacts and temporary build/capture files remain under ignored out/.
 
 ## Runtime acceptance
 
-Exercise these behaviors in a runnable package, using a separate test profile for destructive data/credential operations:
+- Launch the package, reopen Settings through the tray/repeated launch, close Settings while retaining Island, then restart and confirm saved preferences/tasks/workflows.
+- Verify outside-click pass-through, expansion/page gestures, fractional display geometry, selected monitor and focus/menu/drag collapse guards.
+- Check visible-player controls/activation, metadata/artwork matching, long-text restart after collapse, idle/hover artist/control semantics, selection and native-source recovery.
+- Exercise workflow target success/failure, search, clipboard copy, task completion, weather and each configured AI protocol/cancellation/partial failure.
+- Check font bytes/notices, contextual Chinese, keyboard controls, native color ownership, glass on/off and all guide video playback/seeking/offscreen pause.
+- Validate hardware Bluetooth/capture changes on corresponding devices, and macOS behavior on a macOS host. Describe results by actual host and operation.
 
-| Area                  | Acceptance                                                                                                                                                                                         |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Startup/window        | Tray Show/Hide/Quit, launch at login, transparent Island, work-area positioning, outside clicks, normal shutdown                                                                                   |
-| Modes/input           | Hover/click, repeated expand/collapse, 0–2000 ms leave delay, re-entry/menu/focus/drag cancellation, geometry re-entry after moving/shrinking                                                      |
-| Navigation            | Left/Right, Ctrl-number visible order, one-page horizontal strokes, momentum tails, reversal, native vertical scroll and retained scroll position                                                  |
-| Personalization       | Four UI languages and tray, themes/background decode errors, displays, snap/free position, page order/visibility/default, settings after restart                                                   |
-| Launching             | Installed app, executable with separate argv/cwd, HTTP(S) quick app, ordered workflow including a failed target; local `localhost:3000/` with query/fragment opens in default browser              |
-| Music                 | Automatic A and manual dots, single-player indicator rules, stable order, new/closed sessions, identical song titles across players, latest rapid selection and matching control ID                |
-| Music gestures/covers | Vertical vs horizontal ownership, one card per continuous stroke, keyboard focus/Up/Down/Home/End, reduced motion, expanded/QuickView covers, failed-cover recovery and Linux extensionless images |
-| Assistant             | Base URL/model/key, OS-backed storage, streamed Markdown/code copy, cancellation/reset, errors and key removal                                                                                     |
-| Daily tools           | Clock/time zone, weather/location/unit, battery/device notices while expanded, session clipboard read/copy, persisted task add/completion                                                          |
-| Diagnostics           | Shared session, failure/recovery, folder opening, log rotation/dump retention, absence of content/keys/endpoints in logs                                                                           |
+The closed application's `ripple-next.sqlite` contains preferences, tasks, workflows, quick apps and encrypted credential records. Back it up before moving/updating profiles and verify restored data/key availability. Source schemas and appStateStore own the current persistent structure.
 
-Controls disabled during selection must become available for the confirmed player. A disappearing player must remove its dot and return to a valid selection. On Linux with `pactl` absent, exercise PipeWire capture starting and stopping; confirm repeated polling uses the fallback without missing-command spam.
-
-## Platform-specific checks
-
-Linux startup remains hidden until renderer readiness and queried ShapeInput confirmation. Test click-through across viewport edges and repeated animation; preserve statically bundled X11 and `--ozone-platform=x11` in autostart entries. Desktop launch uses `gio launch`. RPM staging retains the root-owned SUID sandbox helper.
-
-Windows validates original shortcut arguments/cwd, Store Shell activation, executable failure feedback, GSMTC artwork/controls and auto-hide taskbar edges. macOS validates Automation permissions, running Spotify/Music, display/Dock behavior and login-item registration. Reliable macOS login items require signing/notarization; current packaging uses an ad-hoc signature.
-
-Record package creation, automated tests and native runtime observations separately, including OS, architecture and tested operations. Hardware/media alerts require an actual source/device. Screenshot demo data illustrates presentation; runtime acceptance exercises live adapters.
-
-## Persistence during an update
-
-Ripple Next stores preferences, tasks, workflows, quick apps and OS-encrypted API-key ciphertext in `ripple-next.sqlite` under its user-data directory. Numbered migrations live in `src/main/database/migrations/`; runtime SQL lives in `.sql` resources. Verify state survives an update and key availability is reported correctly. The old Ripple profile is separate. Linux autostart changes only its own `ripple-next.desktop` in the active XDG autostart directory.
-
-See [platform support](platform-compatibility.md) for native integration and diagnostic detail, and [screenshot capture notes](assets/screenshots/README.md) when refreshing promotional assets.
+See [platform support](platform-compatibility.md), [architecture](architecture.md) and [capture provenance](assets/screenshots/README.md).

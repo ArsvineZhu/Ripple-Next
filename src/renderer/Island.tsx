@@ -1,18 +1,12 @@
+import { islandPages } from './lib/tabs';
 import styles from './styles/Island.module.css';
 import { useOverlay } from './components/OverlayProvider';
-import { animate, motion, useMotionValue } from 'motion/react';
+import { motion } from 'motion/react';
 import { TabPanels } from './components/TabPanels';
 import { useIslandController } from './hooks/useIslandController';
+import { useIslandGeometry } from './hooks/useIslandGeometry';
 import { QuickView } from './components/QuickView';
-import { BrowserSearchTab } from './features/BrowserSearchTab';
-import { WorkflowsTab } from './features/WorkflowsTab';
-import { OverviewTab } from './features/OverviewTab';
-import { NowPlayingTab } from './features/NowPlayingTab';
-import { AssistantTab } from './features/AssistantTab';
-import { ClipboardTab } from './features/ClipboardTab';
-import { TasksTab } from './features/TasksTab';
-import { SettingsTab } from './features/SettingsTab';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Activity, useCallback, useEffect, useState } from 'react';
 import { recordIslandContext } from './lib/diagnostics';
 export default function Island() {
   const controller = useIslandController();
@@ -42,15 +36,15 @@ export default function Island() {
     bgColor,
     textColor,
     isHovered,
+    isPreview,
     theme,
     currentTab,
     syncWindowInputRegion,
     islandBorderEnabled,
+    islandCornerRadius,
     cameraInUse,
     microphoneInUse,
-    charging,
     chargingAlert,
-    percent,
     alert,
     bluetoothAlert,
     currentTabId,
@@ -59,6 +53,7 @@ export default function Island() {
     direction,
     trackPointerPosition,
   } = controller;
+  const { charging, percent } = controller.battery;
   const reportIslandContext = useCallback(() => {
     const bounds = islandElementRef.current?.getBoundingClientRect();
     if (!bounds) return;
@@ -66,39 +61,30 @@ export default function Island() {
       tabId: currentTabId,
       mode,
       expanded: mode === 'large',
-      asked: controller.asked,
+      asked: controller.assistant.asked,
       viewport: { width: window.innerWidth, height: window.innerHeight },
       inputRegion: { width: bounds.width, height: bounds.height },
     });
-  }, [controller.asked, currentTabId, islandElementRef, mode]);
+  }, [controller.assistant.asked, currentTabId, islandElementRef, mode]);
   useEffect(() => {
     reportIslandContext();
     window.addEventListener('resize', reportIslandContext);
     return () => window.removeEventListener('resize', reportIslandContext);
   }, [reportIslandContext]);
   const animatedHeight =
-    mode === 'large' && currentTab === 4 && controller.asked
-      ? Math.min(Math.max(height, window.innerHeight - 80), Math.max(height, assistantAnswerHeight))
+    mode === 'large'
+      ? controller.getExpandedTabSize(currentTab, assistantAnswerHeight).height
       : height;
-  const visualWidth = useMotionValue(width);
-  const visualHeight = useMotionValue(animatedHeight);
-  const tabMoving = useRef(false);
-  const dimensionAnimation = useRef<{
-    width: ReturnType<typeof animate>;
-    height: ReturnType<typeof animate>;
-  } | null>(null);
-  useEffect(() => {
-    if (mode !== 'large') tabMoving.current = false;
-    if (mode === 'large' && tabMoving.current) return;
-    const transition = { type: 'spring' as const, stiffness: 400, damping: 40, mass: 2.5 };
-    const horizontal = animate(visualWidth, width, transition);
-    const vertical = animate(visualHeight, animatedHeight, transition);
-    dimensionAnimation.current = { width: horizontal, height: vertical };
-    return () => {
-      horizontal.stop();
-      vertical.stop();
-    };
-  }, [mode, width, animatedHeight, visualWidth, visualHeight]);
+  const geometry = useIslandGeometry({
+    width,
+    height: animatedHeight,
+    expanded: mode === 'large',
+    tab: currentTab,
+    getTabRadius: islandPages.radius,
+    cornerRadius: islandCornerRadius,
+    getTabSize: (id) => controller.getExpandedTabSize(id, assistantAnswerHeight),
+  });
+  const { width: visualWidth, height: visualHeight, radius, cornerK, fallbackRadius } = geometry;
   useEffect(() => {
     let frame: number | undefined;
     const sync = () => {
@@ -110,28 +96,18 @@ export default function Island() {
     };
     const stopWidth = visualWidth.on('change', sync);
     const stopHeight = visualHeight.on('change', sync);
+    const stopRadius = radius.on('change', sync);
+    const stopCorner = cornerK.on('change', sync);
     return () => {
       stopWidth();
       stopHeight();
+      stopRadius();
+      stopCorner();
       if (frame !== undefined) cancelAnimationFrame(frame);
     };
-  }, [visualWidth, visualHeight, syncWindowInputRegion]);
-  const handleTabProgress = (from: number, to: number, progress: number, moving: boolean) => {
-    tabMoving.current = moving;
-    // Navigation takes over the size values even if opening was still animating
-    // and the requested tabs happen to have identical dimensions.
-    dimensionAnimation.current?.width.stop();
-    dimensionAnimation.current?.height.stop();
-    dimensionAnimation.current = null;
-    const source = controller.getExpandedTabSize(from);
-    const target = controller.getExpandedTabSize(to);
-    const answerHeight = (id: number, base: number) =>
-      id === 4 && controller.asked
-        ? Math.min(Math.max(base, window.innerHeight - 80), Math.max(base, assistantAnswerHeight))
-        : base;
-    visualWidth.set(source.width + (target.width - source.width) * progress);
-    const fromHeight = answerHeight(from, source.height);
-    visualHeight.set(fromHeight + (answerHeight(to, target.height) - fromHeight) * progress);
+  }, [visualWidth, visualHeight, radius, cornerK, syncWindowInputRegion]);
+  const handleTabProgress = (from: string, to: string, progress: number, moving: boolean) => {
+    geometry.followTabs(from, to, progress, moving);
     syncWindowInputRegion();
   };
   return (
@@ -186,27 +162,17 @@ export default function Island() {
       initial={{
         x: sideStyles.x,
         left: sideStyles.left,
-        top: sideStyles.top || 'auto',
-        bottom: sideStyles.bottom || 'auto',
+        top: sideStyles.top ?? 'auto',
+        bottom: sideStyles.bottom ?? 'auto',
       }}
       animate={{
         left: sideStyles.left,
-        top: sideStyles.top || 'auto',
-        bottom: sideStyles.bottom || 'auto',
+        top: sideStyles.top ?? 'auto',
+        bottom: sideStyles.bottom ?? 'auto',
         backgroundColor: hideNotActiveIslandEnabled && mode === 'still' ? 'rgba(0,0,0,0)' : bgColor,
         color: hideNotActiveIslandEnabled && mode === 'still' ? 'rgba(0,0,0,0)' : textColor,
-        scale: isHovered ? 1.05 : 1,
+        scale: isHovered && mode === 'large' ? 1.05 : 1,
         x: sideStyles.x,
-        borderRadius:
-          mode === 'large' && theme === 'win95'
-            ? 0
-            : mode === 'large'
-              ? currentTab === 0
-                ? 28
-                : 30
-              : theme === 'win95'
-                ? 0
-                : 14,
       }}
       onUpdate={syncWindowInputRegion}
       onAnimationComplete={() => {
@@ -219,16 +185,22 @@ export default function Island() {
         stiffness: 400,
         damping: 40,
         mass: 2.5,
-        x: { duration: 0.15 },
+        x: { duration: isPreview ? 0 : 0.15 },
+        left: isPreview ? { duration: 0 } : undefined,
+        top: isPreview ? { duration: 0 } : undefined,
+        bottom: isPreview ? { duration: 0 } : undefined,
       }}
       style={{
         width: visualWidth,
         height: visualHeight,
         backgroundImage: controller.backgroundImageStyle,
-        justifyContent: mode === 'large' && currentTab === 3 ? 'flex-start' : 'center',
+        justifyContent:
+          mode === 'large' ? (islandPages.get(currentTab)?.alignment ?? 'center') : 'center',
         border:
           theme === 'win95'
-            ? '2px solid rgb(254, 254, 254)'
+            ? hideNotActiveIslandEnabled && mode === 'still'
+              ? 'none'
+              : undefined
             : islandBorderEnabled
               ? cameraInUse
                 ? `1px solid rgba(255, 215, 0, 0.8)`
@@ -244,67 +216,52 @@ export default function Island() {
                           ? 'none'
                           : `1px solid color-mix(in srgb, ${textColor}, transparent 70%)`
               : 'none',
-        borderColor: theme === 'win95' ? '#FFFFFF #808080 #808080 #FFFFFF' : 'none',
-
         boxShadow:
           hideNotActiveIslandEnabled && mode === 'still'
             ? 'none'
-            : isHovered
-              ? '0 0 32px rgba(0, 0, 0, 0.25)'
-              : '0 0 24px rgba(0, 0, 0, 0.12)',
+            : theme === 'win95'
+              ? undefined
+              : isHovered
+                ? '0 0 32px rgba(0, 0, 0, 0.25)'
+                : '0 0 24px rgba(0, 0, 0, 0.12)',
         ...({
           '--island-text-color': textColor,
           '--island-bg-color': bgColor,
+          '--island-radius': radius,
+          '--island-corner-k': cornerK,
+          '--island-fallback-radius': fallbackRadius,
         } as import('motion/react').MotionStyle),
       }}
     >
-      {/*Quickview*/}
-      <QuickView {...controller} />
-
-      {mode === 'large' && (
-        <TabPanels
-          tabs={visibleTabs}
-          activeId={currentTabId}
-          width={visualWidth}
-          direction={direction}
-          disabled={isOverlayOpen}
-          onProgress={handleTabProgress}
-          onSelect={selectTab}
-          renderTab={(tab) => (
-            <>
-              {/*Browser Search*/}
-              {tab === 0 && <BrowserSearchTab {...controller} />}
-              {/* Workflows & Quick Apps */}
-              {tab === 1 && <WorkflowsTab {...controller} />}
-
-              {/*Overview tab*/}
-              {tab === 2 && <OverviewTab {...controller} />}
-
-              {/* Now Playing*/}
-              {tab === 3 && <NowPlayingTab {...controller} />}
-
-              {/* AI tab container */}
-              {tab === 4 && (
-                <AssistantTab
-                  {...controller}
-                  onAnswerContentSizeChange={setAssistantAnswerHeight}
-                  resetAnswerContentSize={resetAssistantAnswerHeight}
-                />
-              )}
-
-              {/*Clipboard*/}
-              {tab === 5 && <ClipboardTab {...controller} />}
-
-              {/*Tasks*/}
-              {tab === 6 && <TasksTab {...controller} />}
-
-              {/*Settings Overhaul*/}
-              {tab === 7 && <SettingsTab {...controller} />}
-            </>
-          )}
+      <div className={styles.content}>
+        {/*Quickview*/}
+        <QuickView
+          {...controller}
+          {...controller.media}
+          {...controller.overview}
+          {...controller.battery}
         />
-      )}
-      <div ref={setContainer} data-island-overlay className={styles.overlay} />
+
+        <Activity mode={mode === 'large' ? 'visible' : 'hidden'}>
+          <TabPanels
+            tabs={visibleTabs}
+            activeId={currentTabId}
+            width={visualWidth}
+            direction={direction}
+            disabled={isOverlayOpen}
+            onProgress={handleTabProgress}
+            onSelect={selectTab}
+            renderTab={(tab) =>
+              islandPages.get(tab)?.render({
+                controller,
+                onAnswerContentSizeChange: setAssistantAnswerHeight,
+                resetAnswerContentSize: resetAssistantAnswerHeight,
+              })
+            }
+          />
+        </Activity>
+        <div ref={setContainer} data-island-overlay className={styles.overlay} />
+      </div>
     </motion.div>
   );
 }

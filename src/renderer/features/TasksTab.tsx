@@ -4,35 +4,22 @@ import { AnimatePresence } from 'motion/react';
 import { motion } from 'motion/react';
 import { InlineNotices } from '../components/InlineNotices';
 import { ElasticScrollArea } from '../components/ElasticScrollArea';
-import type { IslandController } from '../hooks/useIslandController';
-type Props = Pick<
-  IslandController,
-  'tasks' | 'removeTask' | 'taskText' | 'setTaskText' | 'addTask' | 'textColor' | 'bgColor'
->;
-export function TasksTab({
-  tasks,
-  removeTask,
-  taskText,
-  setTaskText,
-  addTask,
-  textColor,
-  bgColor,
-}: Props) {
+import { useTasks } from '../hooks/useTasks';
+import { ActionButton, TextEntry, EmptyState } from '../components/content';
+export function TasksTab() {
+  const { tasks, removeTask, taskText, setTaskText, addTask } = useTasks();
   const { t } = useTranslation();
   return (
     <div className={styles.container} id="tasks-container">
-      <ElasticScrollArea className={styles.list} id="task-list">
+      <ElasticScrollArea
+        className={styles.list}
+        id="task-list"
+        data-empty={tasks.length === 0 || undefined}
+      >
         <InlineNotices area="tasks" />
         <AnimatePresence propagate>
           {tasks.length === 0 ? (
-            <motion.p
-              className={styles.emptyState}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-            >
-              {t('tasksEmpty')}
-            </motion.p>
+            <EmptyState className={styles.emptyState}>{t('tasksEmpty')}</EmptyState>
           ) : (
             tasks.map((task, index) => (
               <motion.div
@@ -58,32 +45,25 @@ export function TasksTab({
           )}
         </AnimatePresence>
       </ElasticScrollArea>
-      <div className={styles.inputRow} id="task-input-container">
-        <input
-          type="text"
+      <form
+        className={styles.inputRow}
+        id="task-input-container"
+        onSubmit={(event) => {
+          event.preventDefault();
+          addTask();
+        }}
+      >
+        <TextEntry
+          label={t('newTask')}
           placeholder={t('newTask')}
           value={taskText}
-          onChange={(e) => setTaskText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') addTask();
-          }}
+          onValueChange={setTaskText}
+          onSubmit={addTask}
+          appearance="surface"
           className={styles.input}
-          style={{
-            backgroundColor: `color-mix(in srgb, ${textColor}, transparent 95%)`,
-            color: textColor,
-            border: `1px solid color-mix(in srgb, ${textColor}, transparent 90%)`,
-          }}
         />
-        <button
-          onClick={() => {
-            addTask();
-          }}
-          className={styles.addButton}
-          style={{ backgroundColor: textColor, color: bgColor }}
-        >
-          {t('add')}
-        </button>
-      </div>
+        <ActionButton type="submit">{t('add')}</ActionButton>
+      </form>
     </div>
   );
 }

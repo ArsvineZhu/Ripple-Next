@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { MediaCommand, MediaError, MediaSnapshot } from '../../shared/contracts';
+import type { MediaCommand, MediaError, MediaSnapshot } from '../../shared/media';
 import { emptyMediaSnapshot } from '../../shared/media';
 import { recordRendererError } from '../lib/diagnostics';
 
@@ -23,7 +23,10 @@ export function useMedia() {
   useEffect(() => {
     mounted.current = true;
     let active = true;
-    let timer: ReturnType<typeof setTimeout>;
+    const unsubscribe = window.electronAPI.onMediaSnapshotChanged?.((snapshot) => {
+      requestVersion.current++;
+      if (active) setMediaSnapshot(snapshot);
+    });
     const poll = async () => {
       if (!busy.current) {
         const version = requestVersion.current;
@@ -41,14 +44,13 @@ export function useMedia() {
             }));
         }
       }
-      if (active) timer = setTimeout(() => void poll(), 5000);
     };
     void poll();
     return () => {
       mounted.current = false;
       pendingSelection.current = null;
       active = false;
-      clearTimeout(timer);
+      unsubscribe?.();
     };
   }, []);
   const perform = useCallback(
@@ -59,10 +61,11 @@ export function useMedia() {
       setMediaBusy(true);
       setMediaActionError(null);
       const apply = async (request: typeof operation) => {
+        const version = requestVersion.current;
         try {
           const result = await request();
           if (mounted.current) {
-            setMediaSnapshot(result.snapshot);
+            if (version === requestVersion.current) setMediaSnapshot(result.snapshot);
             setMediaActionError(result.error);
           }
         } catch (error) {

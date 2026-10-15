@@ -1,7 +1,8 @@
 .trigger {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 10px;
   width: max-content;
   min-width: 96px;
@@ -10,15 +11,21 @@
   min-height: 36px;
   padding: 7px 12px;
   font-size: 14px;
-  text-align: left;
-  color: var(--island-text-color);
-  background: var(--control-bg);
-  border: 1px solid var(--control-border);
+  text-align: right;
+  color: var(--settings-muted, var(--island-text-color));
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: var(--control-radius);
   cursor: pointer;
 }
 
-.trigger > span:first-child {
+.trigger > span {
+  position: relative;
+}
+
+.trigger > [data-select-value] {
+  flex: 1;
+  text-align: right;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -32,8 +39,7 @@
 
 .trigger:hover,
 .trigger[data-state='open'] {
-  background: var(--control-hover);
-  border-color: var(--control-focus);
+  color: var(--island-text-color);
 }
 
 .trigger:focus-visible {
@@ -45,26 +51,39 @@
   opacity: 0.45;
   cursor: default;
 }
+.trigger[data-glass-enabled='false'] {
+  background: var(--control-bg);
+  border-color: var(--control-border);
+}
+.content[data-glass-enabled='false'] {
+  background: var(--menu-bg);
+  border: 1px solid var(--control-border);
+  border-radius: 12px;
+}
 
 .content {
+  --glass-menu-origin: var(--radix-dropdown-menu-content-transform-origin);
+  position: relative;
   z-index: 2;
   pointer-events: auto;
-  min-width: var(--radix-dropdown-menu-trigger-width);
-  max-width: var(--radix-dropdown-menu-content-available-width);
-  max-height: var(--radix-dropdown-menu-content-available-height);
+  min-width: max(200px, var(--radix-dropdown-menu-trigger-width, 0px));
+  max-width: var(--radix-dropdown-menu-content-available-width, calc(100vw - 24px));
+  max-height: var(--radix-dropdown-menu-content-available-height, calc(100vh - 24px));
   color: var(--island-text-color);
-  background: var(--menu-bg);
-  border: 1px solid var(--control-focus);
-  border-radius: var(--control-radius);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 30%);
+  background: transparent;
+  border: none;
+  border-radius: 24px;
+  corner-shape: superellipse(1.62);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 24%);
   overflow: hidden;
   font-size: 14px;
 }
 
 .viewport {
+  position: relative;
   overflow-y: auto;
-  max-height: var(--radix-dropdown-menu-content-available-height);
-  padding: 4px;
+  max-height: var(--radix-dropdown-menu-content-available-height, calc(100vh - 24px));
+  padding: 8px;
 }
 
 .item {
@@ -72,17 +91,13 @@
   align-items: center;
   position: relative;
   gap: 8px;
-  padding: 9px 30px 9px 10px;
-  min-height: 34px;
-  border-radius: calc(var(--control-radius) - 4px);
+  padding: 10px 12px 10px 32px;
+  min-height: 38px;
+  border-radius: 16px;
   cursor: pointer;
   outline: none;
   user-select: none;
   overflow-wrap: anywhere;
-}
-
-.item[data-highlighted] {
-  background: var(--control-hover);
 }
 
 .item[data-disabled] {
@@ -92,6 +107,20 @@
 
 .indicator {
   position: absolute;
-  right: 8px;
+  left: 10px;
   display: flex;
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  text-align: left;
+}
+
+.description {
+  color: var(--settings-muted, var(--island-text-color));
+  font-size: 12px;
+  line-height: 1.4;
 }

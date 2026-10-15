@@ -1,0 +1,35 @@
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    opacity 0.2s;
+}
+.button[data-compact] {
+  width: 30px;
+  height: 100%;
+  padding: 0;
+}
+.button:hover:not(:disabled) {
+  transform: scale(1.15);
+}
+.button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.button:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}

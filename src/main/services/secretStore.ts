@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../shared/diagnosticError';
 export interface SafeStorageAdapter {
   isAsyncEncryptionAvailable(): Promise<boolean>;
   getSelectedStorageBackend?(): string;
@@ -12,43 +13,41 @@ export interface SecretDatabase {
   hasSecret(key: string): boolean;
 }
 
-const API_KEY_NAME = 'api-key';
-
 export function createSecretStore(database: SecretDatabase, safeStorage: SafeStorageAdapter) {
   const ensureSecureStorage = async () => {
     if (!(await safeStorage.isAsyncEncryptionAvailable())) {
-      throw new Error('OS-backed secure storage is unavailable');
+      throw new DiagnosticError('OS-backed secure storage is unavailable');
     }
     if (
       process.platform === 'linux' &&
       safeStorage.getSelectedStorageBackend?.() === 'basic_text'
     ) {
-      throw new Error('OS-backed secure storage is unavailable');
+      throw new DiagnosticError('OS-backed secure storage is unavailable');
     }
   };
 
-  const setApiKey = async (value: string) => {
+  const setSecret = async (name: string, value: string) => {
     const key = value.trim();
     if (!key) {
-      database.deleteSecret(API_KEY_NAME);
+      database.deleteSecret(name);
       return;
     }
     await ensureSecureStorage();
-    database.setSecretCiphertext(API_KEY_NAME, await safeStorage.encryptStringAsync(key));
+    database.setSecretCiphertext(name, await safeStorage.encryptStringAsync(key));
+  };
+
+  const getSecret = async (name: string): Promise<string | null> => {
+    const encrypted = database.getSecretCiphertext(name);
+    if (!encrypted) return null;
+    await ensureSecureStorage();
+    const decrypted = await safeStorage.decryptStringAsync(encrypted);
+    if (decrypted.shouldReEncrypt) await setSecret(name, decrypted.result);
+    return decrypted.result;
   };
 
   return {
-    setApiKey,
-    async getApiKey(): Promise<string | null> {
-      const encrypted = database.getSecretCiphertext(API_KEY_NAME);
-      if (!encrypted) return null;
-      await ensureSecureStorage();
-      const decrypted = await safeStorage.decryptStringAsync(encrypted);
-      if (decrypted.shouldReEncrypt) await setApiKey(decrypted.result);
-      return decrypted.result;
-    },
-    async hasApiKey(): Promise<boolean> {
-      return database.hasSecret(API_KEY_NAME);
-    },
+    setSecret,
+    getSecret,
+    hasSecret: async (name: string) => database.hasSecret(name),
   };
 }

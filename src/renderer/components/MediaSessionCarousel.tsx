@@ -8,7 +8,7 @@ import {
   type MotionValue,
 } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import type { MediaSession } from '../../shared/contracts';
+import type { MediaSession } from '../../shared/media';
 import { useMediaPaging } from '../hooks/useMediaPaging';
 import styles from './MediaSessionCarousel.module.css';
 

@@ -1,3 +1,4 @@
+import { DiagnosticError } from '../../shared/diagnosticError';
 import { chmod, mkdir, readdir, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -6,14 +7,26 @@ import { app, crashReporter, shell } from 'electron';
 import log from 'electron-log/main';
 
 import {
-  RENDERER_CONTEXT_PREFIX,
   RendererDiagnosticContextSchema,
   serializeDiagnosticError,
   type DiagnosticErrorSource,
   type DiagnosticEvent,
   type RendererDiagnosticContext,
+  type RendererDiagnostic,
+  type SettingsDiagnosticContext,
+  type RendererViewContext,
 } from '../../shared/diagnostics';
 export { serializeDiagnosticError } from '../../shared/diagnostics';
+import {
+  formatDiagnosticEvent,
+  formatDiagnosticRecord,
+  formatError,
+  formatContext,
+  type DiagnosticRecord,
+  type DiagnosticLevel,
+} from '../../shared/diagnosticFormat';
+import { createDiagnosticSourceMapper } from './diagnosticSourceMaps';
+import { currentDiagnosticOperation } from './diagnosticScope';
 
 const DIAGNOSTICS_DIRECTORY = 'diagnostics';
 const CRASH_DIRECTORY = 'crashes';
@@ -24,8 +37,9 @@ const CRASH_MAX_FILES = 10;
 export interface DiagnosticsService {
   record(event: DiagnosticEvent): void;
   recordError(source: DiagnosticErrorSource, error: unknown): void;
+  receiveRenderer(event: RendererDiagnostic, role: 'island' | 'settings'): void;
   setRendererContext(context: RendererDiagnosticContext): void;
-  getRendererContext(): RendererDiagnosticContext | undefined;
+  getRendererContext(role: 'island' | 'settings'): RendererViewContext | undefined;
   openFolder(): Promise<void>;
 }
 
@@ -73,40 +87,49 @@ export async function initializeDiagnostics(userDataPath: string): Promise<Diagn
   const directory = path.join(userDataPath, DIAGNOSTICS_DIRECTORY);
   const crashDirectory = path.join(directory, CRASH_DIRECTORY);
   const logPath = path.join(directory, LOG_FILE);
+  const mapFrame = createDiagnosticSourceMapper(path.resolve(__dirname, '..'));
   let loggerReady = false;
-  const sessionId = randomUUID();
+  const sessionId = randomUUID().slice(0, 8);
+  const requestedLevel =
+    process.argv.find((value) => value.startsWith('--ripple-log-level='))?.split('=')[1] ??
+    process.env.RIPPLE_LOG_LEVEL ??
+    'info';
+  const levels: DiagnosticLevel[] = ['error', 'warn', 'info', 'debug', 'trace'];
+  const threshold = levels.includes(requestedLevel as DiagnosticLevel)
+    ? levels.indexOf(requestedLevel as DiagnosticLevel)
+    : 2;
   let rendererContext: RendererDiagnosticContext | undefined;
+  let settingsContext: SettingsDiagnosticContext | undefined;
 
-  const write = (level: 'info' | 'warn' | 'error', value: unknown, forceStderr = false) => {
-    const line =
-      typeof value === 'string'
-        ? value
-        : JSON.stringify({
-            timestamp: new Date().toISOString(),
-            sessionId,
-            process: 'main',
-            level,
-            event: value,
-          });
+  const write = (record: DiagnosticRecord, forceStderr = false) => {
+    if (levels.indexOf(record.level) > threshold) return;
+    const operation = currentDiagnosticOperation();
+    const details = [
+      ...(operation
+        ? [
+            `Operation #${operation.id}: ${operation.channel}; source=${operation.sender ?? 'main'}${operation.fields.length ? '; fields=' + operation.fields.join(', ') : ''}`,
+          ]
+        : []),
+      ...(record.details ?? []),
+    ];
+    const line = formatDiagnosticRecord({ ...record, details: details.map(mapFrame) }, sessionId);
     if (!forceStderr && loggerReady) {
       try {
-        log[level](line);
+        log[record.level === 'trace' ? 'silly' : record.level](line);
         return;
       } catch {
-        // Fall through to stderr when the file logger has stopped working.
+        /* stderr remains available after logger failure. */
       }
     }
-    process.stderr.write(`${line}\n`);
+    process.stderr.write(line + '\n');
   };
-
-  const recordError = (source: DiagnosticErrorSource, error: unknown) => {
-    write('error', {
-      kind: 'error',
-      source,
-      error: serializeDiagnosticError(error),
+  const recordError = (source: DiagnosticErrorSource, error: unknown) =>
+    write({
+      level: 'error',
+      scope: 'main/' + source,
+      message: 'Operation failed',
+      details: formatError(serializeDiagnosticError(error)),
     });
-  };
-
   try {
     await mkdir(directory, { recursive: true, mode: 0o700 });
     await mkdir(crashDirectory, { recursive: true, mode: 0o700 });
@@ -116,10 +139,11 @@ export async function initializeDiagnostics(userDataPath: string): Promise<Diagn
     }
   } catch (error) {
     write(
-      'error',
       {
-        kind: 'diagnostics-directory-init-failed',
-        error: serializeDiagnosticError(error),
+        level: 'error',
+        scope: 'diagnostics',
+        message: 'Cannot create diagnostics directory',
+        details: formatError(serializeDiagnosticError(error)),
       },
       true,
     );
@@ -129,14 +153,19 @@ export async function initializeDiagnostics(userDataPath: string): Promise<Diagn
     log.transports.file.fileName = LOG_FILE;
     log.transports.file.maxSize = LOG_LIMIT_BYTES;
     log.transports.file.resolvePathFn = () => logPath;
-    log.initialize();
+    log.transports.file.level = 'silly';
+    log.transports.file.format = '{text}';
+    log.transports.console.level = 'silly';
+    log.transports.console.format = '{text}';
+    log.initialize({ preload: false });
     loggerReady = true;
   } catch (error) {
     write(
-      'error',
       {
-        kind: 'logger-init-failed',
-        error: serializeDiagnosticError(error),
+        level: 'error',
+        scope: 'diagnostics',
+        message: 'File logger initialization failed',
+        details: formatError(serializeDiagnosticError(error)),
       },
       true,
     );
@@ -146,9 +175,11 @@ export async function initializeDiagnostics(userDataPath: string): Promise<Diagn
     app.setPath('crashDumps', crashDirectory);
     crashReporter.start({ productName: 'Ripple Next', uploadToServer: false });
   } catch (error) {
-    write('error', {
-      kind: 'crash-reporter-init-failed',
-      error: serializeDiagnosticError(error),
+    write({
+      level: 'error',
+      scope: 'diagnostics',
+      message: 'Crash reporter initialization failed',
+      details: formatError(serializeDiagnosticError(error)),
     });
   }
 
@@ -160,60 +191,47 @@ export async function initializeDiagnostics(userDataPath: string): Promise<Diagn
 
   const diagnostics: DiagnosticsService = {
     record(event) {
-      const failed =
-        event.kind === 'main-exception' ||
-        (event.kind === 'ipc-operation' && event.phase === 'failed') ||
-        ((event.kind === 'renderer-exit' || event.kind === 'child-process-exit') &&
-          event.reason !== 'clean-exit') ||
-        (event.kind === 'window-lifecycle' && event.event === 'did-fail-load') ||
-        (event.kind === 'linux-input-shape' && event.state === 'failed');
-      write(failed ? 'error' : 'info', event);
+      const record = formatDiagnosticEvent(event);
+      const role =
+        event.kind === 'ipc-operation' && event.phase === 'failed'
+          ? event.sender
+          : event.kind === 'window-lifecycle' &&
+              ['unresponsive', 'did-fail-load'].includes(event.event)
+            ? event.role
+            : undefined;
+      if (role) {
+        const context = diagnostics.getRendererContext(role);
+        if (context) record.details = [...(record.details ?? []), formatContext(context)];
+      }
+      write(record);
     },
     recordError,
+    receiveRenderer(event, role) {
+      if (event.kind === 'renderer-context') diagnostics.setRendererContext(event.context);
+      if (event.kind === 'settings-context') settingsContext = event.context;
+      const record = formatDiagnosticEvent(event);
+      const context = diagnostics.getRendererContext(role);
+      if (event.kind === 'renderer-error' && context)
+        record.details = [...(record.details ?? []), formatContext(context)];
+      write({
+        ...record,
+        scope: 'renderer/' + role + '/' + (event.kind === 'renderer-error' ? event.source : 'view'),
+      });
+    },
     setRendererContext(context) {
       const parsed = RendererDiagnosticContextSchema.safeParse(context);
       if (!parsed.success) return;
       rendererContext = parsed.data;
     },
-    getRendererContext() {
-      return rendererContext ? structuredClone(rendererContext) : undefined;
+    getRendererContext(role) {
+      const context = role === 'island' ? rendererContext : settingsContext;
+      return context ? structuredClone(context) : undefined;
     },
     async openFolder() {
       const error = await shell.openPath(directory);
-      if (error) throw new Error('Could not open the diagnostics directory');
+      if (error) throw new DiagnosticError('Could not open the diagnostics directory');
     },
   };
-
-  log.hooks.push((message) => {
-    if (message.variables?.processType !== 'renderer') return message;
-    const first = message.data?.[0];
-    if (typeof first !== 'string') return message;
-    try {
-      if (!first.startsWith(RENDERER_CONTEXT_PREFIX)) {
-        const value = JSON.parse(first);
-        if (value?.process === 'renderer') {
-          message.data[0] = JSON.stringify({ ...value, sessionId, level: message.level });
-        }
-        return message;
-      }
-      const event: unknown = JSON.parse(first.slice(RENDERER_CONTEXT_PREFIX.length));
-      if (!event || typeof event !== 'object' || !('context' in event)) return false;
-      const parsed = RendererDiagnosticContextSchema.safeParse(event.context);
-      if (!parsed.success) return false;
-      diagnostics.setRendererContext(parsed.data);
-      message.data[0] = JSON.stringify({
-        timestamp: new Date().toISOString(),
-        sessionId,
-        process: 'renderer',
-        level: message.level,
-        event: { kind: 'renderer-context', context: parsed.data },
-      });
-    } catch {
-      // Ignore malformed renderer context and keep the previous valid snapshot.
-      if (first.startsWith(RENDERER_CONTEXT_PREFIX)) return false;
-    }
-    return message;
-  });
 
   return diagnostics;
 }

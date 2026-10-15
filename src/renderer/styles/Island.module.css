@@ -32,7 +32,46 @@
   margin: 0;
   transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
+  border-radius: calc(var(--island-fallback-radius, 14) * 1px);
 }
+
+@supports (corner-shape: superellipse(1.3)) {
+  .Island {
+    border-radius: calc(var(--island-radius) * 1px);
+    corner-shape: superellipse(var(--island-corner-k));
+  }
+}
+
+.Island[data-theme='win95'] {
+  border-radius: 0;
+  corner-shape: round;
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  box-shadow:
+    inset 1px 1px #dfdfdf,
+    inset -1px -1px #404040;
+}
+
+.Island[data-theme='win95'] *,
+.Island[data-theme='win95'] *::before,
+.Island[data-theme='win95'] *::after {
+  border-radius: 0;
+  corner-shape: round;
+}
+
+.content {
+  position: relative;
+  display: flex;
+  align-items: inherit;
+  justify-content: inherit;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  corner-shape: inherit;
+  /* Native box geometry also clips hit testing of transformed tab descendants. */
+  clip-path: border-box;
+}
+
 .overlay {
   position: absolute;
   inset: 0;

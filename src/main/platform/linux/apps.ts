@@ -1,13 +1,11 @@
+import { DiagnosticError } from '../../../shared/diagnosticError';
 import { execFile } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import type { AppEntry } from '../../../shared/contracts';
+import type { Application } from '../../../shared/launch';
 
-interface DesktopEntry {
-  name: string;
-  target: AppEntry['target'];
-}
+import { spawnDetached } from '../../services/processes';
 
 const inheritedDevelopmentVariables = [
   'ELECTRON_DEV',
@@ -40,11 +38,7 @@ function unescapeDesktopValue(value: string) {
   });
 }
 
-function parseDesktopEntry(
-  contents: string,
-  desktopFile: string,
-  locale = '',
-): DesktopEntry | null {
+function parseDesktopEntry(contents: string, desktopFile: string, locale = ''): Application | null {
   let inDesktopEntry = false;
   const values = new Map<string, string>();
   for (const line of contents.split(/\r?\n/)) {
@@ -69,7 +63,11 @@ function parseDesktopEntry(
   const language = locale.replace('_', '-').split('.')[0];
   const name = (language && values.get(`Name[${language}]`)) || values.get('Name');
   if (!name?.trim()) return null;
-  return { name: name.trim(), target: { kind: 'desktop-entry', desktopFile } };
+  return {
+    kind: 'application',
+    name: name.trim(),
+    native: { platform: 'linux', identifier: desktopFile },
+  };
 }
 
 function dataDirectories() {
@@ -103,12 +101,12 @@ async function walkDesktopFiles(directory: string, depth = 0): Promise<string[]>
   ];
 }
 
-export async function discoverLinuxApps(query: string): Promise<AppEntry[]> {
+async function discoverLinuxApps(query: string): Promise<Application[]> {
   const roots = dataDirectories().map((directory) => path.join(directory, 'applications'));
   const files = (await Promise.all(roots.map((root) => walkDesktopFiles(root)))).flat();
   const locale = process.env.LANG || '';
   const normalizedQuery = query.trim().toLocaleLowerCase();
-  const byPath = new Map<string, AppEntry>();
+  const byPath = new Map<string, Application>();
   await Promise.all(
     files.map(async (desktopFile) => {
       try {
@@ -137,7 +135,7 @@ function isWithin(directory: string, candidate: string) {
 
 export async function launchLinuxDesktopEntry(desktopFile: string): Promise<void> {
   if (!path.isAbsolute(desktopFile) || !desktopFile.endsWith('.desktop')) {
-    throw new TypeError('Invalid desktop application entry');
+    throw new DiagnosticError('Invalid desktop application entry');
   }
   const candidate = path.resolve(desktopFile);
   const permittedDirectories = dataDirectories().map((directory) =>
@@ -145,7 +143,7 @@ export async function launchLinuxDesktopEntry(desktopFile: string): Promise<void
   );
   const isPermitted = permittedDirectories.some((directory) => isWithin(directory, candidate));
   if (!isPermitted)
-    throw new TypeError('Desktop application entry is outside the applications directory');
+    throw new DiagnosticError('Desktop application entry is outside the applications directory');
   await fs.access(candidate);
   await new Promise<void>((resolve, reject) => {
     execFile(
@@ -164,3 +162,15 @@ export async function launchLinuxDesktopEntry(desktopFile: string): Promise<void
     );
   });
 }
+
+export const linuxApplications = {
+  discover: discoverLinuxApps,
+  async launch(target: Application) {
+    if (target.native) return launchLinuxDesktopEntry(target.native.identifier);
+    const entry = (await discoverLinuxApps(target.name)).find(
+      (item) => item.name.toLocaleLowerCase() === target.name.toLocaleLowerCase(),
+    );
+    if (entry?.native) return launchLinuxDesktopEntry(entry.native.identifier);
+    return spawnDetached(target.name, []);
+  },
+};

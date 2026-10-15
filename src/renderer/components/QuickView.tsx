@@ -1,24 +1,30 @@
 import styles from './QuickView.module.css';
 import typography from '../styles/typography.module.css';
 import { useTranslation } from 'react-i18next';
+import { localeForFormatting } from '../../shared/i18n';
 import { AnimatePresence } from 'motion/react';
 import { motion } from 'motion/react';
 import { MediaArtwork } from './MediaArtwork';
-import { Pause } from 'lucide-react';
-import { Play } from 'lucide-react';
+import { MediaTransition } from './MediaTransition';
+import { MediaMarquee } from './MediaMarquee';
+import { MediaControl } from './MediaControl';
+import { MediaFeedback } from './MediaFeedback';
 import { Zap } from 'lucide-react';
 import { Camera } from 'lucide-react';
 import { Mic } from 'lucide-react';
 import { Headphones } from 'lucide-react';
 import { WeatherIcon } from '../components/WeatherIcon';
 import type { IslandController } from '../hooks/useIslandController';
-import { mediaCommandSupported } from '../../shared/media';
+import type { useMedia } from '../hooks/useMedia';
+import type { useOverview } from '../hooks/useOverview';
+import type { useBattery } from '../hooks/useBattery';
+
 type Props = Pick<
   IslandController,
   | 'mode'
+  | 'music'
   | 'showInfoWhenIdleEnabled'
   | 'isPlaying'
-  | 'showPausedQuickView'
   | 'alert'
   | 'chargingAlert'
   | 'bluetoothAlert'
@@ -26,24 +32,25 @@ type Props = Pick<
   | 'microphoneAlert'
   | 'trackTitle'
   | 'trackArtist'
-  | 'mediaTrack'
-  | 'mediaSnapshot'
-  | 'mediaActionError'
-  | 'mediaBusy'
-  | 'controlMedia'
-  | 'openMediaSession'
   | 'hideNotActiveIslandEnabled'
   | 'textColor'
-  | 'textWidth'
-  | 'nowPlayingWidth'
-  | 'isHovered'
-  | 'time'
-  | 'percent'
   | 'standbyBorderEnabled'
-  | 'weather'
->;
+> &
+  Pick<
+    ReturnType<typeof useMedia>,
+    | 'mediaTrack'
+    | 'mediaSnapshot'
+    | 'mediaActionError'
+    | 'mediaBusy'
+    | 'controlMedia'
+    | 'openMediaSession'
+    | 'showPausedQuickView'
+  > &
+  Pick<ReturnType<typeof useOverview>, 'time' | 'weather'> &
+  Pick<ReturnType<typeof useBattery>, 'percent'>;
 export function QuickView({
   mode,
+  music,
   showInfoWhenIdleEnabled,
   isPlaying,
   showPausedQuickView,
@@ -62,19 +69,17 @@ export function QuickView({
   trackArtist,
   hideNotActiveIslandEnabled,
   textColor,
-  textWidth,
-  nowPlayingWidth,
-  isHovered,
   time,
   percent,
   standbyBorderEnabled,
   weather,
 }: Props) {
   const { t, i18n } = useTranslation();
+  const showArtist = mode === 'quick' || music.idleArtist;
   const number = (value: number | string | null) =>
     value === null || value === ''
       ? '??'
-      : new Intl.NumberFormat(i18n.language).format(Number(value));
+      : new Intl.NumberFormat(localeForFormatting(i18n.language)).format(Number(value));
   return (
     <>
       {mode !== 'large' &&
@@ -112,92 +117,35 @@ export function QuickView({
                   disabled={mediaBusy}
                   textColor={textColor}
                   onOpen={(id) => void openMediaSession(id)}
+                  preferences={music}
                 />
-                <div
-                  className={styles['trackClip']}
-                  style={{
-                    WebkitMaskImage:
-                      textWidth > nowPlayingWidth - (isHovered ? 80 : 45)
-                        ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)'
-                        : 'none',
-                    maskImage:
-                      textWidth > nowPlayingWidth - (isHovered ? 80 : 45)
-                        ? 'linear-gradient(to right, transparent, black 15px, black calc(100% - 15px), transparent)'
-                        : 'none',
-                  }}
-                >
-                  <motion.div
-                    className={styles['trackText']}
-                    animate={
-                      textWidth > nowPlayingWidth - (isHovered ? 80 : 45)
-                        ? { x: [0, -(textWidth + 30)] }
-                        : { x: 0 }
-                    }
-                    transition={
-                      textWidth > nowPlayingWidth - (isHovered ? 80 : 45)
-                        ? { duration: 12, repeat: Infinity, ease: 'linear' }
-                        : { duration: 0.3, ease: 'easeInOut' }
-                    }
-                    style={{ color: textColor }}
+                <div className={styles.trackClip} style={{ color: textColor }}>
+                  <MediaTransition
+                    identity={JSON.stringify([
+                      mediaTrack?.id,
+                      trackTitle,
+                      showArtist ? trackArtist : '',
+                    ])}
                   >
-                    <span
-                      style={{
-                        paddingRight: textWidth > nowPlayingWidth - (isHovered ? 80 : 45) ? 30 : 0,
-                      }}
-                    >
-                      {trackTitle} <span className={styles['artist']}> • {trackArtist}</span>
-                    </span>
-                    {textWidth > nowPlayingWidth - (isHovered ? 80 : 45) && (
-                      <span className={styles['trackRepeat']}>
-                        {trackTitle}{' '}
-                        <span className={styles['artistRepeat']}> • {trackArtist}</span>
-                      </span>
-                    )}
-                  </motion.div>
+                    <MediaMarquee enabled={music.marquee} className={styles.trackText}>
+                      {trackTitle}
+                      {showArtist && <span className={styles.artist}> • {trackArtist}</span>}
+                    </MediaMarquee>
+                  </MediaTransition>
                 </div>
-                <AnimatePresence>
-                  {isHovered && (
-                    <motion.button
-                      className={styles['playButton']}
-                      key="play-pause-hover"
-                      aria-label={t('playPause')}
-                      disabled={
-                        !mediaTrack ||
-                        mediaBusy ||
-                        mediaSnapshot.status === 'error' ||
-                        !mediaCommandSupported(mediaTrack, 'playpause')
-                      }
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 30 }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.25, ease: 'easeInOut' }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (mediaTrack) void controlMedia('playpause', mediaTrack.id);
-                      }}
-                      onMouseEnter={() => {
-                        if (window.electronAPI)
-                          window.electronAPI.setIgnoreMouseEvents(false, false);
-                      }}
-                    >
-                      {mediaTrack?.state === 'playing' ? (
-                        <Pause size={15} color="#FFFFFF" fill="#FFFFFF" />
-                      ) : (
-                        <Play size={15} color="#FFFFFF" fill="#FFFFFF" />
-                      )}
-                    </motion.button>
-                  )}
-                </AnimatePresence>
+                {mode === 'quick' && (
+                  <div className={styles.playButton}>
+                    <MediaControl
+                      session={mediaTrack}
+                      compact
+                      command="playpause"
+                      disabled={mediaBusy || mediaSnapshot.status === 'error'}
+                      onCommand={controlMedia}
+                    />
+                  </div>
+                )}
               </div>
-              {(mediaActionError || mediaSnapshot.error) && (
-                <p
-                  className={styles.actionError}
-                  role="alert"
-                  title={t(mediaActionError ?? mediaSnapshot.error!)}
-                >
-                  {t(mediaActionError ?? mediaSnapshot.error!)}
-                </p>
-              )}
+              <MediaFeedback error={mediaActionError ?? mediaSnapshot.error} compact />
             </motion.div>
           ) : (
             <motion.div

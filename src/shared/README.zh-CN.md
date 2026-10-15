@@ -1,17 +1,15 @@
-[English](README.md)
+[English](README.md) · [架构](../../docs/architecture.zh-CN.md)
 
-# Shared 契约
+# 共享契约
 
-`MediaSnapshot` 描述会话列表、自动／手动选择、时效和错误；`MediaSession` 包含播放状态及允许未知值的控制能力。`media.ts` 定义纯选择与能力规则。控制 IPC 必须携带会话 ID，选择和控制返回刷新后的快照及领域错误，不将失败当成空播放器列表。
+共享层提供主进程、preload 和界面使用的可序列化数据、校验 schema 与纯策略。原生发现、文件访问、供应方请求和界面状态由所属运行层管理。
 
-`backgroundImage.ts` 规范背景设置，将本地路径编码为专用图片 URL，避免 CSS 反斜杠转义；它不执行文件访问。
+Application／LaunchTarget 描述已安装应用、HTTP(S) 快捷方式及命令 argv／工作目录。MediaSession／MediaSnapshot 描述能力、自动／手动选择、新鲜度与有界错误，控制必须携带当前会话 ID。稳定页面 ID 和布局策略独立于导航顺序。
 
-Shared 定义可序列化的 IPC 与领域契约、用于持久化状态和快捷应用目标的 Zod schema，以及纯输入区域计算。Main、preload 和 renderer 共用这些定义，运行时服务放在各自所属层。
+AppState 管理持久化默认值及天气、字体、音乐、结构化 AI 图等偏好。AI schema 校验稳定 ID、绑定、模型自定义与有序注入；凭据是主进程管理的具名安全记录，关联删除位于同一事务。
 
-`contracts.ts` 定义请求、响应、通知和 AI 流事件；`appState.ts` 定义新状态结构及初始值；`i18n/` 管理语言类型、系统语言解析和随应用打包的词条。Renderer 初始化 i18next，main 使用词条生成托盘文案。
+输入几何处理分数缩放与视口边界；背景／颜色策略规范化资源并保留透明度。诊断 schema 接受有界操作、视图和错误元信息，不包含剪贴板文字或原生协议正文。
 
-参见[开发指南](../../docs/development.zh-CN.md)和[仓库地图](../../INDEX.zh-CN.md)。
+en／zh-CN／zh-TW／ja 词典具有一致键与插值变量。微软／苹果中文覆盖语境提示，继承普通技术和关键措辞；私有 i18next 变体为 Intl 映射到标准 zh-CN。
 
-`diagnostics.ts` 定义安全错误字段，以及 IPC、平台能力和生命周期事件。原生剪贴板读写是明确的 IPC 契约，诊断不记录文本内容。
-
-`ScrollGestureStartSchema` 校验原生触控板边界的时间戳载荷；main 产生事件，preload 校验并转发，renderer 据此区分新手势与旧惯性。
+见[开发](../../docs/development.zh-CN.md)、[测试](../../tests/README.zh-CN.md)和[仓库地图](../../INDEX.zh-CN.md)。

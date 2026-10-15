@@ -25,18 +25,44 @@ const config: ForgeConfig = {
     executableName: 'ripple-next',
     appBundleId: 'com.arsvinezhu.ripple-next',
     icon: 'src/assets/icons/icon',
-    extraResource: [path.join(projectRoot, 'src/assets/icons/icon.png')],
+    extraResource: [
+      path.join(projectRoot, 'src/assets/icons/icon.png'),
+      ...(process.platform === 'linux'
+        ? [path.join(projectRoot, 'out/native/ripple-device-events')]
+        : []),
+      ...(process.platform === 'darwin'
+        ? [path.join(projectRoot, 'native/macos-window/build/Release/macos_window.node')]
+        : []),
+      path.join(projectRoot, 'src/assets/third-party/liquid-glass-notices.txt'),
+      path.join(projectRoot, 'src/assets/third-party/licenses.json'),
+      ...(fs.existsSync(path.join(projectRoot, 'node_modules/electron/dist/LICENSES.chromium.html'))
+        ? [path.join(projectRoot, 'out/license-assets/LICENSES.chromium.html')]
+        : []),
+    ],
     ...(process.platform === 'darwin'
       ? {
           extendInfo: {
             NSAppleEventsUsageDescription:
               'Ripple Next needs to control media players like Spotify and Apple Music.',
+            // Agent like LuLu: Dock appears only via runtime setActivationPolicy('regular').
+            LSUIElement: true,
           },
         }
       : {}),
   },
   hooks: {
-    generateAssets: async () => {
+    generateAssets: async (_config, platform, arch) => {
+      if (platform === 'linux' || platform === 'darwin')
+        execFileSync(
+          process.execPath,
+          [path.join(projectRoot, 'scripts/build-native.mjs'), `--arch=${arch}`],
+          {
+            cwd: projectRoot,
+          },
+        );
+      execFileSync(process.execPath, [path.join(projectRoot, 'scripts/collect-licenses.mjs')], {
+        cwd: projectRoot,
+      });
       await fs.promises.rm(path.join(projectRoot, '.vite'), { recursive: true, force: true });
     },
     postPackage: async (forgeConfig, options) => {
