@@ -2,17 +2,15 @@
 
 # 发布流程
 
-4.1.0-beta.1 在 [PR #14](https://github.com/ArsvineZhu/Ripple-Next/pull/14) 中准备。用户先检查最终代码、发布说明、截图／录像与软件包，再确认合并；确认前保持未发布。
+Ripple Next 4.1.0-beta.1 从 [PR #14](https://github.com/ArsvineZhu/Ripple-Next/pull/14) 的合并提交发布，版本说明、截图和录像描述交付后的应用。
 
-## 确认与发布
+## CI 与发布
 
-工作流在 Linux、Windows、macOS 上检查。PR #14 还生成 Linux x64、Windows x64、macOS x64／arm64 候选软件包，供合并前审查，不发布。
+工作流检查 Linux、Windows、macOS，PR #14 构建 Linux x64、Windows x64、macOS x64／arm64 软件包供审查。PR 合并到 main 后，发布任务检出准确的合并提交，重新验证并构建，创建 `v4.1.0-beta.1` 标签、GitHub 预发布及附件；未合并而关闭不会发布。
 
-用户批准且 PR #14 合并到 main 后，仅合并触发的工作流检出合并提交，重新验证并构建，创建 `v4.1.0-beta.1` 标签、GitHub 预发布和软件包。未合并而关闭 PR 不会发布；普通 PR 构建没有发布写权限，发布只使用已合并的提交。
+与 package.json 一致的标签推送也运行发布路径。普通 PR 构建没有发布写权限，发布使用已合并提交，读取英文／简体中文说明，并通过 `scripts/release-notes.mjs` 将仓库链接解析到发布标签。重复执行保留已有发布的原始附件。
 
-与 package.json 版本一致的标签推送也运行发布路径。发布使用英文／简体中文说明，`scripts/release-notes.mjs` 去除本地待确认状态行，并将仓库链接解析到发布标签；重复执行保留已有发布的原始附件。
-
-## 候选命令与产物
+## 命令与产物
 
 ```sh
 pnpm check
@@ -24,7 +22,7 @@ node scripts/release-notes.mjs v4.1.0-beta.1
 
 `package` 生成可运行目录，`make` 在对应系统生成安装程序和便携归档。Linux 需要 cc、dpkg、fakeroot、rpm，Windows MSI 需要 WiX，macOS 需要 Xcode 命令行工具。Forge 构建／分发 Linux inotify 程序及目标架构 macOS 窗口模块；macOS 使用临时签名。
 
-DEB／RPM、MSI、DMG 和 ZIP 命名为 `RippleNext-<OS>[-<macOS arch>][-Portable]-v<version>.<ext>`。软件包和临时构建／拍摄资料保存在忽略的 out/。
+DEB／RPM、MSI、DMG 和 ZIP 命名为 `RippleNext-<OS>[-<macOS arch>]-v<version>[-Portable].<ext>`。软件包和临时构建／拍摄资料保存在忽略的 out/。
 
 ## 运行验收
 

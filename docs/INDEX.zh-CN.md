@@ -22,7 +22,7 @@
 
 ## 版本发布记录
 
-- [4.1.0-beta.1 发布准备](releases/4.1.0-beta.1.zh-CN.md)与[发布状态](releases/unreleased.md)。
+- 4.1.0-beta.1：[English](releases/4.1.0-beta.1.en.md)、[简体中文](releases/4.1.0-beta.1.zh-CN.md)。
 - 4.0.0：[English](releases/4.0.0.en.md)、[简体中文](releases/4.0.0.zh-CN.md)。
 - 4.0.0-beta.2：[English](releases/4.0.0-beta.2.en.md)、[简体中文](releases/4.0.0-beta.2.zh-CN.md)。
 - 4.0.0-beta.1：[English](releases/4.0.0-beta.1.en.md)、[简体中文](releases/4.0.0-beta.1.zh-CN.md)。

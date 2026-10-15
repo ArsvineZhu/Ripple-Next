@@ -116,7 +116,7 @@ export const zhTW: Messages = {
   guidePages: '切換功能頁',
   guidePagesHint: '焦點不在輸入框時，左右方向鍵切換功能頁，依可見順序循環。',
   guideJump: '直接跳轉頁面',
-  guideJumpHint: 'Ctrl+1 至 Ctrl+7 依你設定的可見頁面順序跳轉。',
+  guideJumpHint: '焦點位於互動控制項之外時，Ctrl+1 至 Ctrl+7 依設定的可見頁面順序跳轉。',
   guideControls: '操作控制項',
   guideControlsHint: 'Enter／空白鍵啟用按鈕及開關。方向鍵選擇選單項，Esc 關閉選單並恢復焦點。',
   guideSliders: '調整滑桿',

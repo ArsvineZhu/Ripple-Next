@@ -11,7 +11,7 @@ export const zhApple = {
   guidePages: '翻一页，换个用法。',
   guidePagesHint: '展开后用左右方向键切换。写字时，方向键只管你的字。',
   guideJump: '一步到位，无须绕路。',
-  guideJumpHint: 'Ctrl+1 至 Ctrl+7，直达你排好的可见页面。顺序由你，捷径随你。',
+  guideJumpHint: '焦点留在控件外，Ctrl+1 至 Ctrl+7 就能直达你排好的可见页面。顺序由你，捷径随你。',
   guideControls: '下一处焦点，触手可及。',
   guideControlsHint: 'Tab 找到控件，Enter 或空格完成操作，Esc 收起菜单。键盘和鼠标，各得其用。',
   guideSliders: '轻一点，刚刚好。',

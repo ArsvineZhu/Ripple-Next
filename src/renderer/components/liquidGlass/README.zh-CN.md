@@ -10,10 +10,10 @@ Select／SearchableSelect 保持 Radix／cmdk 的输入和焦点管理。关闭�
 
 ## 材质与资源
 
-| 来源 | Revision | 声明 |
-| --- | --- | --- |
-| [LeonardSEO/liquid-glass-react](https://github.com/LeonardSEO/liquid-glass-react/tree/f06e3779bd21c129e55408b838364e591aa0c0e5) | f06e3779bd21c129e55408b838364e591aa0c0e5 | [MIT](vendor/leonard/LICENSE) |
-| [rdev/liquid-glass-react](https://github.com/rdev/liquid-glass-react/tree/ac48eab18d1f7f444ae30002d240cae29c863a21) | ac48eab18d1f7f444ae30002d240cae29c863a21 | [MIT](vendor/rdev/LICENSE) |
+| 来源                                                                                                                            | Revision                                 | 声明                          |
+| ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ----------------------------- |
+| [LeonardSEO/liquid-glass-react](https://github.com/LeonardSEO/liquid-glass-react/tree/b857e5cd1ce3daf5599fc9a838364e591aa0c0e5) | b857e5cd1ce3daf5599fc9a838364e591aa0c0e5 | [MIT](vendor/leonard/LICENSE) |
+| [rdev/liquid-glass-react](https://github.com/rdev/liquid-glass-react/tree/ac48eab18d1f7f444ae30002d240cae29c863a21)             | ac48eab18d1f7f444ae30002d240cae29c863a21 | [MIT](vendor/rdev/LICENSE)    |
 
 供应方原文件和声明保持完整，生产使用适配的 Leonard 材质与 rdev 方向运动公式。材质包含折射／色散通道、高光／着色蒙版和 SVG 过滤流程，运动模块提供按压几何。
 

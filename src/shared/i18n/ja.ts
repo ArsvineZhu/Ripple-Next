@@ -124,7 +124,8 @@ export const ja: Messages = {
   guidePages: '機能ページを切り替え',
   guidePagesHint: '入力欄にフォーカスがない時、左右キーで表示順にページを切り替えます。',
   guideJump: 'ページへ直接移動',
-  guideJumpHint: 'Ctrl+1〜Ctrl+7 は設定した表示ページの順序に対応します。',
+  guideJumpHint:
+    '操作コントロールの外にフォーカスがあるとき、Ctrl+1〜Ctrl+7 で設定した表示順のページに移動します。',
   guideControls: 'コントロールを操作',
   guideControlsHint:
     'Enter／Space でボタンやスイッチを操作。矢印でメニューを選び、Esc で閉じてフォーカスを戻します。',

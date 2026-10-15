@@ -127,7 +127,8 @@ export const en = {
   guidePagesHint:
     'Use Left/Right while focus is outside editable fields. Pages wrap in the visible order.',
   guideJump: 'Jump to a page',
-  guideJumpHint: 'Ctrl+1 through Ctrl+7 follow your configured visible-page order.',
+  guideJumpHint:
+    'With focus outside interactive controls, Ctrl+1 through Ctrl+7 follow your configured visible-page order.',
   guideControls: 'Operate a control',
   guideControlsHint:
     'Enter/Space activate buttons and switches. Arrow keys navigate a menu; Escape closes it and restores focus.',

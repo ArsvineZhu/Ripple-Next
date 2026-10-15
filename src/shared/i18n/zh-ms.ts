@@ -11,7 +11,7 @@ export const zhMS = {
   guidePages: '去往你希望前往的页面',
   guidePagesHint: '展开 Island 后，使用左右方向键切换页面。正在输入文字时，方向键仍用于编辑文字。',
   guideJump: '下一站，由你选择',
-  guideJumpHint: '使用 Ctrl+1 至 Ctrl+7 直接前往页面。编号遵循你安排的可见页面顺序。',
+  guideJumpHint: '先将焦点移出交互控件，再使用 Ctrl+1 至 Ctrl+7。编号遵循你安排的可见页面顺序。',
   guideControls: '选择一个控件，然后继续',
   guideControlsHint:
     '使用 Tab 移动焦点，Enter 或空格操作控件；Esc 关闭菜单。你的鼠标也随时可以加入。',

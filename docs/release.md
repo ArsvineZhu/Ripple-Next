@@ -2,17 +2,15 @@
 
 # Release procedure
 
-Version 4.1.0-beta.1 is prepared in [PR #14](https://github.com/ArsvineZhu/Ripple-Next/pull/14). The user reviews the final code, release notes, screenshots/recordings and package artifacts before approving its merge. Keep the candidate unpublished until that confirmation.
+Ripple Next 4.1.0-beta.1 is published from the merged commit of [PR #14](https://github.com/ArsvineZhu/Ripple-Next/pull/14). Version notes, screenshots and recordings describe the delivered application.
 
-## Approval and publication
+## CI and publication
 
-The workflow runs checks on Linux, Windows and macOS. PR #14 also builds Linux x64, Windows x64 and macOS x64/arm64 artifacts for review without publishing them.
+The workflow checks Linux, Windows and macOS. PR #14 builds Linux x64, Windows x64 and macOS x64/arm64 artifacts for review. The release job runs after that PR merges into main, checks out its exact merge commit, reruns verification/builds and creates `v4.1.0-beta.1` with a GitHub prerelease and its artifacts. Closing without merging does not publish.
 
-After the user approves and PR #14 merges into main, the merged-only workflow checks out its merge commit, reruns verification/builds and creates `v4.1.0-beta.1` with a GitHub prerelease and those artifacts. Closing the PR without merging does not publish. An ordinary PR build has no release write permission; publication uses the trusted merged commit, not an unmerged fork head.
+Tag pushes matching package.json also run the release path. Ordinary PR builds have no release write permission. Publication uses the trusted merged commit, consumes both English/Simplified Chinese notes and resolves repository links to the release tag through `scripts/release-notes.mjs`. Repeated delivery keeps an existing release's original artifacts.
 
-Tag pushes matching package.json also run the release path. A release tag and package version must match. Publication consumes both English and Simplified Chinese notes; `scripts/release-notes.mjs` removes the local pending-status line and resolves repository links to the release tag. Repeated delivery keeps an existing release's original artifacts.
-
-## Candidate commands and artifacts
+## Commands and artifacts
 
 ```sh
 pnpm check
@@ -24,7 +22,7 @@ node scripts/release-notes.mjs v4.1.0-beta.1
 
 `package` produces a runnable directory. `make` creates native installers and portable archives on the matching host. Linux needs `cc`, dpkg, fakeroot and rpm; Windows MSI needs WiX; macOS needs Xcode Command Line Tools. Forge builds/ships Linux's inotify executable and the target-architecture macOS window addon. macOS packages use an ad-hoc signature.
 
-Names follow `RippleNext-<OS>[-<macOS arch>][-Portable]-v<version>.<ext>` for DEB/RPM, MSI, DMG and ZIP. Artifacts and temporary build/capture files remain under ignored out/.
+Names follow `RippleNext-<OS>[-<macOS arch>]-v<version>[-Portable].<ext>` for DEB/RPM, MSI, DMG and ZIP. Artifacts and temporary build/capture files remain under ignored out/.
 
 ## Runtime acceptance
 

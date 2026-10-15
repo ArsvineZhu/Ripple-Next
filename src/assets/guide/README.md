@@ -1,18 +1,19 @@
-# Recorded user-guide flows
+# Guide recordings
 
-Captured on 2026-10-14 in the packaged Windows Ripple Next 4.1.0-beta.1 Electron renderer using an isolated demo profile, Simplified Chinese labels and no personal service data. PNG posters are extracted from the corresponding recordings.
+Captured on 2026-10-15 from the built Ripple Next 4.1.0-beta.1 Electron 44.5.1 renderer on Linux, with an isolated demo profile and a 920 × 640 CSS-pixel Settings window at DPR 2. Four recordings use English; the Chinese-expression recording uses the corresponding Chinese interfaces.
 
-| Asset           | Actual actions                                                                                            |
-| --------------- | --------------------------------------------------------------------------------------------------------- |
-| typography.webm | Open Font, select Alibaba PuHuiTi 3, switch Microsoft/Apple Chinese, view About                           |
-| appearance.webm | Open Liquid Glass, restore defaults, press/drag a slider, switch a control, disable/enable Settings glass |
-| workflow.webm   | Add a named workflow, enter two website targets on separate rows, return to the list                      |
-| ai.webm         | Edit a model ID, replace its system prompt, add a named current-time injection                            |
+| Asset           | Actual recorded flow                                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| typography.webm | Open Font, select System and OpenRunde, return to Alibaba PuHuiTi 3, then return to General                                     |
+| expression.webm | Select Simplified Chinese, choose Microsoft Chinese and visit About, choose Apple Chinese and visit About, return to English    |
+| appearance.webm | Open Liquid Glass, drag the preview slider, hold/drag the switch, choose a preview theme, disable/enable Settings glass, return |
+| workflow.webm   | Name Reading room, enter two reserved example-domain targets on separate rows, return to the saved list                         |
+| ai.webm         | Select a configured model, replace its system prompt, add a named current-time injection, return to Integrations                |
 
-Mouse/keyboard events are routed through Chromium CDP; ordinary navigation may use DOM activation. These recordings establish application editing flows, not physical OS input acceptance. AI uses api.example.com and a demo-only credential; no model request is sent. Workflow addresses use reserved example domains and are not launched during capture.
+Mouse/keyboard actions use Chromium CDP on actual application controls. Recordings contain a pointer overlay, no audio and no reconstructed interface frames. VP8 WebM output uses 30 fps; editing trims idle lead/tail. Each PNG poster is extracted from its corresponding clip.
 
-Camera pans and zooms are applied to actual captured frames. No UI frames are reconstructed or interpolated. VP8 WebM recordings use 30 fps camera motion and have no audio. Playback is user-controlled, one video at a time, with offscreen/hidden/unmount pause.
+The demo endpoint is a local protocol fixture and its credential is demonstration-only. The AI editing recording sends no model request; the assistant gallery image uses a local fixture response. Workflow addresses use reserved example domains and are not launched while recording.
 
-To refresh: package the current application, use a separate app-data profile, execute the listed actions, record actual renderer frames, encode WebM, extract a representative PNG poster, and inspect the video from beginning to end. Keep source captures and recording tools under ignored out/. Synchronize the guide steps and [gallery](../../../docs/assets/screenshots/README.md).
+Refresh by building the current application, binding the capture harness to disposable data/cache/lock paths before startup, and repeating the table's real actions. Keep native brokers, scripts and raw captures under ignored out/. When a recorder emits one file per window, select the Settings recording rather than the Island recording. Inspect the complete sequence before encoding and extract a matching poster.
 
-See [development](../../../docs/development.md) and [unreleased notes](../../../docs/releases/4.1.0-beta.1.en.md).
+Guide prose remains selectable. Playback is user-controlled, one video at a time, and pauses offscreen, when hidden or when unmounted. See the [gallery](../../../docs/assets/screenshots/README.md), [development](../../../docs/development.md) and [release notes](../../../docs/releases/4.1.0-beta.1.en.md).

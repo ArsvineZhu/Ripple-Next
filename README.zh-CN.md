@@ -8,7 +8,7 @@
 
 idle 简短显示，悬停查看更多，点击展开完整页面；独立设置窗口负责配置，折叠时草稿仍然保留。
 
-[4.1.0-beta.1 发布准备](docs/releases/4.1.0-beta.1.zh-CN.md)等待 PR #14 合并确认。[下载](https://github.com/ArsvineZhu/Ripple-Next/releases) · [使用指南](instructions.zh-CN.md) · [反馈](https://github.com/ArsvineZhu/Ripple-Next/issues)
+[Ripple Next 4.1.0-beta.1](docs/releases/4.1.0-beta.1.zh-CN.md)。[下载](https://github.com/ArsvineZhu/Ripple-Next/releases) · [使用指南](instructions.zh-CN.md) · [反馈](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > 截图与录像来自独立演示配置中的实际应用。助手使用本地夹具回答，媒体来自演示播放器；中文图片用于介绍对应语言功能。
 
@@ -33,6 +33,8 @@ idle 简短显示，悬停查看更多，点击展开完整页面；独立设置
 ![Now Playing](docs/assets/screenshots/media.png)
 
 ![Compact music](docs/assets/screenshots/media-compact.png)
+
+![Hover quick view](docs/assets/screenshots/media-quick.png)
 
 ## 打开一组工作环境
 

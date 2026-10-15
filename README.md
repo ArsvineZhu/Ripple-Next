@@ -8,7 +8,7 @@ Music is playing. A link needs opening. A copied command is waiting in the clipb
 
 Glance while idle, hover for more, click to open a full page. Configure everything in a dedicated Settings window. Your drafts stay with you when the Island folds.
 
-[4.1.0-beta.1 release preparation](docs/releases/4.1.0-beta.1.en.md) awaits approval of PR #14. [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
+[Ripple Next 4.1.0-beta.1](docs/releases/4.1.0-beta.1.en.md). [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > Screenshots and recordings show the actual application with isolated demo content. The assistant example uses a local fixture response, and the media sessions use demonstration players. Chinese images demonstrate the corresponding language feature.
 
@@ -33,6 +33,8 @@ Automatic selection and player indicators make multiple sources easy to browse. 
 ![Now Playing](docs/assets/screenshots/media.png)
 
 ![Compact music](docs/assets/screenshots/media-compact.png)
+
+![Hover quick view](docs/assets/screenshots/media-quick.png)
 
 ## Open your working context
 

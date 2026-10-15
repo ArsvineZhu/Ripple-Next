@@ -8,9 +8,9 @@
 
 idle 簡短顯示，懸停查看更多，點擊展開完整頁面；獨立設定視窗負責配置，摺疊時草稿仍然保留。
 
-[4.1.0-beta.1 發佈準備](docs/releases/4.1.0-beta.1.zh-CN.md)等待 PR #14 合併確認。[下載](https://github.com/ArsvineZhu/Ripple-Next/releases) · [使用指南（簡體中文）](instructions.zh-CN.md) · [回饋](https://github.com/ArsvineZhu/Ripple-Next/issues)
+[Ripple Next 4.1.0-beta.1](docs/releases/4.1.0-beta.1.zh-CN.md)。[下載](https://github.com/ArsvineZhu/Ripple-Next/releases) · [使用指南（簡體中文）](instructions.zh-CN.md) · [回饋](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
-> 截圖與影片來自獨立示範設定中的實際應用。助手使用本機夾具回答，媒體來自示範播放器；中文圖片介紹对应語言功能。
+> 截圖與影片來自獨立示範設定中的實際應用。助手使用本機夾具回答，媒體來自示範播放器；中文圖片介紹對應語言功能。
 
 ## 七個頁面，伸手就到
 
@@ -33,6 +33,8 @@ idle 簡短顯示，懸停查看更多，點擊展開完整頁面；獨立設定
 ![Now Playing](docs/assets/screenshots/media.png)
 
 ![Compact music](docs/assets/screenshots/media-compact.png)
+
+![Hover quick view](docs/assets/screenshots/media-quick.png)
 
 ## 開啟一組工作環境
 

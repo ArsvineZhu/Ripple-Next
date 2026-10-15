@@ -10,10 +10,10 @@ Select/SearchableSelect retain Radix/cmdk focus and input ownership. Closed valu
 
 ## Material and resources
 
-| Source | Revision | Notice |
-| --- | --- | --- |
-| [LeonardSEO/liquid-glass-react](https://github.com/LeonardSEO/liquid-glass-react/tree/f06e3779bd21c129e55408b838364e591aa0c0e5) | f06e3779bd21c129e55408b838364e591aa0c0e5 | [MIT](vendor/leonard/LICENSE) |
-| [rdev/liquid-glass-react](https://github.com/rdev/liquid-glass-react/tree/ac48eab18d1f7f444ae30002d240cae29c863a21) | ac48eab18d1f7f444ae30002d240cae29c863a21 | [MIT](vendor/rdev/LICENSE) |
+| Source                                                                                                                          | Revision                                 | Notice                        |
+| ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ----------------------------- |
+| [LeonardSEO/liquid-glass-react](https://github.com/LeonardSEO/liquid-glass-react/tree/b857e5cd1ce3daf5599fc9a838364e591aa0c0e5) | b857e5cd1ce3daf5599fc9a838364e591aa0c0e5 | [MIT](vendor/leonard/LICENSE) |
+| [rdev/liquid-glass-react](https://github.com/rdev/liquid-glass-react/tree/ac48eab18d1f7f444ae30002d240cae29c863a21)             | ac48eab18d1f7f444ae30002d240cae29c863a21 | [MIT](vendor/rdev/LICENSE)    |
 
 Original vendor files and notices remain intact. Production uses the adapted Leonard material and the rdev directional motion equation. The material includes refraction/dispersion channels, specular/tint masks and its SVG filter pipeline; the motion owner supplies pressed geometry.
 

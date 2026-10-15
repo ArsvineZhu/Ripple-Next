@@ -11,7 +11,6 @@ const base = `https://github.com/ArsvineZhu/Ripple-Next/blob/${tag}/`;
 const notes = ['en', 'zh-CN'].map(locale => {
   const relative = `docs/releases/${version}.${locale}.md`;
   return fs.readFileSync(path.join(root, relative), 'utf8')
-    .replace(/^> Status:.*\n/gm, '')
     .replace(/(!?\[[^\]]*\]\()([^):]+)(\))/g, (match, prefix, target, suffix) => {
       if (/^(https?:|#)/.test(target)) return match;
       const resolved = path.posix.normalize(path.posix.join(path.posix.dirname(relative), target));

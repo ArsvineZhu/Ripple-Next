@@ -8,15 +8,15 @@ Ripple Next keeps seven daily-action pages in a floating Island and configuratio
 
 Hover for quick view; click a noninteractive part of the Island to expand. Buttons and fields perform their own action. Leaving the pointer collapses according to your delay, unless focus, an open menu, a drag or standby behavior keeps it open.
 
-| Action                 | Input                                                                 |
-| ---------------------- | --------------------------------------------------------------------- |
-| Switch feature page    | Left/Right outside text editing, or horizontal wheel/trackpad gesture |
-| Jump to a page         | Ctrl+1 through Ctrl+7 in your configured visible-page order           |
-| Read longer content    | Native vertical scrolling                                             |
-| Choose a player        | Vertical scroll, A/player indicator, or focused Up/Down               |
-| Player first/last page | Focused Home/End                                                      |
-| Operate menus          | Arrow keys, Enter, Escape                                             |
-| Operate controls       | Tab focus, Enter/Space, native pointer input                          |
+| Action                 | Input                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| Switch feature page    | Left/Right outside text editing, or horizontal wheel/trackpad gesture          |
+| Jump to a page         | Ctrl+1 through Ctrl+7 outside interactive controls, in your visible-page order |
+| Read longer content    | Native vertical scrolling                                                      |
+| Choose a player        | Vertical scroll, A/player indicator, or focused Up/Down                        |
+| Player first/last page | Focused Home/End                                                               |
+| Operate menus          | Arrow keys, Enter, Escape                                                      |
+| Operate controls       | Tab focus, Enter/Space, native pointer input                                   |
 
 Feature pages wrap horizontally; player pages stop at their vertical boundaries. One continuous stroke changes one page. Settings can reorder/hide pages and select the default; Overview remains reachable if every available page is hidden. The music page appears when a supported session or media error is available.
 

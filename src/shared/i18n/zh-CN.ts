@@ -116,7 +116,7 @@ export const zhCN: Messages = {
   guidePages: '切换功能页',
   guidePagesHint: '焦点不在输入框时，左右方向键切换功能页，按可见顺序循环。',
   guideJump: '直接跳转页面',
-  guideJumpHint: 'Ctrl+1 至 Ctrl+7 按照你配置的可见页面顺序跳转。',
+  guideJumpHint: '焦点位于交互控件之外时，Ctrl+1 至 Ctrl+7 按已配置的可见页面顺序跳转。',
   guideControls: '操作控件',
   guideControlsHint: 'Enter／空格激活按钮与开关。方向键选择菜单项，Esc 关闭菜单并恢复焦点。',
   guideSliders: '调整滑杆',

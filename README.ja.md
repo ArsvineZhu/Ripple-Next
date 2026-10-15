@@ -8,7 +8,7 @@
 
 idle でひと目、ホバーでもう少し、クリックでページを展開。設定は専用ウィンドウで行い、折りたたんでも下書きを保ちます。
 
-[4.1.0-beta.1 の公開準備](docs/releases/4.1.0-beta.1.en.md)は PR #14 のマージ承認待ちです。[ダウンロード](https://github.com/ArsvineZhu/Ripple-Next/releases) · [使い方（英語）](instructions.md) · [フィードバック](https://github.com/ArsvineZhu/Ripple-Next/issues)
+[Ripple Next 4.1.0-beta.1](docs/releases/4.1.0-beta.1.en.md)。[ダウンロード](https://github.com/ArsvineZhu/Ripple-Next/releases) · [使い方（英語）](instructions.md) · [フィードバック](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > 画像と動画は独立デモ設定の実際のアプリです。アシスタントはローカルのサンプル応答、音楽はデモプレイヤーを使用。中国語画像は言語固有機能を紹介します。
 
@@ -33,6 +33,8 @@ idle でひと目、ホバーでもう少し、クリックでページを展開
 ![Now Playing](docs/assets/screenshots/media.png)
 
 ![Compact music](docs/assets/screenshots/media-compact.png)
+
+![Hover quick view](docs/assets/screenshots/media-quick.png)
 
 ## 作業の一組を開く
 
