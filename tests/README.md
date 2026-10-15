@@ -15,3 +15,5 @@
 Run all tests with `pnpm test`, or select an ownership directory, for example `pnpm test tests/platform/linux` or `pnpm test tests/features/media`. Vitest discovers `.test.ts` and `.test.tsx` recursively. DOM tests select happy-dom in their file header; Linux kernel tests skip on other hosts. The inotify test compiles its helper in a temporary directory with `cc`.
 
 Put a test with the contract it protects. Split files that mix platform and feature ownership. Share fixtures when they own repeated resource setup or a reusable behavioral oracle; keep assertions local to the test. Remove identical duplicate cases, and retain distinct concurrency, failure and lifecycle regressions.
+
+The optional media-signal module uses Node ESM tests under `features/media-signals` (outside Vitest’s TS/TSX discovery). Run `node --test tests/features/media-signals/*.test.mjs`; these cover synthetic PCM, binary frame fragments and provider-neutral lyric boundaries.

@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Ripple · Media Signal Lab</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          15px/1.5 system-ui,
+          sans-serif;
+        color: #e9eef4;
+        background: #0b1017;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+      }
+      main {
+        max-width: 1360px;
+        margin: auto;
+        padding: 30px 40px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+      .brand {
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        color: #83bdb4;
+        text-transform: uppercase;
+      }
+      h1 {
+        font-size: 28px;
+        letter-spacing: -0.04em;
+        margin: 3px 0;
+      }
+      p {
+        margin: 0;
+        color: #8d9da9;
+      }
+      .pill {
+        padding: 6px 12px;
+        border: 1px solid #30414b;
+        border-radius: 30px;
+        color: #8ee3cd;
+        font-size: 12px;
+      }
+      .toolbar {
+        display: flex;
+        gap: 12px;
+        align-items: end;
+        padding: 18px 20px;
+        background: #121c26;
+        border: 1px solid #24333f;
+        border-radius: 14px;
+        margin-bottom: 20px;
+      }
+      .field {
+        display: grid;
+        gap: 6px;
+        flex: 1;
+      }
+      label,
+      .eyebrow {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #93a6b6;
+      }
+      select,
+      button {
+        font: inherit;
+        border-radius: 8px;
+        border: 1px solid #354754;
+        background: #172633;
+        color: inherit;
+        padding: 9px 12px;
+      }
+      select {
+        max-width: 100%;
+        width: 100%;
+      }
+      button {
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      button.primary {
+        background: #9fe4d0;
+        color: #0b2922;
+        border-color: transparent;
+        font-weight: 650;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      button:hover:not(:disabled) {
+        filter: brightness(1.15);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr);
+        gap: 20px;
+      }
+      .card {
+        background: #111a24;
+        border: 1px solid #24323e;
+        border-radius: 15px;
+        overflow: hidden;
+      }
+      .cardHead {
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .cardHead h2 {
+        font-size: 15px;
+        margin: 0;
+        font-weight: 600;
+      }
+      .small {
+        font-size: 12px;
+        color: #8c9eac;
+      }
+      .visual {
+        padding: 0 20px 18px;
+      }
+      .visual canvas {
+        display: block;
+        width: 100%;
+        height: 185px;
+      }
+      .axis {
+        display: flex;
+        justify-content: space-between;
+        color: #647b8c;
+        font-size: 10px;
+        font-variant-numeric: tabular-nums;
+      }
+      .meters {
+        display: flex;
+        gap: 16px;
+        padding: 14px 20px;
+        border-top: 1px solid #24323e;
+        font-size: 12px;
+        color: #97a9b6;
+      }
+      .meters b {
+        color: #e0edf5;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+      .meter {
+        flex: 1;
+      }
+      .track {
+        padding: 0 24px;
+      }
+      .track h2 {
+        font-size: 22px;
+        letter-spacing: -0.02em;
+        margin: 0 0 3px;
+      }
+      .track p {
+        font-size: 13px;
+      }
+      .progress {
+        margin: 18px 24px 0;
+        height: 3px;
+        background: #22303b;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .progress i {
+        display: block;
+        width: 100%;
+        transform: scaleX(0);
+        transform-origin: left;
+        height: 100%;
+        background: #96ddc9;
+      }
+      .time {
+        display: flex;
+        justify-content: space-between;
+        margin: 7px 24px 0;
+        font-size: 11px;
+        color: #7e94a4;
+        font-variant-numeric: tabular-nums;
+      }
+      .lyrics {
+        height: 384px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 22px;
+        padding: 30px 25px;
+        overflow: hidden;
+      }
+      .line {
+        font-size: 19px;
+        line-height: 1.65;
+        overflow-wrap: anywhere;
+        transition: opacity 0.15s;
+      }
+      .line.previous,
+      .line.next {
+        opacity: 0.25;
+      }
+      .line.current {
+        font-size: 25px;
+        font-weight: 600;
+        color: #627882;
+      }
+      .line .word {
+        background: linear-gradient(90deg, #d6fff1 var(--fill, 0%), #627882 var(--fill, 0%));
+        color: transparent;
+        background-clip: text;
+        -webkit-background-clip: text;
+      }
+      .translation {
+        font-size: 13px;
+        color: #90b3ac;
+        font-weight: 400;
+        margin-top: 7px;
+      }
+      .empty {
+        font-size: 16px;
+        font-weight: 400;
+        color: #94a6b5;
+      }
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 18px;
+        font-size: 12px;
+        color: #788b9a;
+      }
+      .notice {
+        padding: 13px 20px;
+        color: #9fb4c3;
+        font-size: 12px;
+        border-top: 1px solid #24323e;
+      }
+      .status {
+        color: #9fe4d0;
+      }
+      #error {
+        color: #ffac9d;
+        min-height: 22px;
+        font-size: 13px;
+        margin-bottom: 12px;
+      }
+      .live {
+        color: #9fe4d0;
+      }
+      .off {
+        color: #8b99a6;
+      }
+      @media (max-width: 920px) {
+        main {
+          padding: 20px;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .toolbar {
+          flex-wrap: wrap;
+        }
+        .field {
+          flex-basis: 40%;
+        }
+        .lyrics {
+          height: 310px;
+        }
+        header {
+          align-items: start;
+        }
+      }
+    </style>
+    <script type="module" src="/client.mjs"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <div class="brand">Ripple / Local research</div>
+          <h1>Media Signal Lab</h1>
+          <p>Real output audio. Live word timing. Separate data paths.</p>
+        </div>
+        <span class="pill">LOCAL ONLY · NO RECORDING</span>
+      </header>
+      <div class="toolbar">
+        <div class="field">
+          <label for="source">Audio output</label
+          ><select id="source" aria-label="Audio output"></select>
+        </div>
+        <div class="field">
+          <label for="player">Player timeline &amp; lyrics</label
+          ><select id="player" aria-label="Player timeline and lyrics"></select>
+        </div>
+        <button id="refresh">Refresh sources</button
+        ><button id="capture" class="primary">Start capture</button>
+      </div>
+      <div class="toolbar">
+        <label class="field" for="lrc"
+          >Local lyrics (any player)<input
+            id="lrc"
+            type="file"
+            accept=".lrc,.txt,text/plain" /></label
+        ><button id="automatic">Use player lyrics</button
+        ><span class="small">Manual files stay on this device and reset at track changes.</span>
+      </div>
+      <div id="error" role="status"></div>
+      <div class="grid">
+        <section class="card">
+          <div class="cardHead">
+            <h2>Output spectrum</h2>
+            <span id="captureStatus" class="small">Capture stopped</span>
+          </div>
+          <div class="visual">
+            <canvas id="spectrum" aria-label="Real-time frequency spectrum"></canvas>
+            <div class="axis">
+              <span>25 Hz</span><span>100</span><span>400</span><span>1.6k</span><span>6.4k</span
+              ><span>18k</span>
+            </div>
+          </div>
+          <div class="cardHead">
+            <h2>Stereo waveform</h2>
+            <span class="small">42.7 ms window · L / R</span>
+          </div>
+          <div class="visual">
+            <canvas id="wave" aria-label="Real-time stereo waveform"></canvas>
+          </div>
+          <div class="meters">
+            <span class="meter">RMS <b id="rms">—</b></span
+            ><span class="meter">Peak <b id="peak">—</b></span
+            ><span class="meter">Dominant <b id="dominant">—</b></span>
+          </div>
+          <div class="notice">
+            Output loopback only. No microphone source is selected or exposed.
+          </div>
+        </section>
+        <section class="card">
+          <div class="cardHead">
+            <h2>Live lyrics</h2>
+            <span id="lyricKind" class="small">Waiting for player</span>
+          </div>
+          <div class="track">
+            <h2 id="title">No player selected</h2>
+            <p id="artist">Start your music player</p>
+          </div>
+          <div class="progress"><i id="progress"></i></div>
+          <div class="time"><span id="elapsed">0:00</span><span id="duration">0:00</span></div>
+          <div class="lyrics" id="lyrics">
+            <div class="empty">Waiting for Folia's local lyric API.</div>
+          </div>
+          <div class="notice" id="lyricStatus">Position: MPRIS · Lyrics: Folia localhost API</div>
+        </section>
+      </div>
+      <div class="footer">
+        <span id="stats">Analysis 48 kHz / stereo f32 · FFT 2048 / Hann · 30 frames/s maximum</span
+        ><span id="connection">Connecting…</span>
+      </div>
+    </main>
+  </body>
+</html>

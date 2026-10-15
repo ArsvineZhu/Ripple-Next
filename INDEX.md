@@ -15,5 +15,7 @@
 | Configuration   | [Forge, Vite, Vitest and static analysis](.config/README.md)                                                                                  |
 | Media           | [Actual screenshots](docs/assets/screenshots/README.md), [guide recordings](src/assets/guide/README.md)                                       |
 | Fonts and glass | [Original font resources](src/assets/fonts/alibaba-puhuiti/README.md), [glass modules/notices](src/renderer/components/liquidGlass/README.md) |
+| Experiments     | [Local media/lyric research and prototypes](experiments/README.md)                                                                            |
+| Modules         | [Optional, unintegrated reusable modules](modules/README.md)                                                                                  |
 
 Generated dependencies, .vite builds, out packages, reports and temporary captures are excluded from Git. Published version notes retain their corresponding release record; maintained guides describe current behavior.

@@ -20,6 +20,11 @@
 - [贡献](../CONTRIBUTING.zh-CN.md)与[仓库地图](../INDEX.zh-CN.md)。
 - [原生监听](native-observation.zh-CN.md)：媒体／设备事件、并发与生命周期。
 
+## 本地研究
+
+- [歌词与音频信号](media-signals.zh-CN.md)：平台可行性、Linux 实测及集成方向。[可运行原型](../experiments/media-signals/README.zh-CN.md)。
+- [媒体信号模块](../modules/media-signals/README.zh-CN.md)：独立 DSP、帧协议和分来源歌词适配器，尚未在应用启用。
+
 ## 版本发布记录
 
 - 4.1.0-beta.1：[English](releases/4.1.0-beta.1.en.md)、[简体中文](releases/4.1.0-beta.1.zh-CN.md)。

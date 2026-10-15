@@ -15,5 +15,7 @@
 | 配置       | [Forge、Vite、Vitest 和静态检查](.config/README.zh-CN.md)                                                                     |
 | 素材       | [实机截图](docs/assets/screenshots/README.md)、[指南录像](src/assets/guide/README.md)                                         |
 | 字体与玻璃 | [原始字体资源](src/assets/fonts/alibaba-puhuiti/README.md)、[玻璃与声明](src/renderer/components/liquidGlass/README.zh-CN.md) |
+| 实验       | [本地媒体／歌词研究与原型](experiments/README.zh-CN.md)                                                                       |
+| 模块       | [尚未接入应用的可复用模块](modules/README.zh-CN.md)                                                                           |
 
 依赖、.vite、out、报告和临时拍摄文件不进入 Git。已发布版本说明保留对应记录，维护中的指南描述当前状态。

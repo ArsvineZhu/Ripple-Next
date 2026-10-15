@@ -61,3 +61,7 @@ Idle music omits the playback-control slot. Hover quick view adds that width and
 Fonts and third-party notices ship as original resources. Guide videos and promotional screenshots capture actual application flows with isolated demo data; English is the default capture language. Tests are organized by [platform, feature and shared ownership](../tests/README.md).
 
 Island Liquid Glass and AI context awareness are unavailable. Windows/Linux keep the tray visible. The application does not collect desktop content for AI context awareness or maintain a completed-task archive. These states are reflected in the interface and usage guide.
+
+The independent [media-signal experiment](media-signals.md) researches output audio and lyric/timeline sources. It does not add capabilities to the packaged application.
+
+Reusable signal/lyric code lives in [optional modules](../modules/media-signals/README.md), with its UI runner under experiments. Neither is imported by the packaged app. Provider-specific protocols remain separate from the neutral timeline and audio frame paths.
