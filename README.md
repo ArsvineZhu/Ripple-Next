@@ -2,6 +2,7 @@
 <h1 align="center">Ripple Next</h1>
 
 <p align="center"><strong>Your next action, close at hand.</strong></p>
+
 [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · **English** · [日本語](README.ja.md)
 
 Music is playing. A link needs opening. A copied command is waiting in the clipboard. Ripple Next keeps these everyday actions in one floating Island for Windows, macOS and Linux.
