@@ -1,5 +1,6 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 const command = vi.hoisted(() => vi.fn());
+vi.mock('electron', () => ({ app: { isPackaged: false } }));
 vi.mock('../../../src/main/services/processes', () => ({ runCommand: command }));
 beforeEach(() => {
   vi.resetModules();
@@ -19,7 +20,7 @@ it('uses PulseAudio when pactl exists', async () => {
     ['pactl', ['list', 'source-outputs']],
   ]);
 });
-it('switches to PipeWire when pactl is missing and does not retry the absent command each poll', async () => {
+it('switches to PipeWire when pactl is missing and does not retry the absent command on later reads', async () => {
   const devices = await import('../../../src/main/platform/linux/devices');
   command
     .mockRejectedValueOnce(Object.assign(new Error('Missing command'), { code: 'ENOENT' }))
@@ -46,7 +47,7 @@ it('preserves pactl server and permission failures instead of switching backends
   await expect(devices.getMicrophoneStatus()).rejects.toBe(error);
   expect(command).toHaveBeenCalledTimes(1);
 });
-it('propagates a PipeWire failure and retries on the next poll', async () => {
+it('propagates a PipeWire failure and retries on the next read', async () => {
   const devices = await import('../../../src/main/platform/linux/devices');
   const error = new Error('PipeWire unavailable');
   command
