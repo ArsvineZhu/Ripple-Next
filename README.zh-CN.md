@@ -2,15 +2,21 @@
 <h1 align="center">Ripple Next</h1>
 
 <p align="center"><strong>下一步，近在手边。</strong></p>
-**简体中文** · [繁體中文](README.zh-TW.md) · [English](README.md) · [日本語](README.ja.md)
+
+<p align="center">
+  <strong>简体中文</strong> ·
+  <a href="README.zh-TW.md">繁體中文</a> ·
+  <a href="README.md">English</a> ·
+  <a href="README.ja.md">日本語</a>
+</p>
 
 音乐正在播放，有个链接要打开，刚复制的命令还在剪贴板里。Ripple Next 把这些日常操作放进一个浮动 Island，适用于 Windows、macOS 和 Linux。
 
-idle 简短显示，悬停查看更多，点击展开完整页面；独立设置窗口负责配置，折叠时草稿仍然保留。
+闲置时简短显示，悬停查看更多，点击展开完整页面；独立设置窗口负责配置，折叠时草稿仍然保留。
 
-[Ripple Next 4.1.0-beta.1](docs/releases/4.1.0-beta.1.zh-CN.md)。[下载](https://github.com/ArsvineZhu/Ripple-Next/releases) · [使用指南](instructions.zh-CN.md) · [反馈](https://github.com/ArsvineZhu/Ripple-Next/issues)
+[Ripple Next 4.1.0-beta.1（预发布）](docs/releases/4.1.0-beta.1.zh-CN.md)。[下载](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.1) · [使用指南](instructions.zh-CN.md) · [反馈](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
-> 截图与录像来自独立演示配置中的实际应用。助手使用本地夹具回答，媒体来自演示播放器；中文图片用于介绍对应语言功能。
+> 截图与录像来自独立演示配置中的实际应用。助手展示本地演示服务返回的示例回答，媒体来自演示播放器；中文图片用于介绍对应语言功能。
 
 ## 七个页面，伸手就能到
 
@@ -26,39 +32,39 @@ idle 简短显示，悬停查看更多，点击展开完整页面；独立设置
 
 ## 音乐，就在手边
 
-封面、歌手和控制留在附近。idle 是较短的胶囊；悬停快览加宽、显示播放／暂停并始终显示歌手。展开卡片可切歌，点击封面唤起对应播放器。
+封面、歌手和控制留在附近。闲置时显示较短的胶囊，不预留播放键位置；悬停快览加宽、显示播放／暂停并始终显示歌手。歌手显示偏好只影响闲置状态。展开卡片可切歌，点击封面唤起对应播放器。
 
 自动来源与播放器指示器方便浏览多来源，控制始终针对当前卡片。长文本在返回时恢复滚动，3D 封面和程度可以调整。Windows／Linux 通过原生事件观察，元数据和封面分别更新。
 
-![Now Playing](docs/assets/screenshots/media.png)
+![正在播放](docs/assets/screenshots/media.png)
 
-![Compact music](docs/assets/screenshots/media-compact.png)
+![音乐闲置状态](docs/assets/screenshots/media-compact.png)
 
-![Hover quick view](docs/assets/screenshots/media-quick.png)
+![悬停快览](docs/assets/screenshots/media-quick.png)
 
 ## 打开一组工作环境
 
 给工作流一个名字，每行放一个应用或地址，一次启动按顺序打开。单个目标失败单独提示，后续继续；快捷应用也能独立启动或复用到工作流。
 
-![Workflows and quick apps](docs/assets/screenshots/workflows.png)
+![工作流与快捷应用](docs/assets/screenshots/workflows.png)
 
 ## 自选服务的助手
 
 配置 Chat Completions、OpenAI Responses 或 Anthropic Messages，保存加密密钥并绑定模型。模型可有独立提示词、参数和有序注入；回答流式显示 Markdown，代码块支持原生复制。请求发送到你配置的接口。
 
-![Assistant sample response](docs/assets/screenshots/assistant.png)
+![助手示例回答](docs/assets/screenshots/assistant.png)
 
 ## 调成你的样子
 
-选择字体、主题、颜色／背景、显示器、位置、圆角和行为。公共控件保持一致，普通编辑自动保存，凭据和破坏性操作明确提交；设置液态玻璃提供清晰按压透镜、节点吸附与实时预览。
+选择字体、主题、颜色／背景、显示器、位置、圆角和行为。普通编辑自动保存，凭据通过“保存／更改”提交，删除／清空等操作需确认；设置液态玻璃提供清晰按压透镜、节点吸附与实时预览。
 
-![General settings](docs/assets/screenshots/settings.png)
+![常规设置](docs/assets/screenshots/settings.png)
 
 简体中文提供标准、微软中文、苹果中文。语境提示、空状态和指南拥有不同声音，技术标签、重要操作、错误和日期数字含义保持不变。
 
-![Microsoft Chinese expression](docs/assets/screenshots/chinese-microsoft.png)
+![微软中文表达](docs/assets/screenshots/chinese-microsoft.png)
 
-![Apple Chinese expression](docs/assets/screenshots/chinese-apple.png)
+![苹果中文表达](docs/assets/screenshots/chinese-apple.png)
 
 ## 看看实际怎么做
 
@@ -70,7 +76,7 @@ idle 简短显示，悬停查看更多，点击展开完整页面；独立设置
 - [工作流](src/assets/guide/workflow.webm)
 - [AI 配置](src/assets/guide/ai.webm)
 
-![Recorded user guide](docs/assets/screenshots/guide.png)
+![应用操作指南](docs/assets/screenshots/guide.png)
 
 ## 开始使用 Ripple Next
 

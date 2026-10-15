@@ -10,7 +10,7 @@ Hover for quick view; click a noninteractive part of the Island to expand. Butto
 
 | Action                 | Input                                                                          |
 | ---------------------- | ------------------------------------------------------------------------------ |
-| Switch feature page    | Left/Right outside text editing, or horizontal wheel/trackpad gesture          |
+| Switch feature page    | Left/Right outside interactive controls, or horizontal wheel/trackpad gesture  |
 | Jump to a page         | Ctrl+1 through Ctrl+7 outside interactive controls, in your visible-page order |
 | Read longer content    | Native vertical scrolling                                                      |
 | Choose a player        | Vertical scroll, A/player indicator, or focused Up/Down                        |
@@ -60,4 +60,4 @@ Appearance & Position → Liquid Glass (Exp) shows a sticky live preview. Presse
 
 Preferences, tasks, workflows, quick apps and encrypted credential records live in `ripple-next.sqlite` in the Ripple Next user-data directory. The whole database is not encrypted. Back it up with the application closed; encrypted keys may require re-entry on a different machine/OS. Linux key saving requires OS-backed encryption.
 
-Settings → Diagnostics opens bounded local logs and crash data. Inspect crash dumps before sharing because they can contain process memory. See [platform support](docs/platform-compatibility.md), [diagnostics](docs/diagnostics.md) and the [release page](https://github.com/ArsvineZhu/Ripple-Next/releases).
+Settings → About → Diagnostics opens bounded local logs and crash data. Inspect crash dumps before sharing because they can contain process memory. See [platform support](docs/platform-compatibility.md), [diagnostics](docs/diagnostics.md) and the [release page](https://github.com/ArsvineZhu/Ripple-Next/releases).

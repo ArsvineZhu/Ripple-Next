@@ -20,7 +20,7 @@ Ripple Next has two renderer windows: the floating Island for daily actions and 
 | Device alerts                    | Battery events/native device observation → alert queue → Island state/border. An alert preserves an already expanded page; device failures remain source-local.                                                                                    |
 | Guide, About and licenses        | Bundled real recordings/posters → user-controlled playback; product metadata and known license records → Settings.                                                                                                                                 |
 | Diagnostics                      | Validated operation/view events → main bounded log/crash directory → diagnostics-folder action.                                                                                                                                                    |
-| Build and release                | pnpm checks → Forge/Vite main/preload/renderer → native modules/resources → platform makers → versioned release artifacts. Publication follows the release guide's approval gate.                                                                  |
+| Build and release                | pnpm checks → Forge/Vite main/preload/renderer → native modules/resources → platform makers → versioned release artifacts. Publication uses a verified version tag on the reviewed commit, as described in the release guide.                      |
 
 ## Layer boundaries
 

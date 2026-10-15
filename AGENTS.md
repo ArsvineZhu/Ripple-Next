@@ -13,4 +13,4 @@
 - English is canonical. Synchronize the four product READMEs; maintain affected detailed guides in en/zh-CN. Agent instructions use technical English.
 - Maintained docs describe current facts and actions. Published release notes and asset provenance are explicit historical records. Preserve user prose edits and avoid defensive justification.
 - Capture actual application flows with isolated demo data. Use English except for language-specific demonstrations; guide prose remains selectable and videos remain user-controlled.
-- Maintained 4.1.0-beta.1 documentation describes the state delivered by PR #14 merge. Actual merge/publication requires the user's explicit confirmation. Do not create commits unless requested.
+- Release from an approved, verified commit using a matching version tag. Require explicit user authorization for publication and commits; preserve published tags, artifacts and versioned notes.

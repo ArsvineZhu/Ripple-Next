@@ -16,7 +16,7 @@
 - [Design principles](design-principles.md): interaction, visual composition and wording.
 - [Development](development.md): prerequisites, commands and tooling.
 - [Tests](../tests/README.md): platform, feature and shared suites.
-- [Release](release.md): approval, CI, packages and publication.
+- [Release](release.md): version tags, CI, packages and publication.
 - [Contribution](../CONTRIBUTING.md) and [repository map](../INDEX.md).
 - [Native observation](native-observation.md): media/device sources, concurrency and lifecycle.
 

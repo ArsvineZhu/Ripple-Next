@@ -2,13 +2,17 @@
 
 # 发布流程
 
-Ripple Next 4.1.0-beta.1 从 [PR #14](https://github.com/ArsvineZhu/Ripple-Next/pull/14) 的合并提交发布，版本说明、截图和录像描述交付后的应用。
+[4.1.0-beta.1 预发布](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.1) 提供 Linux x64、Windows x64、macOS x64／arm64 软件包。版本说明对应指定软件包；维护中的指南描述当前应用及可用的发布流程。
 
 ## CI 与发布
 
-工作流检查 Linux、Windows、macOS，PR #14 构建 Linux x64、Windows x64、macOS x64／arm64 软件包供审查。PR 合并到 main 后，发布任务检出准确的合并提交，重新验证并构建，创建 `v4.1.0-beta.1` 标签、GitHub 预发布及附件；未合并而关闭不会发布。
+在 main 上经审查并获准发布的提交创建版本标签，标签必须与 package.json 一致。标签 CI 校验版本，在 Linux、Windows、macOS 上运行检查和测试，再构建四个目标；全部构建成功后才创建 GitHub Release。带预发布后缀的标签创建预发布，普通版本标签创建稳定发布。
 
-与 package.json 一致的标签推送也运行发布路径。普通 PR 构建没有发布写权限，发布使用已合并提交，读取英文／简体中文说明，并通过 `scripts/release-notes.mjs` 将仓库链接解析到发布标签。重复执行保留已有发布的原始附件。
+PR 检查不发布版本，手动运行工作流只检查所选 ref，也不发布。来自 fork 的贡献应在集成后使用版本标签流程：`actions/checkout@v7` 拒绝在 `pull_request_target` 事件中检出 fork 代码，工作流中的 PR #14 合并事件路径也受此限制。保持这项保护开启。
+
+发布读取英文／简体中文说明，通过 `scripts/release-notes.mjs` 将仓库链接解析到发布标签。已有发布保留原始附件；已发布标签和软件包保持不变，修正应使用新版本。
+
+准备新版本时，同步更新 package.json 和锁文件，准备两份版本说明，取得发布批准，确认目标提交后再创建并推送标签。最后核对工作流成功、标签指向该提交、说明一致，以及九个附件均已上传且可下载。直接向 main 推送文档不会发布新版本。
 
 ## 命令与产物
 

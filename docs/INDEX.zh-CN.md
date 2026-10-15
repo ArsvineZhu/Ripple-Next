@@ -16,7 +16,7 @@
 - [设计原则](design-principles.zh-CN.md)：交互、公共视觉与措辞。
 - [开发](development.zh-CN.md)：环境、命令与工具。
 - [测试](../tests/README.zh-CN.md)：平台、功能及公共测试。
-- [发布](release.zh-CN.md)：确认、CI、打包及发布。
+- [发布](release.zh-CN.md)：版本标签、CI、打包及发布。
 - [贡献](../CONTRIBUTING.zh-CN.md)与[仓库地图](../INDEX.zh-CN.md)。
 - [原生监听](native-observation.zh-CN.md)：媒体／设备事件、并发与生命周期。
 

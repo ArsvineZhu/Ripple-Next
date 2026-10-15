@@ -3,13 +3,18 @@
 
 <p align="center"><strong>Your next action, close at hand.</strong></p>
 
-[简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md) · **English** · [日本語](README.ja.md)
+<p align="center">
+  <a href="README.zh-CN.md">简体中文</a> ·
+  <a href="README.zh-TW.md">繁體中文</a> ·
+  <strong>English</strong> ·
+  <a href="README.ja.md">日本語</a>
+</p>
 
 Music is playing. A link needs opening. A copied command is waiting in the clipboard. Ripple Next keeps these everyday actions in one floating Island for Windows, macOS and Linux.
 
 Glance while idle, hover for more, click to open a full page. Configure everything in a dedicated Settings window. Your drafts stay with you when the Island folds.
 
-[Ripple Next 4.1.0-beta.1](docs/releases/4.1.0-beta.1.en.md). [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
+[Ripple Next 4.1.0-beta.1 (prerelease)](docs/releases/4.1.0-beta.1.en.md). [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.1) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > Screenshots and recordings show the actual application with isolated demo content. The assistant example uses a local fixture response, and the media sessions use demonstration players. Chinese images demonstrate the corresponding language feature.
 
@@ -27,7 +32,7 @@ Glance while idle, hover for more, click to open a full page. Configure everythi
 
 ## Music, within reach
 
-The cover, the artist and the controls stay nearby. Idle is a shorter capsule; hovering grows the quick view, adds play/pause and always shows the artist. Open the full card for previous/next and click the cover to activate its player.
+The cover, the artist and the controls stay nearby. Idle is a shorter capsule without a reserved playback-control slot; hovering grows the quick view, adds play/pause and always shows the artist. The artist-visibility preference applies to idle only. Open the full card for previous/next and click the cover to activate its player.
 
 Automatic selection and player indicators make multiple sources easy to browse. Controls belong to the displayed player. Long titles resume scrolling when you return; 3D artwork and intensity are yours to choose. Windows and Linux use native event observation, with metadata and artwork updated independently.
 
@@ -51,7 +56,7 @@ Configure Chat Completions, OpenAI Responses or Anthropic Messages, save an encr
 
 ## Make it yours
 
-Choose a font, theme, colors/background, display, placement, corners and page behavior. Shared controls keep edits consistent, ordinary changes save automatically, and credential changes/destructive actions ask for an explicit commit. Settings Liquid Glass adds clear pressed lenses, stop attraction and a live preview.
+Choose a font, theme, colors/background, display, placement, corners and page behavior. Ordinary changes save automatically; credential edits use Save/Change, and destructive actions ask for confirmation. Settings Liquid Glass adds clear pressed lenses, stop attraction and a live preview.
 
 ![General settings](docs/assets/screenshots/settings.png)
 

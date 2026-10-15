@@ -10,10 +10,10 @@ Paths consumed by pnpm tasks and analysis tools refer to the repository root. Ty
 
 See [development](../docs/development.md) and the [repository map](../INDEX.md).
 
-Windows MSI configuration supplies the bundled `.ico` explicitly. Its optional native EXE icon extractor is disabled in `allowBuilds`; building that unused addon fails against the declared Node version on Windows. The explicit icon avoids that dependency at installer creation.
+Windows MSI configuration supplies the bundled `.ico` explicitly. Its optional native EXE icon extractor is disabled in `allowBuilds`; installer creation uses the supplied icon directly.
 
 Forge ships `src/assets/third-party/liquid-glass-notices.txt` as an extra resource. Pinned glass vendor sources retain their original formatting and are excluded from lint, format, Knip and duplication reports; the scoped TypeScript checks still include them.
 
 Main, preload and renderer builds retain sourcemaps and readable generated code. The main diagnostic formatter resolves adjacent maps inside .vite only and caches at most 16 mappings; generated maps remain part of packages, excluded from Git.
 
-Forge generateAssets builds the host-native resource for the target architecture before bundling. PR #14 creates reviewable package artifacts; its approved merged commit triggers the versioned prerelease. Native resources live outside ASAR.
+Forge generateAssets builds the host-native resource for the target architecture before bundling. Version tags matching package.json trigger verified platform packages and publication; see the [release procedure](../docs/release.md). Native resources live outside ASAR.

@@ -2,13 +2,17 @@
 
 # Release procedure
 
-Ripple Next 4.1.0-beta.1 is published from the merged commit of [PR #14](https://github.com/ArsvineZhu/Ripple-Next/pull/14). Version notes, screenshots and recordings describe the delivered application.
+The [4.1.0-beta.1 prerelease](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.1) provides Linux x64, Windows x64 and macOS x64/arm64 packages. Versioned notes describe their corresponding packages; maintained guides describe the current application and supported release procedure.
 
 ## CI and publication
 
-The workflow checks Linux, Windows and macOS. PR #14 builds Linux x64, Windows x64 and macOS x64/arm64 artifacts for review. The release job runs after that PR merges into main, checks out its exact merge commit, reruns verification/builds and creates `v4.1.0-beta.1` with a GitHub prerelease and its artifacts. Closing without merging does not publish.
+Publish from an approved, reviewed commit on main by pushing a version tag that matches package.json. Tag CI verifies the version, runs checks/tests on Linux, Windows and macOS, builds all four targets, and creates the GitHub Release only after every build succeeds. Tags containing a prerelease suffix create prereleases; ordinary version tags create stable releases.
 
-Tag pushes matching package.json also run the release path. Ordinary PR builds have no release write permission. Publication uses the trusted merged commit, consumes both English/Simplified Chinese notes and resolves repository links to the release tag through `scripts/release-notes.mjs`. Repeated delivery keeps an existing release's original artifacts.
+PR checks do not publish. Manual workflow dispatch runs checks for the selected ref without publishing. For fork contributions, use the version-tag route after integration: `actions/checkout@v7` blocks fork checkout in a `pull_request_target` event, including the workflow's PR #14 merged-event route. Keep that protection enabled.
+
+Publication reads both English/Simplified Chinese notes and resolves repository links to the release tag through `scripts/release-notes.mjs`. An existing release keeps its original artifacts. Preserve published tags and packages; corrections belong to a new version.
+
+For a new release, update package.json and the lockfile together, prepare both versioned notes, obtain publication approval and verify the intended commit before creating/pushing its tag. Confirm the final run succeeds, the tag resolves to that commit, the notes match and all nine assets are uploaded and downloadable. Direct documentation pushes to main do not publish a release.
 
 ## Commands and artifacts
 
