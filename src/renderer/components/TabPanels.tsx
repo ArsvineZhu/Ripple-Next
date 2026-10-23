@@ -105,7 +105,6 @@ function Page({
     return index + Math.round((cursor - index) / Math.max(1, count)) * count - cursor;
   });
   const x = useTransform(() => distance.get() * width.get() - elastic.get());
-  const filter = useTransform(() => 'blur(' + Math.min(1, Math.abs(distance.get())) * 6 + 'px)');
   // Only the two pages straddling the live position can paint. Extra elastic
   // displacement exposes empty edge space, never an unsolicited third page.
   const display = useTransform(() => (Math.abs(distance.get()) < 1 ? 'flex' : 'none'));
@@ -116,7 +115,7 @@ function Page({
       role="tabpanel"
       aria-hidden={!active}
       inert={!active}
-      style={{ x, filter, display }}
+      style={{ x, display }}
     >
       {children}
     </motion.div>

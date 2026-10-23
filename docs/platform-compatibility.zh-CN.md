@@ -10,18 +10,20 @@ Ripple Next 在 Windows、macOS、Linux 上共用界面和数据格式，通过�
 
 接口来源：[Windows ColorDialog](https://learn.microsoft.com/dotnet/api/system.windows.forms.colordialog)、[macOS 颜色对话框](https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/PromptforaColor.html)、[KDE 对话框](https://develop.kde.org/docs/administration/kdialog/)。
 
-| 功能           | Windows                              | macOS                                                 | Linux                                                     |
-| -------------- | ------------------------------------ | ----------------------------------------------------- | --------------------------------------------------------- |
-| 音乐           | GSMTC 会话、控制能力与封面           | AppleScript 读取运行中的 Spotify、Music；Spotify 封面 | 会话 D-Bus 上的 MPRIS、控制能力与封面                     |
-| 唤起播放器     | 缓存的应用标识／路径                 | 激活正在运行的应用                                    | MPRIS Raise 或同一会话的托盘 Activate                     |
-| 已安装快捷应用 | 开始菜单 `.lnk` 与 Store 标识        | 系统、共享、用户 Applications，含 Utilities           | XDG 桌面条目，经 `gio launch` 启动                        |
-| 登录启动       | 打包应用的系统登录设置               | 打包应用的原生登录项                                  | 当前 XDG 自启动目录中的 `ripple-next.desktop`             |
-| 透明窗口输入   | 按原生光标／岛边界切换穿透           | Electron 岛外点击穿透                                 | XWayland 上的 X11 `ShapeInput`                            |
-| 设备状态       | WinRT 蓝牙；摄像头／麦克风注册表探测 | 蓝牙与采集设备注册表探测                              | BlueZ D-Bus、inotify + `fuser`、PipeWire／PulseAudio 事件 |
+| 功能           | Windows                              | macOS                                          | Linux                                                     |
+| -------------- | ------------------------------------ | ---------------------------------------------- | --------------------------------------------------------- |
+| 音乐           | GSMTC 会话、控制能力与封面           | AppleScript 读取运行中的 Spotify、Music 及封面 | 会话 D-Bus 上的 MPRIS、控制能力与封面                     |
+| 唤起播放器     | 缓存的应用标识／路径                 | 激活正在运行的应用                             | MPRIS Raise 或同一会话的托盘 Activate                     |
+| 已安装快捷应用 | 开始菜单 `.lnk` 与 Store 标识        | 系统、共享、用户 Applications，含 Utilities    | XDG 桌面条目，经 `gio launch` 启动                        |
+| 登录启动       | 打包应用的系统登录设置               | 打包应用的原生登录项                           | 当前 XDG 自启动目录中的 `ripple-next.desktop`             |
+| 透明窗口输入   | 按原生光标／岛边界切换穿透           | Electron 岛外点击穿透                          | XWayland 上的 X11 `ShapeInput`                            |
+| 设备状态       | WinRT 蓝牙；摄像头／麦克风注册表探测 | 蓝牙与采集设备注册表探测                       | BlueZ D-Bus、inotify + `fuser`、PipeWire／PulseAudio 事件 |
 
-播放器发布受支持的媒体会话后才会出现；控制可用性由其能力决定。macOS 当前接入 Spotify／Music，Music 适配器读取元数据和控制，但尚未读取封面。摄像头／麦克风提示依据系统和驱动提供的探测信息。
+播放器发布受支持的媒体会话后才会出现；控制可用性由其能力决定。macOS 当前接入 Spotify／Music，不会发现任意系统媒体会话。摄像头／麦克风提示依据系统和驱动提供的探测信息。
 
 ## 封面与多播放器
+
+macOS 读取 Spotify 封面 URL 和 Apple Music 当前曲目的封面数据。Music 封面在本地解码为边长不超过 512 px 的 PNG 缩略图，按曲目身份缓存，在元数据之后异步发布；换曲后丢弃旧请求结果。封面缺失时 30 秒后重试，不阻塞播放控制；原始数据上限为 5 MiB，不向外部服务发送曲库搜索请求。
 
 Linux 从 `mpris:artUrl` 获取封面，本地读取上限为 5 MiB。已识别扩展名决定图片格式；扩展名无法识别时，根据 PNG／JPEG／GIF／WebP 文件签名决定 data URL 的 MIME。文件缺失、过大或无法读取时，歌曲和控制仍保持可用。图片解码失败显示音乐占位图，切换会话或封面 URL 后重试。
 
@@ -59,11 +61,13 @@ Windows 按 DIP 比较光标和 Island 边界，拖动时保留输入捕获，�
 
 macOS 发现应用程序包时不遍历包内部；AppleScript 媒体控制可能需要自动化权限。登录项仅供打包应用使用，注册后检查系统返回的实际状态。当前打包使用 ad-hoc 签名，开发构建会提示登录项注册不可用；原生注册失败时保留已保存的设置。
 
+macOS Island 使用原生 Stationary 窗口行为，在显示桌面和 Mission Control 时保持原位。原生模块统一管理窗口行为，包括所有空间和全屏辅助可见性，排除与 Stationary 互斥的 Transient、Managed 标志。主进程在显示或聚焦 Island 后应用并校验该策略，避免 Electron 在这些操作中恢复 Managed 标志；设置窗口保持普通窗口行为。原生探针检查标志读回、隐藏后重新显示及设置窗口隔离；桌面手势和台前调度需要在目标 macOS 版本上实际验证。
+
 切换开发系统后从锁文件重新安装依赖。已安装应用的标识依赖平台，迁移配置后重新选择这些快捷应用；系统加密的 API 密钥也可能需要重新填写。
 
 ## 手势与反馈
 
-较长面板使用原生纵向滚动。连续横向输入最多前进一个循环相邻页，保留稳定页面标识、连续动画、模糊和尺寸插值，额外位移产生有界弹性。允许少量横向手势漂移；明显的纵向输入由内容持有。
+较长面板使用原生纵向滚动。连续横向输入最多前进一个循环相邻页，保留稳定页面标识、连续位移动画和尺寸插值，额外位移产生有界弹性。切页不使用整页模糊，输入边界在每帧 DOM 更新后统一测量一次。允许少量横向手势漂移；明显的纵向输入由内容持有。
 
 主进程合并 Chromium `gestureScrollBegin`／`gestureFlingCancel` 后，以仅含时间戳的事件传给 preload。没有原生边界的设备使用 150 ms 静默间隔，以及持续衰减尾部／重新上升输入规则。主进程和 preload 的修改需要重启应用才能验证。
 

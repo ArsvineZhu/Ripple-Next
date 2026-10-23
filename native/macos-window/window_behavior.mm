@@ -1,10 +1,10 @@
 // Native window behaviour for the Island window (macOS only; N-API, so it needs no per-Electron rebuild).
 // Electron has no API for the full NSWindowCollectionBehavior mask. Its `hiddenInMissionControl`
 // option only sets Transient (not Stationary). This module owns the intentional mask as a whole:
-// CanJoinAllSpaces | FullScreenAuxiliary | Stationary | Transient.
+// CanJoinAllSpaces | FullScreenAuxiliary | Stationary. AppKit makes Stationary,
+// Transient and Managed mutually exclusive; only Stationary keeps the Island in place.
 //
-// Electron's getNativeWindowHandle() buffer is not a usable NSView*/NSWindow* here, so windows are
-// matched by title against [NSApp windows] instead.
+// Match the singleton Island by its distinct title, leaving the settings window untouched.
 #include <node_api.h>
 #import <AppKit/AppKit.h>
 #include <stdlib.h>
@@ -12,7 +12,7 @@
 
 static const NSWindowCollectionBehavior kIslandMask =
     NSWindowCollectionBehaviorCanJoinAllSpaces | NSWindowCollectionBehaviorFullScreenAuxiliary |
-    NSWindowCollectionBehaviorStationary | NSWindowCollectionBehaviorTransient;
+    NSWindowCollectionBehaviorStationary;
 
 static NSWindow *WindowByTitle(NSString *title) {
   if (title == nil || title.length == 0) return nil;
@@ -38,25 +38,6 @@ static NSString *TitleArg(napi_env env, napi_value value) {
   NSString *title = [[NSString alloc] initWithBytes:buffer length:written encoding:NSUTF8StringEncoding];
   free(buffer);
   return title;
-}
-
-static bool Flag(napi_env env, napi_value options, const char *name) {
-  napi_value value;
-  bool enabled = false;
-  if (napi_get_named_property(env, options, name, &value) == napi_ok) {
-    napi_get_value_bool(env, value, &enabled);
-  }
-  return enabled;
-}
-
-static NSWindowCollectionBehavior MaskFromOptions(napi_env env, napi_value options) {
-  // Whole-mask decision from the caller; do not OR onto Electron's existing bits.
-  NSWindowCollectionBehavior mask = 0;
-  if (Flag(env, options, "canJoinAllSpaces")) mask |= NSWindowCollectionBehaviorCanJoinAllSpaces;
-  if (Flag(env, options, "fullScreenAuxiliary")) mask |= NSWindowCollectionBehaviorFullScreenAuxiliary;
-  if (Flag(env, options, "stationary")) mask |= NSWindowCollectionBehaviorStationary;
-  if (Flag(env, options, "transient")) mask |= NSWindowCollectionBehaviorTransient;
-  return mask;
 }
 
 static void SetStringProp(napi_env env, napi_value object, const char *key, const char *value) {
@@ -147,11 +128,11 @@ static napi_value DescribeAppWindows(napi_env env, napi_callback_info info) {
 }
 
 static napi_value ApplyIslandBehavior(napi_env env, napi_callback_info info) {
-  size_t argc = 2;
-  napi_value argv[2];
+  size_t argc = 1;
+  napi_value argv[1];
   napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
-  if (argc < 2) {
-    napi_throw_type_error(env, nullptr, "applyIslandBehavior(title, options)");
+  if (argc < 1) {
+    napi_throw_type_error(env, nullptr, "applyIslandBehavior(title)");
     return nullptr;
   }
   NSString *title = TitleArg(env, argv[0]);
@@ -161,8 +142,7 @@ static napi_value ApplyIslandBehavior(napi_env env, napi_callback_info info) {
     napi_throw_error(env, nullptr, "no NSWindow matches the island title");
     return nullptr;
   }
-  NSWindowCollectionBehavior mask = MaskFromOptions(env, argv[1]);
-  [window setCollectionBehavior:mask];
+  [window setCollectionBehavior:kIslandMask];
   napi_value applied;
   napi_create_int64(env, (int64_t)[window collectionBehavior], &applied);
   return applied;

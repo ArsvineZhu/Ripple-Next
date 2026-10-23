@@ -2,7 +2,7 @@
 
 # Settings glass
 
-Settings sliders and switches use white resting capsules and a clear 1.6× lens immediately on press. The full sampling box is prepared at lens size. Active handles have no blur; their material preserves the track and surrounding background. Held drag deformation is bounded and has no position offset; release, cancellation, blur and unmount restore the resting state.
+Settings uses a 36×16 px switch track with a 24 px hit target and 20×16 px slider handles. Sliders have an unfilled surround and a 6 px accent track. Sliders and switches use white resting capsules and a restrained 1.35× clear lens immediately on press. The full sampling box is prepared at lens size. Active handles have no blur; their material preserves the track and surrounding background. Held drag deformation is bounded and has no position offset; release, cancellation, blur and unmount restore the resting state.
 
 `useGlassMotion` owns pointer response without consuming the host's events. Handles respond while pressed; buttons/menus have approach feedback. Native range capture transfer while the pointer is still held preserves the active lens. Reduced motion keeps the operations available without the animated response.
 

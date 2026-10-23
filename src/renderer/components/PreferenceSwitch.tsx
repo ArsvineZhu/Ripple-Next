@@ -117,7 +117,7 @@ export function PreferenceSwitch({ label, checked, disabled, busy, onCheckedChan
       />
       <span className={styles.track} aria-hidden="true">
         <span className={styles.thumb}>
-          <GlassHandle controlRef={ref} disabled={disabled} radius={10} cornerK={1.15} />
+          <GlassHandle controlRef={ref} disabled={disabled} radius={6.5} cornerK={1.15} />
         </span>
       </span>
     </label>

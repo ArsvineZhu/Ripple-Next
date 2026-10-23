@@ -11,7 +11,7 @@ import type { InputRect } from '../shared/contracts';
 import { getWindowBoundsForDisplay } from './windowBounds';
 import { registerWindowRole } from './windowRoles';
 import {
-  applyIslandCollectionBehavior,
+  watchIslandCollectionBehavior,
   ISLAND_WINDOW_TITLE,
 } from './platform/macos/islandWindowBehavior';
 import { installScrollGestureBridge } from './services/scrollGestures';
@@ -29,6 +29,7 @@ let mainWindowReady = false;
 let rendererIsReady = false;
 let displaySyncInstalled = false;
 let windowsInputRegion: ReturnType<typeof createWindowsInputRegion> | undefined;
+let syncMacWindowBehavior: (() => void) | undefined;
 const syncWindowToDisplay = () => {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   const currentBounds = mainWindow.getBounds();
@@ -70,11 +71,12 @@ export const showMainWindow = (focus = false) => {
   if (process.platform === 'linux' && !inputShape.isReady()) return;
 
   syncWindowToDisplay();
+  mainWindow.setAlwaysOnTop(true, process.platform === 'linux' ? 'screen-saver' : 'floating');
   if (focus) mainWindow.show();
   else if (!mainWindow.isVisible()) mainWindow.showInactive();
   applySkipTaskbar();
-  mainWindow.setAlwaysOnTop(true, process.platform === 'linux' ? 'screen-saver' : 'floating');
   if (focus) mainWindow.focus();
+  syncMacWindowBehavior?.();
 };
 
 export const markRendererReady = () => {
@@ -123,7 +125,6 @@ export const createWindow = (
     hasShadow: false,
     skipTaskbar: true,
     icon: getIconPath(),
-    ...(isMac ? { hiddenInMissionControl: true } : {}),
     ...(windowType ? { type: windowType } : {}),
     fullscreen: false,
     acceptFirstMouse: true,
@@ -141,7 +142,15 @@ export const createWindow = (
   });
   attachWindowDiagnostics(mainWindow, diagnostics, 'island');
   registerWindowRole(mainWindow.webContents, 'island');
-  if (isMac) mainWindow.setTitle(ISLAND_WINDOW_TITLE);
+  if (isMac) {
+    mainWindow.setTitle(ISLAND_WINDOW_TITLE);
+    syncMacWindowBehavior = watchIslandCollectionBehavior(mainWindow, (reason) => {
+      diagnostics.recordError(
+        'window',
+        new DiagnosticError(`island collectionBehavior apply failed: ${reason}`),
+      );
+    });
+  }
   const closeScrollGestureBridge = installScrollGestureBridge(mainWindow.webContents);
   diagnostics.record({
     kind: 'window-lifecycle',
@@ -164,21 +173,12 @@ export const createWindow = (
     mainWindowReady = true;
     syncWindowToDisplay();
     showMainWindow();
-    // macOS: replace Electron's Transient-only Mission Control bit with the intentional whole mask.
-    if (isMac && mainWindow && !mainWindow.isDestroyed()) {
-      const result = applyIslandCollectionBehavior(mainWindow);
-      if (!result.ok) {
-        diagnostics.recordError(
-          'window',
-          new Error(`island collectionBehavior apply failed: ${result.reason}`),
-        );
-      }
-    }
   });
 
   mainWindow.on('closed', () => {
     closeScrollGestureBridge();
     windowsInputRegion = undefined;
+    syncMacWindowBehavior = undefined;
     mainWindow = null;
   });
 

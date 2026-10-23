@@ -2,14 +2,14 @@
   /* Color — OS light/dark via prefers-color-scheme only (not island themes) */
   --settings-fg: #000000;
   --settings-muted: #707070;
-  --settings-bg: #ffffff;
-  --settings-sidebar: #ffffff;
+  --settings-bg: #f5f5f7;
+  --settings-sidebar: #ebebef;
   --settings-card: #ffffff;
   --settings-panel: #ffffff;
   --settings-border: rgba(0, 0, 0, 0.12);
   --settings-divider: rgba(0, 0, 0, 0.1);
-  --settings-accent: var(--settings-fg);
-  --settings-accent-soft: color-mix(in srgb, var(--settings-fg) 14%, transparent);
+  --settings-accent: #007aff;
+  --settings-accent-soft: color-mix(in srgb, var(--settings-accent) 14%, transparent);
   --settings-danger: #ff3b30;
   --settings-danger-soft: rgb(255 59 48 / 12%);
   --notice-warning-color: var(--settings-fg);
@@ -33,22 +33,26 @@
   --settings-corner-k: 1.62;
 
   /* Radius */
-  --settings-radius-sm: 10px;
-  --settings-radius-md: 12px;
-  --settings-radius-lg: 16px;
+  --settings-radius-sm: 6px;
+  --settings-radius-md: 8px;
+  --settings-radius-lg: 12px;
 
   /*
    * Bridge shared Select/SearchableSelect/inputs away from island theme tokens.
    * Remap to settings OS palette so sleek-black / win95 never tint this window.
    */
   --island-text-color: var(--settings-fg);
-  --island-bg-color: var(--settings-bg);
+  --island-bg-color: #ffffff;
   --control-bg: color-mix(in srgb, var(--settings-fg) 5%, transparent);
   --control-hover: color-mix(in srgb, var(--settings-fg) 9%, transparent);
   --control-border: var(--settings-border);
   --control-focus: color-mix(in srgb, var(--settings-accent) 40%, var(--settings-border));
   --menu-bg: var(--settings-card);
-  --control-radius: var(--settings-radius-md);
+  --control-radius: 6px;
+  --action-padding: 4px 12px;
+  --action-font-size: 13px;
+  --action-min-height: 26px;
+  --action-primary-fg: #ffffff;
 
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
@@ -88,11 +92,11 @@
   .app {
     --settings-fg: #ffffff;
     --settings-muted: #989898;
-    --settings-bg: #000000;
-    --settings-sidebar: #000000;
-    --settings-card: #0d0d0d;
-    --settings-panel: #0d0d0d;
-    --settings-border: rgba(255, 255, 255, 0.1);
+    --settings-bg: #1c1c1e;
+    --settings-sidebar: #252628;
+    --settings-card: #242426;
+    --settings-panel: #242426;
+    --settings-border: rgba(255, 255, 255, 0.06);
     --settings-divider: rgba(255, 255, 255, 0.08);
   }
 }
@@ -146,7 +150,7 @@
 
 .navItemActive {
   font-weight: 600;
-  color: var(--settings-bg);
+  color: #ffffff;
 }
 
 .navItemActive:hover {

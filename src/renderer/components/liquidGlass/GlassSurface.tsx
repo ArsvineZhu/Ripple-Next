@@ -51,13 +51,13 @@ export function GlassSurface({
       radius={radius}
       cornerK={k}
       ior={glass.glassIor}
-      refraction={glass.glassRefraction}
-      dispersion={glass.glassDispersion}
+      refraction={handle ? glass.glassRefraction * 0.65 : glass.glassRefraction}
+      dispersion={handle ? glass.glassDispersion * 0.5 : glass.glassDispersion}
       blur={handle ? 0 : glass.glassBlur}
       saturation={handle ? glass.glassSaturation * 0.8 : glass.glassSaturation}
       specular={(button ? 0.16 : 1) * glass.glassSpecular}
       {...(handle
-        ? { tint: 'dark', bezel: 4, thickness: 2.5 }
+        ? { tint: 'dark', bezel: 2, thickness: 1.5 }
         : button
           ? { tint: 'dark', bezel: 6 }
           : {})}

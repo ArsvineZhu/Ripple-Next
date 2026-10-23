@@ -10,7 +10,7 @@ export function GlassHandle({
   slider = false,
   radius,
   cornerK = 1,
-  expansion = 1.6,
+  expansion = 1.35,
 }: {
   controlRef: RefObject<HTMLElement | null>;
   disabled?: boolean;

@@ -44,7 +44,9 @@ AppStateProvider 分离待提交与已提交状态，合并写入。主进程只
 
 ## 原生监听
 
-Windows 使用常驻 MTA 执行器监听 GSMTC、蓝牙 DeviceWatcher 和采集注册表。Linux 使用 MPRIS／BlueZ 信号、PipeWire／PulseAudio 增量流及内置 C inotify 摄像头监听器。事件后端正常时没有周期采样；macOS 查询运行中 Spotify／Music 的字典并使用设备探测。见[原生监听](native-observation.zh-CN.md)和[平台支持](platform-compatibility.zh-CN.md)。
+macOS 窗口适配器在 Island 显示或聚焦后应用并校验原生窗口行为；原生模块负责 Stationary 策略，设置窗口保持普通窗口行为。桌面行为及验证方式见[平台支持](platform-compatibility.zh-CN.md)。
+
+Windows 使用常驻 MTA 执行器监听 GSMTC、蓝牙 DeviceWatcher 和采集注册表。Linux 使用 MPRIS／BlueZ 信号、PipeWire／PulseAudio 增量流及内置 C inotify 摄像头监听器。事件后端正常时没有周期采样；macOS 每五秒查询运行中 Spotify／Music 的字典并使用设备探测。媒体适配器负责 Apple Music 封面的异步解码、按代次校验及缓存，封面完成后立即通知共用媒体服务。见[原生监听](native-observation.zh-CN.md)和[平台支持](platform-compatibility.zh-CN.md)。
 
 MPRIS 会话 ID 包含唯一 D-Bus owner。属性信号直接更新缓存元数据，本地封面按会话代次读取，迟到结果不能覆盖当前曲目。双窗订阅相同的主进程快照及选择。
 
@@ -61,3 +63,5 @@ MPRIS 会话 ID 包含唯一 D-Bus owner。属性信号直接更新缓存元数�
 字体及第三方声明以原始资源分发。指南和宣传素材来自独立演示配置中的实际操作，默认使用英文。测试按[平台、功能与公共契约](../tests/README.zh-CN.md)分类。
 
 Island 液态玻璃与 AI 上下文感知尚未开放；Windows／Linux 保持托盘可见。应用不会为上下文感知收集桌面内容，也不维护已完成任务归档；界面和指南明确表达这些状态。
+
+设置控件共用紧凑尺寸、蓝色强调状态和系统明暗表面 token。滑块命中计算与 CSS 几何使用同一手柄宽度；按下时呈现克制的玻璃透镜，不偏移数值轴。

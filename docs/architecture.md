@@ -44,7 +44,9 @@ AppStateProvider keeps pending edits separate from committed state and coalesces
 
 ## Native observation
 
-Windows uses the supervised MTA executor for GSMTC, Bluetooth DeviceWatcher and capture registry events. Linux uses MPRIS and BlueZ signals, incremental PipeWire/PulseAudio streams and the bundled C inotify camera listener. Healthy event backends do not run periodic samplers. macOS queries the dictionaries of running Spotify/Music and uses its native device probes. See [native observation](native-observation.md) and [platform support](platform-compatibility.md).
+The macOS window adapter applies and verifies the native Island collection behavior after visibility and focus changes. The native module owns the Stationary policy; Settings retains ordinary window behavior. See [platform support](platform-compatibility.md) for desktop behavior and validation.
+
+Windows uses the supervised MTA executor for GSMTC, Bluetooth DeviceWatcher and capture registry events. Linux uses MPRIS and BlueZ signals, incremental PipeWire/PulseAudio streams and the bundled C inotify camera listener. Healthy event backends do not run periodic samplers. macOS samples the dictionaries of running Spotify/Music every five seconds and uses its native device probes. Its media adapter owns asynchronous, generation-guarded Apple Music cover decoding and caching; cover completion notifies the shared media service immediately. See [native observation](native-observation.md) and [platform support](platform-compatibility.md).
 
 MPRIS session IDs include the unique D-Bus owner. Property signals update cached metadata directly; local cover reads use per-session generations so late results cannot overwrite the current track. Every window subscribes to the same main-owned snapshot and selection.
 
@@ -61,3 +63,5 @@ Idle music omits the playback-control slot. Hover quick view adds that width and
 Fonts and third-party notices ship as original resources. Guide videos and promotional screenshots capture actual application flows with isolated demo data; English is the default capture language. Tests are organized by [platform, feature and shared ownership](../tests/README.md).
 
 Island Liquid Glass and AI context awareness are unavailable. Windows/Linux keep the tray visible. The application does not collect desktop content for AI context awareness or maintain a completed-task archive. These states are reflected in the interface and usage guide.
+
+Settings controls share compact dimensions, blue accent states and OS light/dark surface tokens. Slider hit testing uses the same thumb width as its CSS geometry; glass handles reveal a restrained lens while pressed without moving the value axis.

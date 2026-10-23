@@ -86,24 +86,15 @@ export default function Island() {
   });
   const { width: visualWidth, height: visualHeight, radius, cornerK, fallbackRadius } = geometry;
   useEffect(() => {
-    let frame: number | undefined;
-    const sync = () => {
-      if (frame !== undefined) return;
-      frame = requestAnimationFrame(() => {
-        frame = undefined;
-        syncWindowInputRegion();
-      });
-    };
-    const stopWidth = visualWidth.on('change', sync);
-    const stopHeight = visualHeight.on('change', sync);
-    const stopRadius = radius.on('change', sync);
-    const stopCorner = cornerK.on('change', sync);
+    const stopWidth = visualWidth.on('change', syncWindowInputRegion);
+    const stopHeight = visualHeight.on('change', syncWindowInputRegion);
+    const stopRadius = radius.on('change', syncWindowInputRegion);
+    const stopCorner = cornerK.on('change', syncWindowInputRegion);
     return () => {
       stopWidth();
       stopHeight();
       stopRadius();
       stopCorner();
-      if (frame !== undefined) cancelAnimationFrame(frame);
     };
   }, [visualWidth, visualHeight, radius, cornerK, syncWindowInputRegion]);
   const handleTabProgress = (from: string, to: string, progress: number, moving: boolean) => {

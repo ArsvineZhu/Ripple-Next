@@ -10,16 +10,16 @@ Color fields open the operating system's picker through Settings-only IPC: Windo
 
 API references: [Windows ColorDialog](https://learn.microsoft.com/dotnet/api/system.windows.forms.colordialog), [macOS color prompt](https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/PromptforaColor.html), [KDE dialogs](https://develop.kde.org/docs/administration/kdialog/).
 
-| Feature              | Windows                                                | macOS                                                          | Linux                                                        |
-| -------------------- | ------------------------------------------------------ | -------------------------------------------------------------- | ------------------------------------------------------------ |
-| Music                | GSMTC sessions, capabilities and artwork               | Running Spotify and Music through AppleScript; Spotify artwork | MPRIS over session D-Bus, capabilities and artwork           |
-| Open a player        | Cached app identity/path                               | Activate the running application                               | MPRIS Raise or same-owner tray Activate                      |
-| Installed quick apps | Start Menu `.lnk` files and Store identifiers          | System/shared/user Applications, including Utilities           | XDG desktop entries launched with `gio launch`               |
-| Launch at login      | Native login settings for packaged apps                | Native login items for packaged apps                           | `ripple-next.desktop` in the active XDG autostart directory  |
-| Transparent input    | Native cursor/bounds with click-through outside Island | Electron click-through outside Island                          | X11 `ShapeInput` through XWayland                            |
-| Device status        | WinRT Bluetooth; camera/microphone registry probes     | Bluetooth and capture-device registry probes                   | BlueZ D-Bus, inotify + `fuser`, PipeWire / PulseAudio events |
+| Feature              | Windows                                                | macOS                                                            | Linux                                                        |
+| -------------------- | ------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------ |
+| Music                | GSMTC sessions, capabilities and artwork               | Running Spotify and Music through AppleScript, including artwork | MPRIS over session D-Bus, capabilities and artwork           |
+| Open a player        | Cached app identity/path                               | Activate the running application                                 | MPRIS Raise or same-owner tray Activate                      |
+| Installed quick apps | Start Menu `.lnk` files and Store identifiers          | System/shared/user Applications, including Utilities             | XDG desktop entries launched with `gio launch`               |
+| Launch at login      | Native login settings for packaged apps                | Native login items for packaged apps                             | `ripple-next.desktop` in the active XDG autostart directory  |
+| Transparent input    | Native cursor/bounds with click-through outside Island | Electron click-through outside Island                            | X11 `ShapeInput` through XWayland                            |
+| Device status        | WinRT Bluetooth; camera/microphone registry probes     | Bluetooth and capture-device registry probes                     | BlueZ D-Bus, inotify + `fuser`, PipeWire / PulseAudio events |
 
-A player must publish a supported session to appear. Controls follow its reported capabilities. macOS does not discover arbitrary system media sessions, and its Music adapter currently retrieves metadata and controls without artwork. Camera/microphone indicators reflect the available OS or driver probes.
+A player must publish a supported session to appear. Controls follow its reported capabilities. macOS discovers supported Spotify/Music players rather than arbitrary system media sessions. Camera/microphone indicators reflect the available OS or driver probes.
 
 ## Music covers and multiple players
 
@@ -59,11 +59,13 @@ Windows input compares cursor and Island bounds in DIP, preserves capture while 
 
 macOS discovers bundles without descending into app internals. AppleScript media control can require Automation permission. Login-item registration checks the native result. Use the packaged application; development builds report registration as unavailable. Packages use an ad-hoc signature, and native registration failures keep the committed setting.
 
+The macOS Island uses the native Stationary window behavior to remain in place during Show Desktop and Mission Control. The native module owns the complete collection behavior, including all Spaces and full-screen auxiliary visibility; it excludes the mutually exclusive Transient and Managed flags. Main applies and checks this policy after showing or focusing the Island, because Electron can restore Managed during these transitions. Settings keeps ordinary window behavior. The native probe checks flag readback, hide/show and Settings isolation; verify desktop gestures and Stage Manager visually on the target macOS version.
+
 Reinstall dependencies from the lockfile when switching development hosts. Installed-app identifiers remain platform-specific, so re-select those quick apps after moving a profile. OS-encrypted API keys may also need to be entered again.
 
 ## Gestures and feature feedback
 
-Long panels use native vertical scrolling. Horizontal feature navigation advances one circular neighbor per continuous stream, with stable page keys, continuous animation, blur, size interpolation and bounded elastic displacement. Small cross-axis drift is tolerated; a substantial vertical stroke keeps ownership of the content.
+Long panels use native vertical scrolling. Horizontal feature navigation advances one circular neighbor per continuous stream, with stable page keys, continuous transform animation, size interpolation and bounded elastic displacement. Page slides avoid whole-page blur, and input bounds are measured once after each animation frame’s DOM updates. Small cross-axis drift is tolerated; a substantial vertical stroke keeps ownership of the content.
 
 Main forwards coalesced Chromium `gestureScrollBegin` / `gestureFlingCancel` boundaries through a timestamp-only preload event. A 150 ms quiet gap and sustained-tail/rising-input rules handle sources without native boundaries. A renderer hot update cannot install a changed main/preload listener: restart the application to test those paths.
 

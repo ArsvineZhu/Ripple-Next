@@ -4,6 +4,8 @@ import styles from './PreferenceSlider.module.css';
 import { GlassHandle } from './liquidGlass/GlassHandle';
 import { useGlassPreferences } from './liquidGlass/GlassPreferences';
 
+const THUMB_WIDTH = 20;
+
 interface Props {
   label: string;
   startLabel: string;
@@ -51,7 +53,7 @@ export function PreferenceSlider({
       Math.abs(stop - current) < Math.abs(best - current) ? stop : best,
     );
   const attractionRange = (input: HTMLInputElement) => {
-    const travel = Math.max(1, input.getBoundingClientRect().width - 32);
+    const travel = Math.max(1, input.getBoundingClientRect().width - THUMB_WIDTH);
     return Math.min((range * glass.glassSnapPixels) / travel, (range / (stages - 1)) * 0.45);
   };
   const clear = useCallback(() => {
@@ -68,7 +70,12 @@ export function PreferenceSlider({
       ref={shell}
       className={styles.slider}
       data-disabled={disabled || undefined}
-      style={{ '--slider-fraction': progress / 100 } as CSSProperties}
+      style={
+        {
+          '--slider-fraction': progress / 100,
+          '--slider-thumb-width': `${THUMB_WIDTH}px`,
+        } as CSSProperties
+      }
     >
       <span className={styles.endpoint} aria-hidden="true">
         {startLabel}
@@ -136,8 +143,9 @@ export function PreferenceSlider({
             dragging.current = true;
             startX.current = event.clientX;
             const rect = event.currentTarget.getBoundingClientRect();
-            const centre = rect.left + 16 + ((rect.width - 32) * progress) / 100;
-            directDrag.current = Math.abs(event.clientX - centre) <= 16;
+            const centre =
+              rect.left + THUMB_WIDTH / 2 + ((rect.width - THUMB_WIDTH) * progress) / 100;
+            directDrag.current = Math.abs(event.clientX - centre) <= THUMB_WIDTH / 2;
             shell.current?.toggleAttribute('data-slider-dragging', directDrag.current);
             event.currentTarget.setPointerCapture(event.pointerId);
           }}
@@ -167,13 +175,7 @@ export function PreferenceSlider({
           }}
         />
         <span className={styles.thumbPosition} aria-hidden="true">
-          <GlassHandle
-            controlRef={inputRef}
-            disabled={disabled}
-            slider
-            radius={11}
-            cornerK={1.15}
-          />
+          <GlassHandle controlRef={inputRef} disabled={disabled} slider radius={8} cornerK={1.15} />
         </span>
       </div>
       <span className={styles.endpoint} aria-hidden="true">

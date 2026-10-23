@@ -1,5 +1,6 @@
 import { islandInputRectangle } from '../../shared/inputGeometry';
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { cancelFrame, frame } from 'motion/react';
 
 import type { InputRect } from '../../shared/contracts';
 
@@ -23,10 +24,10 @@ export function useWindowInput(onGeometryExit: () => void) {
   useLayoutEffect(() => {
     onGeometryExitRef.current = onGeometryExit;
   }, [onGeometryExit]);
-  const trackPointerPosition = (event: { clientX: number; clientY: number }) => {
+  const trackPointerPosition = useCallback((event: { clientX: number; clientY: number }) => {
     pointerPositionRef.current = { x: event.clientX, y: event.clientY };
-  };
-  const syncWindowInputRegion = () => {
+  }, []);
+  const measureInputRegion = useCallback(() => {
     const element = islandElementRef.current;
     if (!element) return;
 
@@ -74,11 +75,19 @@ export function useWindowInput(onGeometryExit: () => void) {
 
     lastWindowShapeRef.current = rect;
     window.electronAPI.setWindowInputShape(rect);
-  };
-  useEffect(() => {
-    syncWindowInputRegion();
-    window.addEventListener('resize', syncWindowInputRegion);
-    return () => window.removeEventListener('resize', syncWindowInputRegion);
   }, []);
+  // Motion deduplicates the stable callback and runs it after this frame's DOM writes.
+  // Page progress, geometry and shell transforms can all request the same measurement.
+  const syncWindowInputRegion = useCallback(() => {
+    frame.postRender(measureInputRegion);
+  }, [measureInputRegion]);
+  useEffect(() => {
+    measureInputRegion();
+    window.addEventListener('resize', syncWindowInputRegion);
+    return () => {
+      window.removeEventListener('resize', syncWindowInputRegion);
+      cancelFrame(measureInputRegion);
+    };
+  }, [measureInputRegion, syncWindowInputRegion]);
   return { islandElementRef, syncWindowInputRegion, trackPointerPosition };
 }

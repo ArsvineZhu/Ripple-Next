@@ -5,14 +5,6 @@ import type { BrowserWindow } from 'electron';
 /** Distinct from the settings window title (`Ripple Next`) so [NSApp windows] can match the island. */
 export const ISLAND_WINDOW_TITLE = 'Ripple Island';
 
-/** Intentional whole mask — not an OR onto Electron's Transient-only Mission Control bit. */
-const ISLAND_COLLECTION_BEHAVIOR = {
-  canJoinAllSpaces: true,
-  fullScreenAuxiliary: true,
-  stationary: true,
-  transient: true,
-} as const;
-
 type MacosWindowNative = {
   describeAppWindows: () => Array<{
     title: string;
@@ -28,15 +20,7 @@ type MacosWindowNative = {
     frame: { x: number; y: number; width: number; height: number };
     className: string;
   }>;
-  applyIslandBehavior: (
-    title: string,
-    options: {
-      canJoinAllSpaces?: boolean;
-      fullScreenAuxiliary?: boolean;
-      stationary?: boolean;
-      transient?: boolean;
-    },
-  ) => number;
+  applyIslandBehavior: (title: string) => number;
   readIslandBehavior: (title: string) => number | null;
   expectedIslandMask: () => number;
 };
@@ -74,7 +58,7 @@ function loadNative(): MacosWindowNative | null {
 
 /**
  * Replace the island NSWindow collectionBehavior with the intentional whole mask.
- * Call only for the island BrowserWindow after it is shown; never for the settings window.
+ * Apply after Electron changes visibility/focus; never apply to the settings window.
  */
 export function applyIslandCollectionBehavior(
   window: BrowserWindow,
@@ -83,10 +67,14 @@ export function applyIslandCollectionBehavior(
   const native = loadNative();
   if (!native) return { ok: false, reason: 'native module unavailable' };
   if (window.isDestroyed()) return { ok: false, reason: 'window destroyed' };
-  window.setTitle(title);
-  const before = native.readIslandBehavior(title);
   try {
-    const after = native.applyIslandBehavior(title, { ...ISLAND_COLLECTION_BEHAVIOR });
+    window.setTitle(title);
+    const before = native.readIslandBehavior(title);
+    const after = native.applyIslandBehavior(title);
+    const expected = native.expectedIslandMask();
+    if (after !== expected) {
+      return { ok: false, reason: `expected collectionBehavior ${expected}, received ${after}` };
+    }
     return { ok: true, before, after };
   } catch (error) {
     return {
@@ -94,4 +82,22 @@ export function applyIslandCollectionBehavior(
       reason: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+/** Electron can restore Managed when a panel is shown or focused. */
+export function watchIslandCollectionBehavior(
+  window: BrowserWindow,
+  reportFailure: (reason: string) => void,
+) {
+  const apply = () => {
+    const result = applyIslandCollectionBehavior(window);
+    if (!result.ok) reportFailure(result.reason);
+  };
+  window.on('show', apply);
+  window.on('focus', apply);
+  window.once('closed', () => {
+    window.removeListener('show', apply);
+    window.removeListener('focus', apply);
+  });
+  return apply;
 }
