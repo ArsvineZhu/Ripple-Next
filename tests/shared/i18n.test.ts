@@ -120,6 +120,15 @@ describe('bundled messages and formatting', () => {
       expect(instance.t('items', { count: 2 })).not.toContain('items');
     }
   });
+  it('pads midnight in 24-hour mode while preserving explicit 12-hour preferences', () => {
+    for (const locale of ['en', 'zh-CN', 'zh-TW', 'ja']) {
+      expect(formatTime(locale, false, new Date('2026-10-23T16:54:00Z'), 'Asia/Shanghai')).toBe(
+        '00:54',
+      );
+      expect(formatTime(locale, false, new Date('2026-10-24T00:05:00Z'), 'UTC')).toBe('00:05');
+      expect(formatTime(locale, true, new Date('2026-10-24T00:05:00Z'), 'UTC')).toBe('12:05');
+    }
+  });
   it('formats dates in the selected language and preserves the selected clock cycle', () => {
     const date = new Date(2026, 9, 4, 13, 5);
     expect(formatDateShort('ja', date)).not.toEqual(formatDateShort('en', date));

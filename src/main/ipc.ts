@@ -12,6 +12,7 @@ import type { DiagnosticsService } from './services/diagnostics';
 import {
   applyWindowInputRegion,
   getMainWindow,
+  getNativeScrollAvailable,
   markRendererReady,
   showMainWindow,
   moveMainWindowToDisplay,
@@ -423,6 +424,7 @@ export function registerIPC(services: IPCServices) {
   handle(services, 'discover-apps', (_event, query) =>
     apps.discoverApps(getText(query, 'Application query', 256)),
   );
+  handle(services, 'get-native-scroll-available', () => getNativeScrollAvailable());
   handle(services, 'renderer-ready', (event) => {
     const role = getWindowRole(event.sender);
     if (role === 'island') {

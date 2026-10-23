@@ -1,3 +1,4 @@
+import { watchIslandScroll } from './platform/macos/islandWindowBehavior';
 import { DiagnosticError } from '../shared/diagnosticError';
 import { createLinuxInputShape } from './platform/linux/inputShape';
 import { app, BrowserWindow, screen } from 'electron';
@@ -151,6 +152,8 @@ export const createWindow = (
       );
     });
   }
+  const closeNativeScroll = isMac ? watchIslandScroll(mainWindow) : null;
+  nativeScrollAvailable = closeNativeScroll !== null;
   const closeScrollGestureBridge = installScrollGestureBridge(mainWindow.webContents);
   diagnostics.record({
     kind: 'window-lifecycle',
@@ -177,6 +180,8 @@ export const createWindow = (
 
   mainWindow.on('closed', () => {
     closeScrollGestureBridge();
+    closeNativeScroll?.();
+    nativeScrollAvailable = false;
     windowsInputRegion = undefined;
     syncMacWindowBehavior = undefined;
     mainWindow = null;
@@ -220,3 +225,8 @@ export const closeInputConnection = () => {
   windowsInputRegion?.close();
   inputShape.close();
 };
+
+let nativeScrollAvailable = false;
+export function getNativeScrollAvailable() {
+  return nativeScrollAvailable;
+}

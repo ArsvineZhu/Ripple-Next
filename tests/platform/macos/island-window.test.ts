@@ -3,6 +3,8 @@ import { EventEmitter } from 'node:events';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
 const native = vi.hoisted(() => ({
+  startScrollEvents: vi.fn(),
+  stopScrollEvents: vi.fn(),
   readIslandBehavior: vi.fn(),
   applyIslandBehavior: vi.fn(),
   expectedIslandMask: vi.fn(),
@@ -95,4 +97,48 @@ it('restores policy after visibility/focus changes and cleans up on close', asyn
   window.emit('show');
   window.emit('focus');
   expect(native.applyIslandBehavior).toHaveBeenCalledTimes(4);
+});
+
+it('normalizes native scroll coordinates for zoom and stops the observer once', async () => {
+  const { watchIslandScroll } =
+    await import('../../../src/main/platform/macos/islandWindowBehavior');
+  native.startScrollEvents.mockReturnValue(true);
+  const window = Object.assign(makeWindow(), {
+    webContents: { getZoomFactor: () => 2, send: vi.fn() },
+  });
+  const close = watchIslandScroll(window as unknown as BrowserWindow);
+  const event = { at: 123, x: 100, y: 80, deltaX: 40, deltaY: 2, phase: 'begin', control: false };
+  native.startScrollEvents.mock.calls[0][1](event);
+  expect(window.webContents.send).toHaveBeenCalledWith('native-scroll', {
+    ...event,
+    x: 50,
+    y: 40,
+    deltaX: 20,
+    deltaY: 1,
+  });
+  native.startScrollEvents.mock.calls[0][1]({ ...event, deltaX: Infinity });
+  expect(window.webContents.send).toHaveBeenCalledTimes(1);
+  close?.();
+  close?.();
+  expect(native.stopScrollEvents).toHaveBeenCalledTimes(1);
+});
+it('allows DOM fallback when the native observer is unavailable or throws', async () => {
+  const { watchIslandScroll } =
+    await import('../../../src/main/platform/macos/islandWindowBehavior');
+  native.startScrollEvents.mockReturnValue(false);
+  expect(watchIslandScroll(makeWindow() as unknown as BrowserWindow)).toBeNull();
+  native.startScrollEvents.mockImplementation(() => {
+    throw new Error('unavailable');
+  });
+  expect(watchIslandScroll(makeWindow() as unknown as BrowserWindow)).toBeNull();
+});
+it('never loads the macOS input observer on Windows or Linux', async () => {
+  for (const platform of ['win32', 'linux']) {
+    vi.resetModules();
+    vi.stubGlobal('process', { ...process, platform });
+    const { watchIslandScroll } =
+      await import('../../../src/main/platform/macos/islandWindowBehavior');
+    expect(watchIslandScroll(makeWindow() as unknown as BrowserWindow)).toBeNull();
+  }
+  expect(native.startScrollEvents).not.toHaveBeenCalled();
 });

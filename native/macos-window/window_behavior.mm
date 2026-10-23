@@ -6,6 +6,7 @@
 //
 // Match the singleton Island by its distinct title, leaving the settings window untouched.
 #include <node_api.h>
+#include "scroll_events.h"
 #import <AppKit/AppKit.h>
 #include <stdlib.h>
 #include <string.h>
@@ -177,6 +178,7 @@ static napi_value IslandMaskConstant(napi_env env, napi_callback_info info) {
 }
 
 NAPI_MODULE_INIT() {
+  RegisterScrollEvents(env, exports);
   napi_value describe;
   napi_value apply;
   napi_value read;

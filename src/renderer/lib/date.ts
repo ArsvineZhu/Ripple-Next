@@ -33,7 +33,7 @@ export function formatTime(
 ) {
   locale = localeForFormatting(locale);
   const options: Intl.DateTimeFormatOptions = {
-    hour: 'numeric',
+    hour: hour12 ? 'numeric' : '2-digit',
     minute: '2-digit',
     hourCycle: hour12 ? 'h12' : 'h23',
     ...(timeZone === 'system' ? {} : { timeZone }),

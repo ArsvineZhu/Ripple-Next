@@ -1,7 +1,7 @@
 import { RendererDiagnosticSchema } from '../shared/diagnostics';
 import type { AppNotice, AssistantEvent, ElectronAPI, InvokeMap } from '../shared/contracts';
 import type { AppState } from '../shared/appState';
-import { ScrollGestureStartSchema } from '../shared/contracts';
+import { NativeScrollSchema, ScrollGestureStartSchema } from '../shared/contracts';
 import { contextBridge, ipcRenderer } from 'electron';
 
 function invoke<K extends keyof InvokeMap>(
@@ -76,6 +76,23 @@ const api: ElectronAPI = {
       callback(payload);
     ipcRenderer.on('assistant-event', listener);
     return () => ipcRenderer.removeListener('assistant-event', listener);
+  },
+  getNativeScrollAvailable: () => invoke('get-native-scroll-available'),
+  onNativeScroll: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, payload: unknown) => {
+      const result = NativeScrollSchema.safeParse(payload);
+      if (result.success) callback(result.data);
+    };
+    ipcRenderer.on('native-scroll', listener);
+    return () => ipcRenderer.removeListener('native-scroll', listener);
+  },
+  onScrollGestureEnd: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, payload: unknown) => {
+      const result = ScrollGestureStartSchema.safeParse(payload);
+      if (result.success) callback(result.data);
+    };
+    ipcRenderer.on('scroll-gesture-end', listener);
+    return () => ipcRenderer.removeListener('scroll-gesture-end', listener);
   },
   onScrollGestureStart: (callback) => {
     const listener = (_event: Electron.IpcRendererEvent, payload: unknown) => {

@@ -10,22 +10,18 @@ interface ScrollGestureSource {
 
 export function installScrollGestureBridge(contents: ScrollGestureSource): () => void {
   let closed = false;
-  let lastBoundary: { type: string; at: number } | null = null;
   const input = (_event: unknown, value: unknown) => {
     if (closed || contents.isDestroyed() || !value || typeof value !== 'object') return;
-    // ScrollBegin also covers fresh gestures without a prior fling. Chromium
-    // may emit FlingCancel + ScrollBegin as one pair; forward that boundary once.
     if (
       'type' in value &&
-      (value.type === 'gestureFlingCancel' || value.type === 'gestureScrollBegin')
+      (value.type === 'gestureScrollEnd' || value.type === 'gestureFlingStart')
     ) {
-      const now = Date.now();
-      if (lastBoundary && lastBoundary.type !== value.type && now - lastBoundary.at <= 50) {
-        lastBoundary = null;
-        return;
-      }
-      lastBoundary = { type: value.type, at: now };
-      contents.send('scroll-gesture-start', { at: now });
+      contents.send('scroll-gesture-end', { at: Date.now() });
+    }
+    // FlingCancel only stops inertia (including a touch with no movement).
+    // ScrollBegin is the single authoritative start for Chromium sources.
+    if ('type' in value && value.type === 'gestureScrollBegin') {
+      contents.send('scroll-gesture-start', { at: Date.now() });
     }
   };
   const close = () => {

@@ -113,7 +113,7 @@ export const defaultAppState: AppState = {
     largeStandbyMode: false,
     hideIslandWhenInactive: false,
     showInfoWhenIdle: false,
-    hourFormat: '12-hr',
+    hourFormat: '24-hr',
     showAmPm: false,
     timeZone: 'system',
     weather: defaultWeatherPreferences,

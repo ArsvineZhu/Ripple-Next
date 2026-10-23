@@ -56,6 +56,8 @@ Content owns ActionButton, TextEntry, EmptyState, Feedback and Surface. Preferen
 
 The page registry owns stable IDs, visibility/order, geometry and rendering. Feature pages own drafts. React Activity preserves them while hiding pages and pausing page effects. Media/device/clipboard observation and active assistant work stay above that lifecycle. The interaction machine owns collapse, re-entry, menus, focus and drag guards; geometry follows current visible dimensions and fractional display/input coordinates.
 
+PageSwipe owns axis locking, finger distance, release velocity and the one-neighbor limit. usePageSwipe adapts app-local AppKit phases or DOM wheel input with Chromium boundaries; TabPanels owns one interruptible transform rail. Native momentum cannot select a page. New profiles use a padded 24-hour clock; existing explicit clock preferences remain intact.
+
 Idle music omits the playback-control slot. Hover quick view adds that width and always includes the artist. Both card sizes measure text against the actual viewport and use a CSS marquee. Track changes retain one keyed current content layer, and hidden-page restoration restarts measurement/animation.
 
 ## Resources, validation and availability

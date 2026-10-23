@@ -1,11 +1,15 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
+import { NativeScrollSchema } from '../../../shared/contracts';
+import type { NativeScroll } from '../../../shared/contracts';
 import type { BrowserWindow } from 'electron';
 
 /** Distinct from the settings window title (`Ripple Next`) so [NSApp windows] can match the island. */
 export const ISLAND_WINDOW_TITLE = 'Ripple Island';
 
 type MacosWindowNative = {
+  startScrollEvents(title: string, callback: (event: NativeScroll) => void): boolean;
+  stopScrollEvents(): void;
   describeAppWindows: () => Array<{
     title: string;
     number: number;
@@ -100,4 +104,38 @@ export function watchIslandCollectionBehavior(
     window.removeListener('focus', apply);
   });
   return apply;
+}
+
+/** App-local observer; never intercepts events belonging to another window. */
+export function watchIslandScroll(window: BrowserWindow): (() => void) | null {
+  const native = loadNative();
+  if (!native?.startScrollEvents) return null;
+  let started = false;
+  try {
+    started = native.startScrollEvents(ISLAND_WINDOW_TITLE, (event) => {
+      if (window.isDestroyed()) return;
+      const parsed = NativeScrollSchema.safeParse(event);
+      if (!parsed.success) return;
+      const zoom = window.webContents.getZoomFactor();
+      const payload = parsed.data;
+      window.webContents.send('native-scroll', {
+        ...payload,
+        x: payload.x / zoom,
+        y: payload.y / zoom,
+        deltaX: payload.deltaX / zoom,
+        deltaY: payload.deltaY / zoom,
+      });
+    });
+  } catch {
+    return null;
+  }
+  let closed = false;
+  return started
+    ? () => {
+        if (!closed) {
+          closed = true;
+          native.stopScrollEvents();
+        }
+      }
+    : null;
 }
