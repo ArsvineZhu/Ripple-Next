@@ -17,9 +17,11 @@ let interaction: ReturnType<typeof useIslandInteraction>;
 let overlay: ReturnType<typeof useOverlay>;
 const setMode = vi.fn();
 const ignoreMouse = vi.fn(async () => {});
+let mode: 'large' | 'quick' = 'large';
 function Harness() {
   const currentInteraction = useIslandInteraction({
     setMode,
+    mode,
     standby: false,
     largeStandby: false,
     leaveDelayMs: 400,
@@ -32,6 +34,7 @@ function Harness() {
   return createElement('div', { id: 'Island' });
 }
 beforeEach(async () => {
+  mode = 'large';
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   vi.useFakeTimers();
   host = document.createElement('div');
@@ -50,6 +53,7 @@ afterEach(async () => {
   host.remove();
   Reflect.deleteProperty(window, 'electronAPI');
   vi.useRealTimers();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 describe('Island position and overlay lifecycle', () => {
@@ -72,15 +76,11 @@ describe('Island position and overlay lifecycle', () => {
     });
     expect(setMode.mock.calls).toEqual([['large']]);
     expect(ignoreMouse).toHaveBeenCalledWith(true, true);
+    await act(async () => vi.advanceTimersByTimeAsync(1000));
+    expect(setMode.mock.calls).toEqual([['large']]);
     await act(async () => interaction.finishPositionChange());
     expect(setMode.mock.calls).toEqual([['large']]);
-    await act(async () => interaction.leave());
-    expect(setMode.mock.calls).toEqual([['large']]);
-    await act(async () => {
-      interaction.setIsHovered(true);
-      interaction.leave();
-      await vi.advanceTimersByTimeAsync(400);
-    });
+    await act(async () => vi.advanceTimersByTimeAsync(400));
     expect(setMode).toHaveBeenLastCalledWith('still');
     setMode.mockClear();
     await act(async () => {
@@ -114,6 +114,65 @@ describe('Island position and overlay lifecycle', () => {
       interaction.leave();
       await vi.advanceTimersByTimeAsync(400);
     });
+    expect(setMode).toHaveBeenLastCalledWith('still');
+  });
+  it('starts closing a hover quick view without the expanded-page delay', async () => {
+    mode = 'quick';
+    await act(async () =>
+      root.render(createElement(OverlayProvider, null, createElement(Harness))),
+    );
+    await act(async () => interaction.setIsHovered(true));
+    await act(async () => interaction.leave());
+    expect(interaction.isHovered).toBe(false);
+    await act(async () => vi.advanceTimersByTimeAsync(0));
+    expect(setMode).toHaveBeenLastCalledWith('still');
+  });
+  it('releases hover immediately while keeping the configured collapse delay', async () => {
+    await act(async () => interaction.setIsHovered(true));
+    expect(interaction.isHovered).toBe(true);
+    await act(async () => interaction.leave());
+    expect(interaction.isHovered).toBe(false);
+    expect(setMode).not.toHaveBeenCalled();
+    await act(async () => vi.advanceTimersByTimeAsync(399));
+    expect(setMode).not.toHaveBeenCalled();
+    await act(async () => vi.advanceTimersByTimeAsync(1));
+    expect(setMode).toHaveBeenLastCalledWith('still');
+  });
+  it('clears stale input ownership on window blur without needing input focusout', async () => {
+    const hasFocus = vi.spyOn(document, 'hasFocus').mockReturnValue(true);
+    const input = document.createElement('input');
+    document.getElementById('Island')!.append(input);
+    await act(async () => {
+      interaction.setIsHovered(true);
+      input.focus();
+    });
+    await act(async () => {
+      interaction.leave();
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    expect(setMode).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(input);
+    hasFocus.mockReturnValue(false);
+    await act(async () => window.dispatchEvent(new FocusEvent('blur')));
+    await act(async () => vi.advanceTimersByTimeAsync(400));
+    expect(setMode).toHaveBeenLastCalledWith('still');
+    expect(document.activeElement).toBe(input);
+  });
+  it('releases inputs in hidden pages even if no focusout is delivered', async () => {
+    vi.spyOn(document, 'hasFocus').mockReturnValue(true);
+    const page = document.createElement('div');
+    const input = document.createElement('input');
+    page.append(input);
+    document.getElementById('Island')!.append(page);
+    await act(async () => {
+      interaction.setIsHovered(true);
+      input.focus();
+    });
+    await act(async () => interaction.leave());
+    await act(async () => vi.advanceTimersByTimeAsync(1000));
+    expect(setMode).not.toHaveBeenCalled();
+    await act(async () => page.setAttribute('inert', ''));
+    await act(async () => vi.advanceTimersByTimeAsync(400));
     expect(setMode).toHaveBeenLastCalledWith('still');
   });
   it('leaves keyboard events with form controls and open menus, then resumes tab shortcuts outside them', async () => {

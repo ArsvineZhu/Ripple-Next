@@ -27,6 +27,13 @@ function createInteraction() {
 }
 
 describe('Island interaction machine', () => {
+  it('can collapse a keyboard-opened page without a preceding pointer enter', () => {
+    const { actor, clock, collapse } = createInteraction();
+    actor.send({ type: 'POINTER_LEAVE' });
+    clock.increment(400);
+    expect(collapse).toHaveBeenCalledOnce();
+    actor.stop();
+  });
   it('cancels the delayed collapse when the pointer returns', () => {
     const { actor, clock, collapse } = createInteraction();
     actor.send({ type: 'POINTER_ENTER' });
@@ -42,22 +49,31 @@ describe('Island interaction machine', () => {
     actor.stop();
   });
 
-  it('waits for re-entry after geometry moves beyond the pointer', () => {
+  it('collapses after geometry excludes the pointer without requiring re-entry', () => {
     const { actor, clock, collapse } = createInteraction();
     actor.send({ type: 'POINTER_ENTER' });
     actor.send({ type: 'GEOMETRY_EXIT' });
-    clock.increment(1000);
-    expect(actor.getSnapshot().value).toBe('awaitingReentry');
+    expect(actor.getSnapshot().value).toBe('leaving');
+    clock.increment(399);
     expect(collapse).not.toHaveBeenCalled();
-
-    actor.send({ type: 'POINTER_LEAVE' });
-    expect(actor.getSnapshot().value).toBe('awaitingReentry');
-    actor.send({ type: 'POINTER_ENTER' });
-    actor.send({ type: 'POINTER_LEAVE' });
-    clock.increment(400);
-
+    actor.send({ type: 'GEOMETRY_EXIT' });
+    clock.increment(1);
     expect(collapse).toHaveBeenCalledOnce();
     expect(actor.getSnapshot().value).toBe('outside');
+    actor.stop();
+  });
+
+  it('holds geometry exits during position changes and resumes collapse when they end', () => {
+    const { actor, clock, collapse } = createInteraction();
+    actor.send({ type: 'POINTER_ENTER' });
+    actor.send({ type: 'BLOCKERS_CHANGED', blockers: { ...noBlockers, positionChanging: true } });
+    actor.send({ type: 'GEOMETRY_EXIT' });
+    clock.increment(2000);
+    expect(actor.getSnapshot().value).toBe('heldOutside');
+    expect(collapse).not.toHaveBeenCalled();
+    actor.send({ type: 'BLOCKERS_CHANGED', blockers: noBlockers });
+    clock.increment(400);
+    expect(collapse).toHaveBeenCalledOnce();
     actor.stop();
   });
 
@@ -65,7 +81,7 @@ describe('Island interaction machine', () => {
     const { actor, setMousePassthrough } = createInteraction();
     actor.send({ type: 'POINTER_ENTER' });
     actor.send({ type: 'GEOMETRY_EXIT' });
-    expect(actor.getSnapshot().value).toBe('awaitingReentry');
+    expect(actor.getSnapshot().value).toBe('leaving');
 
     actor.send({ type: 'OVERLAY_OPEN' });
 

@@ -176,6 +176,7 @@ export default function Island() {
         stiffness: 400,
         damping: 40,
         mass: 2.5,
+        scale: { type: 'tween', duration: 0.16, ease: [0.2, 0.8, 0.2, 1], delay: 0 },
         x: { duration: isPreview ? 0 : 0.15 },
         left: isPreview ? { duration: 0 } : undefined,
         top: isPreview ? { duration: 0 } : undefined,

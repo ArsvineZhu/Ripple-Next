@@ -60,9 +60,16 @@ export const islandInteractionMachine = setup({
   states: {
     outside: {
       on: {
+        POINTER_LEAVE: [
+          { guard: 'canCollapse', target: 'leaving', actions: 'setOutside' },
+          { target: 'heldOutside', actions: 'setOutside' },
+        ],
         POINTER_ENTER: { target: 'inside', actions: 'setInside' },
         OVERLAY_OPEN: { target: 'inside', actions: 'setInside' },
-        GEOMETRY_EXIT: { target: 'awaitingReentry', actions: 'setOutside' },
+        GEOMETRY_EXIT: [
+          { guard: 'canCollapse', target: 'leaving', actions: 'setOutside' },
+          { target: 'heldOutside', actions: 'setOutside' },
+        ],
         BLOCKERS_CHANGED: { actions: 'setBlockers' },
         SET_DELAY: { actions: 'setDelay' },
       },
@@ -75,7 +82,10 @@ export const islandInteractionMachine = setup({
           { guard: 'canCollapse', target: 'leaving', actions: 'setOutside' },
           { target: 'heldOutside', actions: 'setOutside' },
         ],
-        GEOMETRY_EXIT: { target: 'awaitingReentry', actions: 'setOutside' },
+        GEOMETRY_EXIT: [
+          { guard: 'canCollapse', target: 'leaving', actions: 'setOutside' },
+          { target: 'heldOutside', actions: 'setOutside' },
+        ],
         BLOCKERS_CHANGED: { actions: 'setBlockers' },
         SET_DELAY: { actions: 'setDelay' },
       },
@@ -86,7 +96,10 @@ export const islandInteractionMachine = setup({
       on: {
         POINTER_ENTER: { target: 'inside', actions: 'setInside' },
         OVERLAY_OPEN: { target: 'inside', actions: 'setInside' },
-        GEOMETRY_EXIT: { target: 'awaitingReentry', actions: 'setOutside' },
+        GEOMETRY_EXIT: [
+          { guard: 'canCollapse', target: 'leaving', actions: 'setOutside' },
+          { target: 'heldOutside', actions: 'setOutside' },
+        ],
         BLOCKERS_CHANGED: { actions: 'setBlockers' },
         SET_DELAY: { target: 'leaving', reenter: true, actions: 'setDelay' },
       },
@@ -96,15 +109,10 @@ export const islandInteractionMachine = setup({
       on: {
         POINTER_ENTER: { target: 'inside', actions: 'setInside' },
         OVERLAY_OPEN: { target: 'inside', actions: 'setInside' },
-        GEOMETRY_EXIT: { target: 'awaitingReentry', actions: 'setOutside' },
-        BLOCKERS_CHANGED: { actions: 'setBlockers' },
-        SET_DELAY: { actions: 'setDelay' },
-      },
-    },
-    awaitingReentry: {
-      on: {
-        POINTER_ENTER: { target: 'inside', actions: 'setInside' },
-        OVERLAY_OPEN: { target: 'inside', actions: 'setInside' },
+        GEOMETRY_EXIT: [
+          { guard: 'canCollapse', target: 'leaving', actions: 'setOutside' },
+          { target: 'heldOutside', actions: 'setOutside' },
+        ],
         BLOCKERS_CHANGED: { actions: 'setBlockers' },
         SET_DELAY: { actions: 'setDelay' },
       },

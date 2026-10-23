@@ -73,6 +73,7 @@ export function useIslandController() {
     isOverlayOpen,
   } = useIslandInteraction({
     setMode,
+    mode,
     standby: standbyBorderEnabled,
     largeStandby: largeStandbyEnabled,
     leaveDelayMs,
