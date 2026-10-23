@@ -3,34 +3,17 @@
 // the horizontal movement.
 const AXIS_FLOOR = 2;
 const AXIS_SHARE = 0.25;
-// A diagonal cancels a pending page instead of flipping the tab, and a stroke whose movement is
-// dominated by the vertical axis keeps the content until the input stops.
+// The media carousel can hand a horizontal start over to vertical player paging.
 const TAKEOVER_SHARE = 0.5;
-const VERTICAL_DOMINANCE = 2;
-const VERTICAL_DISTANCE = 12;
-// A single sample needs far more vertical movement than drift before it hands the stroke over.
-const VERTICAL_SAMPLE_DISTANCE = 32;
 export function wheelEventAxis(deltaX: number, deltaY: number): 'horizontal' | 'vertical' | 'none' {
   if (!deltaX && !deltaY) return 'none';
   const tolerance = Math.max(AXIS_FLOOR, Math.abs(deltaX) * AXIS_SHARE);
   return Math.abs(deltaX) > 0 && Math.abs(deltaY) <= tolerance ? 'horizontal' : 'vertical';
 }
 
-/** Whether a sample is diagonal enough to cancel a pending page and hand the stroke to the content. */
+/** Whether a sample hands media-carousel input over to vertical player paging. */
 export function isVerticalTakeover(deltaX: number, deltaY: number): boolean {
   return Math.abs(deltaY) > Math.max(AXIS_FLOOR, Math.abs(deltaX) * TAKEOVER_SHARE);
-}
-
-/** Whether the movement seen so far is dominated by the vertical axis, so the content owns it. */
-export function isVerticalStroke(accumulatedX: number, accumulatedY: number): boolean {
-  return accumulatedY >= VERTICAL_DISTANCE && accumulatedY >= accumulatedX * VERTICAL_DOMINANCE;
-}
-
-/** Whether a sample is clearly vertical, so the content owns the rest of the stroke. */
-export function isClearVerticalSample(deltaX: number, deltaY: number): boolean {
-  return (
-    wheelEventAxis(deltaX, deltaY) === 'vertical' && Math.abs(deltaY) >= VERTICAL_SAMPLE_DISTANCE
-  );
 }
 
 // A single dip or rise is not a gesture boundary. A resumed push needs the tail to have decayed

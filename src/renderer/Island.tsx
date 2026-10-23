@@ -15,7 +15,6 @@ export default function Island() {
   const { setContainer, beginPointerGesture, consumeShellClick } = useOverlay();
   const {
     leave,
-    finishPositionChange,
     isOverlayOpen,
     islandElementRef,
     setIsHovered,
@@ -169,7 +168,6 @@ export default function Island() {
       onAnimationComplete={() => {
         syncWindowInputRegion();
         reportIslandContext();
-        finishPositionChange();
       }}
       transition={{
         type: 'spring',

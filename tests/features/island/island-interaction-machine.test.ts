@@ -4,8 +4,6 @@ import { islandInteractionMachine } from '../../../src/renderer/lib/islandIntera
 import type { InteractionBlockers } from '../../../src/renderer/lib/islandInteractionMachine';
 
 const noBlockers: InteractionBlockers = {
-  dragging: false,
-  positionChanging: false,
   menuOpen: false,
   inputFocused: false,
 };
@@ -63,10 +61,10 @@ describe('Island interaction machine', () => {
     actor.stop();
   });
 
-  it('holds geometry exits during position changes and resumes collapse when they end', () => {
+  it('holds geometry exits while an input is focused and resumes collapse when focus ends', () => {
     const { actor, clock, collapse } = createInteraction();
     actor.send({ type: 'POINTER_ENTER' });
-    actor.send({ type: 'BLOCKERS_CHANGED', blockers: { ...noBlockers, positionChanging: true } });
+    actor.send({ type: 'BLOCKERS_CHANGED', blockers: { ...noBlockers, inputFocused: true } });
     actor.send({ type: 'GEOMETRY_EXIT' });
     clock.increment(2000);
     expect(actor.getSnapshot().value).toBe('heldOutside');

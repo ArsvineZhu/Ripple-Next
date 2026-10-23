@@ -62,22 +62,14 @@ export function useIslandController() {
   const backgroundImage = useBackgroundImage(bgImage);
   const media = useMedia();
   const { mediaTrack, mediaSnapshot, mediaActionError } = media;
-  const {
-    isHovered,
-    setIsHovered,
-    isDragging,
-    finishPositionChange,
-    setAssistantActive,
-    leave,
-    geometryExited,
-    isOverlayOpen,
-  } = useIslandInteraction({
-    setMode,
-    mode,
-    standby: standbyBorderEnabled,
-    largeStandby: largeStandbyEnabled,
-    leaveDelayMs,
-  });
+  const { isHovered, setIsHovered, setAssistantActive, leave, geometryExited, isOverlayOpen } =
+    useIslandInteraction({
+      setMode,
+      mode,
+      standby: standbyBorderEnabled,
+      largeStandby: largeStandbyEnabled,
+      leaveDelayMs,
+    });
   const assistant = useAssistant();
   const { asked } = assistant;
   const tasks = appState.tasks;
@@ -110,7 +102,6 @@ export function useIslandController() {
     mediaAvailable:
       mediaSnapshot.status !== 'idle' || mediaActionError !== null || mediaSnapshot.error !== null,
     mode,
-    isDragging,
     setMode,
   });
   useLayoutEffect(() => {
@@ -229,7 +220,6 @@ export function useIslandController() {
     music,
     isPreview,
     leave,
-    finishPositionChange,
     isOverlayOpen,
     islandElementRef,
     setIsHovered,

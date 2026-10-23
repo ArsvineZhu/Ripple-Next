@@ -5,7 +5,7 @@ import type { Root } from 'react-dom/client';
 import type { MotionValue } from 'motion/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useIslandGeometry } from '../../../src/renderer/hooks/useIslandGeometry';
-import { expandedTabSize } from '../../../src/renderer/lib/tabGeometry';
+import { defaultPageLayoutContext } from '../../../src/renderer/lib/tabGeometry';
 import { islandPages } from '../../../src/renderer/lib/tabs';
 
 const motion = vi.hoisted(() => ({
@@ -33,14 +33,14 @@ type Options = Parameters<typeof useIslandGeometry>[0];
 const collapsed: Options = {
   width: 170,
   height: 40,
-  getTabSize: expandedTabSize,
+  getTabSize: (id) => islandPages.size(id, defaultPageLayoutContext),
   getTabRadius: islandPages.radius,
   expanded: false,
   tab: 'search',
 };
 const search: Options = {
   ...collapsed,
-  ...expandedTabSize('search'),
+  ...islandPages.size('search', defaultPageLayoutContext),
   expanded: true,
   tab: 'search',
 };

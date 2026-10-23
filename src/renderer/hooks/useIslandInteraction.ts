@@ -1,5 +1,5 @@
 import { useMachine } from '@xstate/react';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { IslandMode } from '../../shared/contracts';
 import { islandInteractionMachine } from '../lib/islandInteractionMachine';
@@ -24,8 +24,6 @@ function isFocusedControl(element: Element | null) {
 }
 
 const initialBlockers: InteractionBlockers = {
-  dragging: false,
-  positionChanging: false,
   menuOpen: false,
   inputFocused: false,
 };
@@ -39,7 +37,6 @@ export function useIslandInteraction({
 }: Options) {
   const collapseDelay = mode === 'quick' ? 0 : leaveDelayMs;
   const { openId } = useOverlay();
-  const [isDragging, setIsDragging] = useState(false);
   const blockersRef = useRef<InteractionBlockers>(initialBlockers);
   const callbacksRef = useRef({ setMode, standby, largeStandby });
   useLayoutEffect(() => {
@@ -120,18 +117,6 @@ export function useIslandInteraction({
     };
   }, [publishBlockers, send]);
 
-  const updateDragging = (value: boolean) => {
-    setIsDragging(value);
-    publishBlockers({ dragging: value });
-    if (!value && !snapshot.matches('inside')) {
-      void window.electronAPI?.setIgnoreMouseEvents(true, true);
-    }
-  };
-  const beginPositionChange = () => {
-    publishBlockers({ positionChanging: true });
-    callbacksRef.current.setMode('large');
-  };
-  const finishPositionChange = () => publishBlockers({ positionChanging: false });
   const setAssistantActive = useCallback(
     (assistantActive: boolean) => publishBlockers({ assistantActive }),
     [publishBlockers],
@@ -144,10 +129,6 @@ export function useIslandInteraction({
   return {
     isHovered: snapshot.matches('inside'),
     setIsHovered,
-    isDragging,
-    updateDragging,
-    beginPositionChange,
-    finishPositionChange,
     setAssistantActive,
     leave,
     geometryExited,

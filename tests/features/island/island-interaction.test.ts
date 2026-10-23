@@ -66,21 +66,17 @@ describe('Island position and overlay lifecycle', () => {
     overlay.beginPointerGesture();
     expect(overlay.consumeShellClick()).toBe(false);
   });
-  it('retains expansion through movement-generated leave/focus events and resumes normal leave after animation', async () => {
+  it('collapses after geometry excludes the pointer and preserves actual hover focus behavior', async () => {
     await act(async () => {
       interaction.setIsHovered(true);
-      interaction.beginPositionChange();
       interaction.geometryExited();
       interaction.leave();
       window.dispatchEvent(new FocusEvent('focusout'));
     });
-    expect(setMode.mock.calls).toEqual([['large']]);
     expect(ignoreMouse).toHaveBeenCalledWith(true, true);
-    await act(async () => vi.advanceTimersByTimeAsync(1000));
-    expect(setMode.mock.calls).toEqual([['large']]);
-    await act(async () => interaction.finishPositionChange());
-    expect(setMode.mock.calls).toEqual([['large']]);
-    await act(async () => vi.advanceTimersByTimeAsync(400));
+    await act(async () => vi.advanceTimersByTimeAsync(399));
+    expect(setMode).not.toHaveBeenCalled();
+    await act(async () => vi.advanceTimersByTimeAsync(1));
     expect(setMode).toHaveBeenLastCalledWith('still');
     setMode.mockClear();
     await act(async () => {
@@ -180,7 +176,6 @@ describe('Island position and overlay lifecycle', () => {
     function NavigationHarness() {
       const current = useNavigation({
         mode: 'large',
-        isDragging: false,
         setMode,
         mediaAvailable: true,
       });

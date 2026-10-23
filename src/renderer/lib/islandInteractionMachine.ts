@@ -1,8 +1,6 @@
 import { assign, setup } from 'xstate';
 
 export interface InteractionBlockers {
-  dragging: boolean;
-  positionChanging: boolean;
   menuOpen: boolean;
   inputFocused: boolean;
   assistantActive?: boolean;
