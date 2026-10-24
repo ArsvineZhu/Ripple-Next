@@ -14,6 +14,8 @@ Publication reads both English/Simplified Chinese notes and resolves repository 
 
 For a new release, update package.json and the lockfile together, prepare both versioned notes, obtain publication approval and verify the intended commit before creating/pushing its tag. Confirm the final run succeeds, the tag resolves to that commit, the notes match and all nine assets are uploaded and downloadable. Direct documentation pushes to main do not publish a release.
 
+To publish a prepared regular-release draft from an existing successful build, dispatch **Publish existing release artifacts** with its tag and build run ID. The workflow attaches that run’s packages and publishes the draft without rebuilding.
+
 ## Commands and artifacts
 
 ```sh

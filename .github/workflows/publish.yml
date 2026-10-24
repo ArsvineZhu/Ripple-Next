@@ -1,0 +1,45 @@
+name: Publish existing release artifacts
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag
+        required: true
+        type: string
+      run_id:
+        description: Successful build run containing RippleNext artifacts
+        required: true
+        type: string
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v7
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.run_id }}
+          pattern: RippleNext-*
+          path: release-assets
+          merge-multiple: true
+      - name: Publish regular release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          BUILD_RUN: ${{ inputs.run_id }}
+        run: |
+          build_commit="$(gh api "repos/$GH_REPO/actions/runs/$BUILD_RUN" --jq '.head_sha')"
+          tag_commit="$(git rev-parse "$RELEASE_TAG^{commit}")"
+          test "$build_commit" = "$tag_commit"
+          test "$(gh api "repos/$GH_REPO/actions/runs/$BUILD_RUN" --jq '.conclusion')" = success
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft')" = true
+          mapfile -d '' release_files < <(find release-assets -type f -print0 | sort -z)
+          test "${#release_files[@]}" -gt 0
+          gh release upload "$RELEASE_TAG" "${release_files[@]}" --clobber
+          gh release edit "$RELEASE_TAG" --draft=false --prerelease=false --latest
