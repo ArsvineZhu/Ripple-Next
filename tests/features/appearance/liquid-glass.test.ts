@@ -1,3 +1,4 @@
+import { handleLensMap } from '../../../src/renderer/components/liquidGlass/handleLens';
 import { describe, expect, it, beforeAll, vi } from 'vitest';
 import { cacheStats, clearMaps, mapsFor } from '../../../src/renderer/components/liquidGlass/maps';
 import { rdevResponse } from '../../../src/renderer/components/liquidGlass/interaction';
@@ -187,4 +188,22 @@ describe('Pinned motion and material contracts', () => {
     expect(cacheStats().layers.entries).toBe(0);
     encode.mockRestore();
   });
+});
+
+it('compresses the track within a clear handle while keeping its value center fixed', () => {
+  const shape = { width: 60, height: 40, radius: 20, cornerK: 1 };
+  const source = adapted.buildDisplacementMap(shape, { ...optics, bezel: 4, thickness: 4 });
+  const lens = handleLensMap(source, shape);
+  const sampleY = (y: number) => {
+    const index = (y * lens.width + 30) * 4 + 1;
+    return y + 0.5 + (lens.data[index] / 255 - 0.5) * lens.scale * 1.5;
+  };
+  const visibleTrack = Array.from({ length: 40 }, (_, y) => sampleY(y)).filter(
+    (sourceY) => Math.abs(sourceY - 20) < 6,
+  );
+  expect(visibleTrack.length).toBeGreaterThanOrEqual(8);
+  expect(visibleTrack.length).toBeLessThanOrEqual(9);
+  expect((sampleY(19) + sampleY(20)) / 2).toBeCloseTo(20, 0);
+  expect(sampleY(15)).toBeLessThan(15.5);
+  expect(sampleY(24)).toBeGreaterThan(24.5);
 });

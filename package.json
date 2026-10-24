@@ -1,7 +1,7 @@
 {
   "name": "ripple-next",
   "productName": "Ripple Next",
-  "version": "4.1.0-beta.1",
+  "version": "4.1.0-beta.2",
   "description": "A Dynamic Island for All Platforms",
   "homepage": "https://github.com/ArsvineZhu/Ripple-Next",
   "repository": {
@@ -59,6 +59,7 @@
     "@radix-ui/react-dropdown-menu": "2.1.24",
     "@radix-ui/react-popover": "1.1.23",
     "@types/better-sqlite3": "^9.6.0",
+    "@types/fontkit": "2.0.9",
     "@types/node": "24.19.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
@@ -90,7 +91,9 @@
   },
   "dependencies": {
     "better-sqlite3": "13.0.3",
-    "electron-log": "5.4.4"
+    "electron-log": "5.4.4",
+    "font-list": "2.1.0",
+    "fontkit": "2.0.4"
   },
   "engines": {
     "node": ">=22.13.0",

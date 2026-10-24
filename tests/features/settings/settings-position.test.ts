@@ -144,7 +144,28 @@ it('awaits one autostart preference commit, ignores overlapping toggles and rest
 it('maps horizontal endpoints to visible edges and preserves vertical zero', () => {
   const size = { width: 380, height: 250 };
   const viewport = { width: 1920, height: 1080 };
-  expect(freeIslandPosition(0, 0, size, viewport)).toMatchObject({ left: 190, top: 0 });
-  expect(freeIslandPosition(50, 20, size, viewport)).toMatchObject({ left: 960, top: 20 });
-  expect(freeIslandPosition(100, 2000, size, viewport)).toMatchObject({ left: 1730, top: 830 });
+  expect(freeIslandPosition(0, 0, size, viewport)).toMatchObject({ left: '0%', x: '0%', top: 0 });
+  expect(freeIslandPosition(50, 20, size, viewport)).toMatchObject({
+    left: '50%',
+    x: '-50%',
+    top: 20,
+  });
+  expect(freeIslandPosition(100, 2000, size, viewport)).toMatchObject({
+    left: '100%',
+    x: '-100%',
+    top: 830,
+  });
 });
+
+it.each([1, 1.25, 1.5, 2])(
+  'keeps free position centered through visible width changes at %sx scale',
+  (scale) => {
+    const viewport = { width: 1536 / scale, height: 864 / scale };
+    for (const width of [120, 230, 330, 380, 520]) {
+      const position = freeIslandPosition(50, 20, { width, height: 250 }, viewport);
+      const left = (parseFloat(position.left) / 100) * viewport.width;
+      const translate = (parseFloat(position.x) / 100) * width;
+      expect((left + translate + width / 2) * scale).toBeCloseTo(768);
+    }
+  },
+);

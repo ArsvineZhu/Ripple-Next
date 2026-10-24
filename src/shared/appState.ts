@@ -5,7 +5,7 @@ import type { LanguagePreference } from './i18n';
 import { DEFAULT_PAGE_ID, DEFAULT_PAGE_IDS, PageIdSchema } from './pages';
 import { AIConfigurationSchema, defaultAIConfiguration } from './aiConfiguration';
 import { GlassPreferencesSchema, defaultGlassPreferences } from './glassPreferences';
-import { UiFontSchema } from './fonts';
+import { UiFontSchema, defaultUIFont } from './fonts';
 import { WeatherPreferencesSchema, defaultWeatherPreferences } from './weather';
 import { MusicPreferencesSchema, defaultMusicPreferences } from './musicPreferences';
 
@@ -35,7 +35,9 @@ const AppSettingsSchema = z
   .object({
     ...GlassPreferencesSchema.shape,
     language: z.enum(['system', 'en', 'zh-CN', 'zh-TW', 'ja', 'zh-ms', 'zh-apple']),
-    uiFont: UiFontSchema.default('default'),
+    settingsSidebarExpanded: z.boolean().default(false),
+    settingsSidebarTranslucent: z.boolean().default(true),
+    uiFont: UiFontSchema.default(() => structuredClone(defaultUIFont)),
     music: MusicPreferencesSchema.default(() => ({ ...defaultMusicPreferences })),
     searchUrlTemplate: z.string().max(2048).default('https://www.google.com/search?q={query}'),
     ai: AIConfigurationSchema.default(defaultAIConfiguration),
@@ -100,7 +102,9 @@ export const defaultAppState: AppState = {
   settings: {
     ...defaultGlassPreferences,
     language: 'system' satisfies LanguagePreference,
-    uiFont: 'default',
+    uiFont: structuredClone(defaultUIFont),
+    settingsSidebarExpanded: false,
+    settingsSidebarTranslucent: true,
     music: { ...defaultMusicPreferences },
     searchUrlTemplate: 'https://www.google.com/search?q={query}',
     ai: defaultAIConfiguration(),

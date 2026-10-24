@@ -25,15 +25,16 @@
 }
 .lens.lens.lens {
   /* The full sampling footprint stays ready; scaling a small sampled box stretches its backdrop. */
-  inset: calc((1 - var(--handle-expansion, 1.35)) * 50%);
-  width: calc(var(--handle-expansion, 1.35) * 100%);
-  height: calc(var(--handle-expansion, 1.35) * 100%);
-  --glass-panel-tint: rgb(255 255 255 / 8%);
-  --lg-shadow: 0 2px 6px rgb(0 0 0 / 18%);
-  --lg-inner-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 30%);
+  inset: calc((1 - var(--handle-expansion, 1.45)) * 50%);
+  width: calc(var(--handle-expansion, 1.45) * 100%);
+  height: calc(var(--handle-expansion, 1.45) * 100%);
+  --lg-tint: transparent;
+  --lg-shadow: 0 2px 5px rgb(0 0 0 / 16%), 0 0 0 0.5px rgb(0 0 0 / 24%);
+  --lg-inner-shadow: none;
   background: transparent;
+  box-shadow: var(--lg-shadow);
   visibility: hidden;
-  transform: scale(calc(var(--handle-scale, 1) / var(--handle-expansion, 1.35)));
+  transform: scale(calc(var(--handle-scale, 1) / var(--handle-expansion, 1.45)));
   transition:
     visibility 0s linear 160ms,
     transform var(--motion-duration, 200ms) ease-out,
@@ -47,11 +48,15 @@
   transition-delay: 0s !important;
 }
 .lens:global(.lg--pressed) > :global(.lg__glow) {
-  opacity: 0.18;
+  opacity: 0;
 }
 @media (prefers-reduced-motion: reduce) {
   .solid,
   .lens.lens.lens {
     transition: none !important;
   }
+}
+
+.lens > :global(.lg__specular) {
+  mix-blend-mode: normal;
 }

@@ -14,6 +14,8 @@ Main owns application lifetime, windows, tray, native effects and durable state.
 - Weather owns provider query assembly, protected credentials, request coalescing and a bounded cache. Local background images use the dedicated protocol restricted to the configured resource.
 - Color picker owns its helper lifetime and Settings window. Diagnostics owns bounded readable logs, operation correlation, native failure codes and source-map resolution. Licenses returns known bundled records.
 
+Font service owns native file selection, metadata parsing, unchanged profile-owned font bytes and the hash-addressed font protocol. Platform adapters enumerate installed font families; main commits the ordered selection through the existing settings store.
+
 ## Native boundaries
 
 Windows uses the supervised persistent MTA executor for media/device events and native commands. Linux uses D-Bus signals, PipeWire/PulseAudio streams and the bundled inotify camera executable; property changes update cached metadata before generation-guarded local artwork. macOS owns player dictionaries, application activation and native window behavior.

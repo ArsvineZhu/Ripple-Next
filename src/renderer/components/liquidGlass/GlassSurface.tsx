@@ -17,6 +17,7 @@ interface Props {
   radius?: number;
   cornerK?: number;
   button?: boolean;
+  hoverOnly?: boolean;
 }
 
 /** Decorative LeonardSEO material; the native control retains all input semantics. */
@@ -31,6 +32,7 @@ export function GlassSurface({
   radius = 12,
   cornerK = 1,
   button,
+  hoverOnly,
 }: Props) {
   const glass = useGlassPreferences();
   const ref = useGlassMotion({
@@ -40,6 +42,7 @@ export function GlassSurface({
     slider,
     handle,
     handleExpansion,
+    hoverOnly,
     dragDeformation: glass.glassDragDeformation,
     elasticity: glass.glassElasticity,
   });
@@ -51,13 +54,19 @@ export function GlassSurface({
       radius={radius}
       cornerK={k}
       ior={glass.glassIor}
-      refraction={handle ? glass.glassRefraction * 0.65 : glass.glassRefraction}
-      dispersion={handle ? glass.glassDispersion * 0.5 : glass.glassDispersion}
+      refraction={glass.glassRefraction}
+      dispersion={handle ? glass.glassDispersion * 1.5 : glass.glassDispersion}
       blur={handle ? 0 : glass.glassBlur}
-      saturation={handle ? glass.glassSaturation * 0.8 : glass.glassSaturation}
-      specular={(button ? 0.16 : 1) * glass.glassSpecular}
+      saturation={handle ? 1 + (glass.glassSaturation - 1) * 0.2 : glass.glassSaturation}
+      specular={(handle ? 0.25 : button ? 0.16 : 1) * glass.glassSpecular}
       {...(handle
-        ? { tint: 'dark', bezel: 2, thickness: 1.5 }
+        ? {
+            handle: true,
+            tint: 'transparent',
+            bezel: Math.max(2, radius * 0.3),
+            thickness: radius * 0.3,
+            rimGlow: 0.5,
+          }
         : button
           ? { tint: 'dark', bezel: 6 }
           : {})}

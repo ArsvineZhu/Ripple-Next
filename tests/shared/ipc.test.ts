@@ -97,6 +97,12 @@ import { clearWindowRoles, registerWindowRole } from '../../src/main/windowRoles
 import type { WebContents } from 'electron';
 
 const services = {
+  fonts: {
+    listSystem: vi.fn(async () => ['Arial']),
+    chooseFiles: vi.fn(async () => ({ fonts: [], errors: [] })),
+    importFiles: vi.fn(),
+    installProtocol: vi.fn(),
+  },
   aiConfiguration: {
     activeModel: async () => {
       throw new Error('Not configured');
@@ -176,6 +182,15 @@ describe('IPC boundary', () => {
     await expect(
       mock.handlers.get('get-app-bootstrap')!({ sender: mock.settings }),
     ).resolves.toEqual({ state: defaultAppState, hasWeatherApiKey: false });
+  });
+  it('exposes the font catalog and file chooser only to Settings', async () => {
+    const list = mock.handlers.get('list-system-fonts')!;
+    const choose = mock.handlers.get('choose-font-files')!;
+    await expect(list({ sender: mock.island })).rejects.toThrow('Fonts require Settings');
+    await expect(choose({ sender: mock.island })).rejects.toThrow('Fonts require Settings');
+    await expect(list({ sender: mock.settings })).resolves.toEqual(['Arial']);
+    await expect(choose({ sender: mock.settings })).resolves.toEqual({ fonts: [], errors: [] });
+    expect(services.fonts.chooseFiles).toHaveBeenCalledWith(mock.colorOwner);
   });
   it('restricts the native color picker to Settings and validates RGB before invoking it', async () => {
     const choose = mock.handlers.get('show-color-picker')!;

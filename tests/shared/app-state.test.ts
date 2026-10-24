@@ -45,7 +45,13 @@ it('persists independent feature and settings edits, including empty lists, acro
   expect(await store.load()).toEqual(defaultAppState);
   await Promise.all([
     store.update({ tasks: ['Review build'] }),
-    store.update({ settings: { uiFont: 'openrunde', language: 'zh-apple', showTray: false } }),
+    store.update({
+      settings: {
+        uiFont: [{ kind: 'builtin', id: 'openrunde' }],
+        language: 'zh-apple',
+        showTray: false,
+      },
+    }),
     store.update({
       workflows: [{ name: 'Work', targets: [{ kind: 'url', url: 'https://example.com' }] }],
     }),
@@ -58,7 +64,11 @@ it('persists independent feature and settings edits, including empty lists, acro
   store.close();
   const { store: restored } = await openStore(directory);
   expect(await restored.load()).toMatchObject({
-    settings: { uiFont: 'openrunde', language: 'zh-apple', showTray: false },
+    settings: {
+      uiFont: [{ kind: 'builtin', id: 'openrunde' }],
+      language: 'zh-apple',
+      showTray: false,
+    },
     tasks: ['Review build'],
     workflows: [{ name: 'Work', targets: [{ kind: 'url', url: 'https://example.com' }] }],
     quickApps: [{ id: 'docs' }],
@@ -131,4 +141,25 @@ it('reports unreadable persisted state and prevents edits from overwriting it wi
   } finally {
     database.close();
   }
+});
+
+it('loads an existing single-font preference and persists an ordered cross-source font list across restart', async () => {
+  const { directory, store } = await openStore();
+  store.close();
+  const database = new Database(path.join(directory, 'ripple-next.sqlite'));
+  database
+    .prepare('UPDATE app_settings SET value = ? WHERE key = ?')
+    .run(JSON.stringify('openrunde'), 'uiFont');
+  database.close();
+  const opened = await openStore(directory);
+  expect((await opened.store.load()).settings.uiFont).toEqual([
+    { kind: 'builtin', id: 'openrunde' },
+  ]);
+  const uiFont = [
+    { kind: 'system' as const, family: 'Example Latin' },
+    { kind: 'system' as const, family: 'Example Fallback' },
+  ];
+  await opened.store.update({ settings: { uiFont } });
+  opened.store.close();
+  expect((await (await openStore(directory)).store.load()).settings.uiFont).toEqual(uiFont);
 });

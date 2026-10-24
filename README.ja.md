@@ -14,7 +14,7 @@
 
 待機中にひと目、ホバーでもう少し、クリックでページを展開。設定は専用ウィンドウで行い、折りたたんでも下書きを保ちます。
 
-[Ripple Next 4.1.0-beta.1（プレリリース）](docs/releases/4.1.0-beta.1.en.md)。[ダウンロード](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.1) · [使い方（英語）](instructions.md) · [フィードバック](https://github.com/ArsvineZhu/Ripple-Next/issues)
+[Ripple Next 4.1.0-beta.2](docs/releases/4.1.0-beta.2.en.md)。[ダウンロード](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) · [使い方（英語）](instructions.md) · [フィードバック](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > 画像と動画は独立デモ設定の実際のアプリです。アシスタントはローカルのサンプル応答、音楽はデモプレイヤーを使用。中国語画像は言語固有機能を紹介します。
 
@@ -56,7 +56,9 @@ Chat Completions、OpenAI Responses、Anthropic Messages の接続先と暗号�
 
 ## 自分に合う形へ
 
-書体、テーマ、色と背景、画面、位置、角、ページ動作を選択。通常の変更は自動保存し、認証情報は Save/Change で確定、削除などの操作には確認を求めます。設定の Liquid Glass は押したレンズ、吸着点、ライブプレビューを備えます。
+内蔵・システム・読み込みフォントを字形の優先順に並べ、テーマ、色と背景、画面、位置、角、ページ動作を選択。通常の変更は自動保存し、認証情報は Save/Change で確定、削除などの操作には確認を求めます。設定の Liquid Glass は押したレンズ、吸着点、ライブプレビューを備えます。
+
+設定にはコンパクトなアイコン列、展開できるカテゴリパネル、独立したサイドバー半透明設定があります。
 
 ![一般設定](docs/assets/screenshots/settings.png)
 

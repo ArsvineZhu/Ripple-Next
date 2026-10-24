@@ -30,6 +30,7 @@ function visit(name, origin) {
 for(const name of Object.keys({...project.dependencies,...project.devDependencies}))visit(name,root);
 for(const [name,folder] of [['LeonardSEO/liquid-glass-react','leonard'],['rdev/liquid-glass-react','rdev']])licenses.push({id:name,name,version:folder==='leonard'?'b857e5c':'ac48eab',license:'MIT',url:`https://github.com/${name}`,text:fs.readFileSync(path.join(root,'src/renderer/components/liquidGlass/vendor',folder,'LICENSE'),'utf8')});
 licenses.push({id:'AlibabaPuHuiTi-3.0',name:'Alibaba PuHuiTi',version:'3.0',license:'Alibaba Font Legal Statement',url:'https://www.alibabafonts.com',text:fs.readFileSync(path.join(root,'src/assets/fonts/alibaba-puhuiti/LICENSE.txt'),'utf8')});
+licenses.push({id:'HYPixel-11px-U',name:'HYPixel 11px U',version:'9.00.00',license:'Hanyi Fonts - see embedded licensing reference',url:'https://www.hanyi.com.cn',text:fs.readFileSync(path.join(root,'src/assets/fonts/hanyi-pixel/NOTICE.txt'),'utf8')});
 const chromium=path.join(root,'node_modules/electron/dist/LICENSES.chromium.html');
 if(fs.existsSync(chromium)) {
   const folder=path.join(root,'out/license-assets');fs.mkdirSync(folder,{recursive:true});fs.copyFileSync(chromium,path.join(folder,'LICENSES.chromium.html'));

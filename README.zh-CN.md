@@ -14,7 +14,7 @@
 
 闲置时简短显示，悬停查看更多，点击展开完整页面；独立设置窗口负责配置，折叠时草稿仍然保留。
 
-[Ripple Next 4.1.0-beta.1（预发布）](docs/releases/4.1.0-beta.1.zh-CN.md)。[下载](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.1) · [使用指南](instructions.zh-CN.md) · [反馈](https://github.com/ArsvineZhu/Ripple-Next/issues)
+[Ripple Next 4.1.0-beta.2](docs/releases/4.1.0-beta.2.zh-CN.md)。[下载](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) · [使用指南](instructions.zh-CN.md) · [反馈](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > 截图与录像来自独立演示配置中的实际应用。助手展示本地演示服务返回的示例回答，媒体来自演示播放器；中文图片用于介绍对应语言功能。
 
@@ -56,7 +56,9 @@
 
 ## 调成你的样子
 
-选择字体、主题、颜色／背景、显示器、位置、圆角和行为。普通编辑自动保存，凭据通过“保存／更改”提交，删除／清空等操作需确认；设置液态玻璃提供清晰按压透镜、节点吸附与实时预览。
+按字形补齐顺序组合内置、系统与导入字体，选择主题、颜色／背景、显示器、位置、圆角和行为。普通编辑自动保存，凭据通过“保存／更改”提交，删除／清空等操作需确认；设置液态玻璃提供清晰按压透镜、节点吸附与实时预览。
+
+设置提供紧凑图标栏、可展开分类面板及独立的侧栏半透明开关。
 
 ![常规设置](docs/assets/screenshots/settings.png)
 

@@ -11,6 +11,8 @@ function invoke<K extends keyof InvokeMap>(
   return ipcRenderer.invoke(channel, ...args);
 }
 const api: ElectronAPI = {
+  listSystemFonts: () => invoke('list-system-fonts'),
+  chooseFontFiles: () => invoke('choose-font-files'),
   systemEventCapabilities: {
     media: process.platform === 'win32' || process.platform === 'linux',
     devices: process.platform === 'win32' || process.platform === 'linux',

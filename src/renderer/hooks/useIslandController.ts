@@ -22,6 +22,7 @@ import { freeIslandPosition } from '../lib/islandPosition';
 export function useIslandController() {
   const { t } = useTranslation();
   const { state: appState } = useAppState();
+  const uiFontKey = JSON.stringify(appState.settings.uiFont);
   const [, remeasureFont] = useReducer((revision: number) => revision + 1, 0);
   useEffect(() => {
     let active = true;
@@ -36,7 +37,7 @@ export function useIslandController() {
       cancelAnimationFrame(frame);
       document.fonts?.removeEventListener('loadingdone', refresh);
     };
-  }, [appState.settings.uiFont]);
+  }, [uiFontKey]);
   const [requestedMode, setMode] = useReducer(modeReducer, 'still');
   const {
     batteryAlerts: batteryAlertsEnabled,
@@ -203,9 +204,9 @@ export function useIslandController() {
           x: '-100%',
         };
       case 'top-center':
-        return { left: '49.8%', top: '20px', x: '-50%' };
+        return { left: '50%', top: '20px', x: '-50%' };
       case 'bottom-center':
-        return { left: '49.8%', top: 'auto', bottom: `${45 - feedbackHeight}px`, x: '-50%' };
+        return { left: '50%', top: 'auto', bottom: `${45 - feedbackHeight}px`, x: '-50%' };
       default:
         return freeIslandPosition(
           islandX,

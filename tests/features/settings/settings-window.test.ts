@@ -39,6 +39,10 @@ const mock = vi.hoisted(() => {
     focus = vi.fn();
     moveTop = vi.fn();
     setBackgroundColor = vi.fn();
+    setMenu = vi.fn();
+    setTitleBarOverlay = vi.fn();
+    setVibrancy = vi.fn();
+    setBackgroundMaterial = vi.fn();
     webContents = {
       id: this.id + 100,
       isDestroyed: () => this.#destroyed,
@@ -81,6 +85,7 @@ const mock = vi.hoisted(() => {
   }
   return {
     windows,
+    osRelease: '10.0.26300',
     BrowserWindow: MockBrowserWindow,
     app,
     get lastOptions() {
@@ -88,6 +93,8 @@ const mock = vi.hoisted(() => {
     },
   };
 });
+
+vi.mock('node:os', () => ({ release: () => mock.osRelease }));
 
 vi.mock('electron', () => ({
   BrowserWindow: mock.BrowserWindow,
@@ -108,13 +115,15 @@ import {
   configureSettingsWindow,
   getSettingsWindow,
   openSettingsWindow,
+  setSettingsSidebarTranslucent,
 } from '../../../src/main/settingsWindow';
 import { clearWindowRoles, getWindowRole } from '../../../src/main/windowRoles';
-import type { WebContents } from 'electron';
+import { nativeTheme, type WebContents } from 'electron';
 
 describe('settings window singleton', () => {
   beforeEach(() => {
     mock.windows.length = 0;
+    mock.osRelease = '10.0.26300';
     clearSettingsWindow();
     clearWindowRoles();
     mock.app.focus.mockClear();
@@ -126,6 +135,7 @@ describe('settings window singleton', () => {
         openFolder: vi.fn(),
       } as never,
       onLoadError: vi.fn(),
+      sidebarTranslucent: false,
     });
   });
 
@@ -135,11 +145,9 @@ describe('settings window singleton', () => {
     expect(getSettingsWindow()).toBe(first);
     expect(getWindowRole(first.webContents as unknown as WebContents)).toBe('settings');
     expect(mock.lastOptions?.skipTaskbar).toBe(false);
-    expect(mock.lastOptions?.backgroundColor).toBe('#ffffff');
+    expect(mock.lastOptions?.backgroundColor).toBe('#00000000');
     expect(mock.lastOptions).not.toHaveProperty('type');
-    expect('transparent' in (mock.lastOptions ?? {}) ? mock.lastOptions?.transparent : false).toBe(
-      false,
-    );
+    expect(mock.lastOptions?.transparent ?? false).toBe(process.platform === 'linux');
     const second = openSettingsWindow();
     expect(mock.windows).toHaveLength(1);
     expect(second).toBe(first);
@@ -162,8 +170,12 @@ describe('settings window singleton', () => {
         Object.defineProperty(process, 'platform', { configurable: true, value: platform });
         clearSettingsWindow();
         openSettingsWindow();
-        if (platform === 'win32') expect(mock.lastOptions?.accentColor).toBe(false);
-        else expect(mock.lastOptions).not.toHaveProperty('accentColor');
+        if (platform === 'win32') {
+          expect(mock.lastOptions?.accentColor).toBe(false);
+          expect(mock.lastOptions?.thickFrame).toBe(true);
+          expect(mock.lastOptions?.roundedCorners).toBe(true);
+          expect(mock.lastOptions?.transparent ?? false).toBe(false);
+        } else expect(mock.lastOptions).not.toHaveProperty('accentColor');
       }
     } finally {
       Object.defineProperty(process, 'platform', { configurable: true, value: previousPlatform });
@@ -204,4 +216,62 @@ describe('settings window singleton', () => {
       });
     }
   });
+});
+
+it.each(['win32', 'darwin', 'linux'])(
+  '%s changes only the native sidebar backdrop without recreating the settings window',
+  (platform) => {
+    const previous = process.platform;
+    Object.defineProperty(process, 'platform', { configurable: true, value: platform });
+    try {
+      clearSettingsWindow();
+      configureSettingsWindow({
+        diagnostics: { record: vi.fn() } as never,
+        onLoadError: vi.fn(),
+        sidebarTranslucent: true,
+      });
+      const window = openSettingsWindow();
+      expect(mock.lastOptions?.titleBarStyle).toBe('hidden');
+      expect(mock.lastOptions?.backgroundColor).toBe('#00000000');
+      if (platform === 'darwin') expect(window.setVibrancy).toHaveBeenLastCalledWith('sidebar');
+      else expect(window.setMenu).toHaveBeenCalledWith(null);
+      if (platform === 'win32')
+        expect(window.setBackgroundMaterial).toHaveBeenLastCalledWith('acrylic');
+      setSettingsSidebarTranslucent(false);
+      expect(window.setBackgroundColor).toHaveBeenLastCalledWith('#f5f5f7');
+      if (platform === 'win32')
+        expect(window.setBackgroundMaterial).toHaveBeenLastCalledWith('none');
+      if (platform === 'darwin') expect(window.setVibrancy).toHaveBeenLastCalledWith(null);
+      expect(getSettingsWindow()).toBe(window);
+      const sync = vi.mocked(nativeTheme.on).mock.calls.at(-1)![1] as () => void;
+      Object.assign(nativeTheme, { shouldUseDarkColors: true });
+      sync();
+      expect(window.setBackgroundColor).toHaveBeenLastCalledWith('#111111');
+      window.destroy();
+    } finally {
+      Object.assign(nativeTheme, { shouldUseDarkColors: false });
+      Object.defineProperty(process, 'platform', { configurable: true, value: previous });
+    }
+  },
+);
+
+it('keeps the solid window fallback when Windows has no system backdrop material', () => {
+  const previous = process.platform;
+  Object.defineProperty(process, 'platform', { configurable: true, value: 'win32' });
+  mock.osRelease = '10.0.19045';
+  try {
+    clearSettingsWindow();
+    configureSettingsWindow({
+      diagnostics: { record: vi.fn() } as never,
+      onLoadError: vi.fn(),
+      sidebarTranslucent: true,
+    });
+    const window = openSettingsWindow();
+    expect(mock.lastOptions?.backgroundColor).toBe('#f5f5f7');
+    expect(window.setBackgroundMaterial).not.toHaveBeenCalled();
+    window.destroy();
+  } finally {
+    mock.osRelease = '10.0.26300';
+    Object.defineProperty(process, 'platform', { configurable: true, value: previous });
+  }
 });

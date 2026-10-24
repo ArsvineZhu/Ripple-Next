@@ -3,13 +3,21 @@ import { act, createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import SettingsApp from '../../../src/renderer/SettingsApp';
-import { defaultGlassPreferences } from '../../../src/shared/glassPreferences';
+import { defaultAppState } from '../../../src/shared/appState';
 import type { ElectronAPI } from '../../../src/shared/contracts';
 
 const preferences = vi.hoisted(() => ({ reduced: false }));
+let sidebarExpanded = false;
+const updateSettings = vi.fn(async (patch: { settingsSidebarExpanded?: boolean }) => {
+  sidebarExpanded = patch.settingsSidebarExpanded ?? sidebarExpanded;
+  await act(async () => root.render(createElement(SettingsApp)));
+});
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('../../../src/renderer/components/SettingsProvider', () => ({
-  useSettingsContext: () => ({ settings: defaultGlassPreferences }),
+  useSettingsContext: () => ({
+    settings: { ...defaultAppState.settings, settingsSidebarExpanded: sidebarExpanded },
+    updateSettings,
+  }),
 }));
 vi.mock('../../../src/renderer/hooks/useReducedMotionPreference', () => ({
   useReducedMotionPreference: () => preferences.reduced,
@@ -49,6 +57,8 @@ let snapshots: { commit: () => void; skipTransition: ReturnType<typeof vi.fn> }[
 beforeEach(async () => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   preferences.reduced = false;
+  sidebarExpanded = false;
+  updateSettings.mockClear();
   snapshots = [];
   window.electronAPI = {
     setIslandPreview: vi.fn().mockResolvedValue(undefined),
@@ -91,7 +101,9 @@ it('keeps the latest selection when snapshot callbacks complete out of order', a
   await act(async () => snapshots[1].commit());
   await act(async () => snapshots[0].commit());
   expect(host.querySelector('input')?.dataset.category).toBe('behavior');
-  expect(host.querySelector('[aria-current="page"]')?.textContent).toBe('settingsNavBehavior');
+  expect(
+    host.querySelector('[data-settings-category="behavior"]')?.getAttribute('aria-current'),
+  ).toBe('page');
 });
 it('opens a detail with a fixed back header and restores its opener focus', async () => {
   await act(async () => host.querySelector<HTMLButtonElement>('[data-settings-entry]')!.click());
@@ -101,7 +113,7 @@ it('opens a detail with a fixed back header and restores its opener focus', asyn
   expect(back.closest('header')).not.toBeNull();
   await act(async () => back.click());
   await act(async () => snapshots.at(-1)!.commit());
-  expect(host.querySelector('header')).toBeNull();
+  expect(host.querySelector('button[aria-label="backToSettings"]')).toBeNull();
   expect(document.activeElement).toBe(host.querySelector('[data-settings-entry]'));
 });
 
@@ -111,7 +123,7 @@ it('can return to the current category before an editor snapshot commits', async
   expect(snapshots).toHaveLength(2);
   await act(async () => snapshots[1].commit());
   await act(async () => snapshots[0].commit());
-  expect(host.querySelector('header')).toBeNull();
+  expect(host.querySelector('button[aria-label="backToSettings"]')).toBeNull();
   expect(host.querySelector('[data-settings-entry]')?.textContent).toBe('edit');
 });
 
@@ -161,3 +173,24 @@ it.each(['reduced motion', 'no View Transition API'])(
     expect(snapshots).toHaveLength(0);
   },
 );
+
+it('retains the detail, draft and focus when expanding and collapsing the sidebar', async () => {
+  await act(async () => host.querySelector<HTMLButtonElement>('[data-settings-entry]')!.click());
+  await act(async () => snapshots.at(-1)!.commit());
+  const input = host.querySelector('input')!;
+  input.value = 'unsaved draft';
+  input.focus();
+  const toggle = host.querySelector<HTMLButtonElement>('[aria-controls="settings-sidebar-panel"]')!;
+  for (const expanded of [true, false]) {
+    await act(async () => toggle.click());
+    expect(toggle.getAttribute('aria-expanded')).toBe(String(expanded));
+    const panel = host.querySelector('#settings-sidebar-panel')!;
+    expect(panel.getAttribute('aria-hidden')).toBe(String(!expanded));
+    expect(panel.hasAttribute('inert')).toBe(!expanded);
+    expect(panel.hasAttribute('hidden')).toBe(false);
+    expect(host.querySelector('input')).toBe(input);
+    expect(input.value).toBe('unsaved draft');
+    expect(document.activeElement).toBe(input);
+    expect(host.querySelector('button[aria-label="backToSettings"]')).not.toBeNull();
+  }
+});

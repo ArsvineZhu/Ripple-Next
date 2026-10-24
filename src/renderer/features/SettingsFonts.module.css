@@ -8,72 +8,69 @@
   font-size: 14px;
   line-height: 1.6;
   color: var(--settings-muted);
-  text-wrap: pretty;
   max-width: 65ch;
 }
-.choices {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.choice {
-  position: relative;
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  border: 1px solid var(--settings-border);
-  border-radius: 16px;
-  padding: 18px;
-  background: var(--settings-card);
-  cursor: pointer;
-}
-.choice[data-selected='true'] {
-  border-color: var(--settings-fg);
-}
-.choice > input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+.fontList {
   margin: 0;
-  opacity: 0;
-  cursor: pointer;
+  padding: 0;
+  list-style: none;
 }
-.choice:has(input:focus-visible) {
-  outline: 2px solid var(--settings-fg);
-  outline-offset: 3px;
+.fontItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--settings-divider);
+}
+.fontItem:last-child {
+  border-bottom: 0;
+}
+.order {
+  color: var(--settings-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 18px;
 }
 .copy {
   display: flex;
   flex: 1;
   min-width: 0;
   flex-direction: column;
-  gap: 7px;
+  gap: 5px;
+  overflow-wrap: anywhere;
 }
-.copy > strong {
+.copy strong {
   font-size: 14px;
   font-weight: 600;
 }
 .copy > span {
   font-size: 12px;
-  line-height: 1.5;
   color: var(--settings-muted);
 }
+.actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
 .sample {
-  margin: 12px 0 0;
-  font-size: 22px;
-  line-height: 1.4;
-  text-wrap: balance;
-}
-.numbers {
+  display: block;
+  width: 100%;
+  min-height: 160px;
+  padding: 16px;
   margin: 0;
-  font-size: 16px;
-  font-variant-numeric: tabular-nums;
+  resize: vertical;
+  border: 0;
+  background: transparent;
+  color: var(--settings-fg);
+  font-size: 22px;
+  line-height: 1.6;
 }
-.check {
-  flex: 0 0 auto;
-  opacity: 0;
+.sample:focus-visible {
+  outline: 2px solid var(--settings-accent);
+  outline-offset: -2px;
 }
-.choice[data-selected='true'] .check {
-  opacity: 1;
+.error {
+  color: var(--settings-danger);
+  font-size: 13px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }

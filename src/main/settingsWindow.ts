@@ -1,5 +1,6 @@
 import { DiagnosticError } from '../shared/diagnosticError';
 import path from 'node:path';
+import { release } from 'node:os';
 import { app, BrowserWindow, nativeTheme } from 'electron';
 import { getIconPath } from './assets';
 import type { DiagnosticsService } from './services/diagnostics';
@@ -10,6 +11,30 @@ declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
 declare const MAIN_WINDOW_VITE_NAME: string;
 
 let settingsWindow: BrowserWindow | null = null;
+let translucentSidebar = true;
+const supportsBackdrop = () =>
+  process.platform === 'darwin' ||
+  process.platform === 'linux' ||
+  (process.platform === 'win32' && Number(release().split('.')[2]) >= 22621);
+
+export function setSettingsSidebarTranslucent(enabled: boolean): void {
+  translucentSidebar = enabled;
+  if (settingsWindow && !settingsWindow.isDestroyed()) syncSettingsAppearance(settingsWindow);
+}
+
+function syncSettingsAppearance(window: BrowserWindow): void {
+  const translucent = translucentSidebar && supportsBackdrop();
+  window.setBackgroundColor(translucent ? '#00000000' : settingsWindowBackgroundColor());
+  if (process.platform === 'darwin') window.setVibrancy(translucent ? 'sidebar' : null);
+  if (process.platform === 'win32' && supportsBackdrop())
+    window.setBackgroundMaterial(translucent ? 'acrylic' : 'none');
+  if (process.platform !== 'darwin')
+    window.setTitleBarOverlay({
+      color: '#00000000',
+      symbolColor: nativeTheme.shouldUseDarkColors ? '#ffffff' : '#111111',
+      height: 44,
+    });
+}
 let configured: {
   diagnostics: DiagnosticsService;
   onLoadError: (error: unknown) => void;
@@ -17,14 +42,16 @@ let configured: {
 
 /** Match the settings shell OS light/dark tokens (not island themes). */
 function settingsWindowBackgroundColor(): string {
-  return nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff';
+  return nativeTheme.shouldUseDarkColors ? '#111111' : '#f5f5f7';
 }
 
 export function configureSettingsWindow(options: {
   diagnostics: DiagnosticsService;
   onLoadError: (error: unknown) => void;
+  sidebarTranslucent?: boolean;
 }): void {
   configured = options;
+  translucentSidebar = options.sidebarTranslucent ?? true;
 }
 
 export function getSettingsWindow(): BrowserWindow | null {
@@ -57,7 +84,7 @@ function wireSettingsWindow(window: BrowserWindow): void {
   registerWindowRole(window.webContents, 'settings');
   const syncBackground = () => {
     if (!window.isDestroyed()) {
-      window.setBackgroundColor(settingsWindowBackgroundColor());
+      syncSettingsAppearance(window);
     }
   };
   nativeTheme.on('updated', syncBackground);
@@ -98,8 +125,27 @@ export function openSettingsWindow(): BrowserWindow {
     minHeight: 520,
     show: false,
     autoHideMenuBar: true,
+    titleBarStyle: 'hidden',
+    ...(process.platform === 'darwin'
+      ? { trafficLightPosition: { x: 12, y: 14 } }
+      : {
+          titleBarOverlay: {
+            color: '#00000000',
+            symbolColor: nativeTheme.shouldUseDarkColors ? '#ffffff' : '#111111',
+            height: 44,
+          },
+        }),
+    ...(process.platform === 'linux' ? { transparent: true } : {}),
+    ...(process.platform === 'win32'
+      ? {
+          thickFrame: true,
+          roundedCorners: true,
+          backgroundMaterial:
+            translucentSidebar && supportsBackdrop() ? ('acrylic' as const) : ('none' as const),
+        }
+      : {}),
     title: 'Ripple Next',
-    backgroundColor: settingsWindowBackgroundColor(),
+    backgroundColor: supportsBackdrop() ? '#00000000' : settingsWindowBackgroundColor(),
     // Keep Windows' active-window border neutral even when the OS accent color is enabled.
     ...(process.platform === 'win32' ? { accentColor: false } : {}),
     // Settings is a normal window: on the taskbar while open, never click-through.
@@ -117,7 +163,9 @@ export function openSettingsWindow(): BrowserWindow {
       backgroundThrottling: true,
     },
   });
+  if (process.platform !== 'darwin') window.setMenu(null);
   wireSettingsWindow(window);
+  syncSettingsAppearance(window);
   attachWindowDiagnostics(window, diagnostics, 'settings');
   diagnostics.record({
     kind: 'window-lifecycle',

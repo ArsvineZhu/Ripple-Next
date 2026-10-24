@@ -50,7 +50,7 @@ export const zhApple = {
     '默认模型或临时选择，由你决定。系统提示词、温度、推理参数和限制，按每个模型分别设置。',
   guideAIStep4: '把片段排好，把提示补全。启用的注入按顺序追加到系统提示词；上下文感知尚未开放。',
   guideEditorHelp: '顺着箭头，多看一层。按返回，回到原来的滚动位置；删除或清空之前，先由你确认。',
-  fontSettingsHint: '好看，也要好读。比较样例，为设置和 Island 选择同一种字体。',
+  fontSettingsHint: '按照你的阅读习惯排列字体。每个字符会优先使用列表中包含对应字形的字体。',
   fontSample: 'Ripple Next。每一步，恰如其分。',
   chineseStyleHint: '说得不同，做得相同。趣味中文不改变操作含义和日期、数字格式。',
   chineseMicrosoftHint: '认真又亲切，偶尔直译，偶尔有诗意。',

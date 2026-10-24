@@ -17,7 +17,7 @@ const projectRoot = path.resolve(__dirname, '..');
 
 const config: ForgeConfig = {
   packagerConfig: {
-    asar: true,
+    asar: { unpack: '**/font-list/libs/darwin/fontlist' },
     ignore: (file: string) => {
       if (!file) return false;
       return !file.startsWith('/.vite') && !file.startsWith('/node_modules');

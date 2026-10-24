@@ -14,7 +14,7 @@ Music is playing. A link needs opening. A copied command is waiting in the clipb
 
 Glance while idle, hover for more, click to open a full page. Configure everything in a dedicated Settings window. Your drafts stay with you when the Island folds.
 
-[Ripple Next 4.1.0-beta.1 (prerelease)](docs/releases/4.1.0-beta.1.en.md). [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.1) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
+[Ripple Next 4.1.0-beta.2](docs/releases/4.1.0-beta.2.en.md). [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > Screenshots and recordings show the actual application with isolated demo content. The assistant example uses a local fixture response, and the media sessions use demonstration players. Chinese images demonstrate the corresponding language feature.
 
@@ -56,7 +56,9 @@ Configure Chat Completions, OpenAI Responses or Anthropic Messages, save an encr
 
 ## Make it yours
 
-Choose a font, theme, colors/background, display, placement, corners and page behavior. Ordinary changes save automatically; credential edits use Save/Change, and destructive actions ask for confirmation. Settings Liquid Glass adds clear pressed lenses, stop attraction and a live preview.
+Arrange built-in, system and imported fonts in glyph-fallback order; choose a theme, colors/background, display, placement, corners and page behavior. Ordinary changes save automatically; credential edits use Save/Change, and destructive actions ask for confirmation. Settings Liquid Glass adds clear pressed lenses, stop attraction and a live preview.
+
+Settings has a compact icon rail with an expandable category panel and an independent translucent-sidebar option.
 
 ![General settings](docs/assets/screenshots/settings.png)
 

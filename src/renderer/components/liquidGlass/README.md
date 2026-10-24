@@ -2,9 +2,9 @@
 
 # Settings glass
 
-Settings uses a 36×16 px switch track with a 24 px hit target and 20×16 px slider handles. Sliders have an unfilled surround and a 6 px accent track. Sliders and switches use white resting capsules and a restrained 1.35× clear lens immediately on press. The full sampling box is prepared at lens size. Active handles have no blur; their material preserves the track and surrounding background. Held drag deformation is bounded and has no position offset; release, cancellation, blur and unmount restore the resting state.
+Settings uses a 36×16 px switch track with a 24 px hit target and 20×16 px slider handles. Sliders have an unfilled surround and a 6 px accent track. Sliders and switches use white resting capsules and a 1.45× clear lens immediately on press. The full sampling box is prepared at lens size. Active handles have no blur or solid tint. Their displacement map compresses the track inside the lens and refracts its rim with separate RGB sampling; directional highlights define the edge. Handle optics use a compact preset derived from the shared material preferences. Held drag deformation is bounded and has no position offset; release, cancellation, blur and unmount restore the resting state.
 
-`useGlassMotion` owns pointer response without consuming the host's events. Handles respond while pressed; buttons/menus have approach feedback. Native range capture transfer while the pointer is still held preserves the active lens. Reduced motion keeps the operations available without the animated response.
+`useGlassMotion` owns pointer response without consuming the host's events. Handles respond while pressed; menus have approach feedback. Back buttons begin tracking only while hovered or held and return to rest on leaving or releasing outside the control. Native range capture transfer while the pointer is still held preserves the active lens. Reduced motion keeps the operations available without the animated response.
 
 Select/SearchableSelect retain Radix/cmdk focus and input ownership. Closed values align right; popups use left-aligned labels, leading checkmarks and descriptions. Size is bounded before positioning, and the time-zone list is mounted during open/close. Popup transforms use the positioning origin; backdrop sampling remains separate from foreground text opacity.
 

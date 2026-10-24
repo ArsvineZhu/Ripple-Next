@@ -5,6 +5,6 @@ export default defineConfig({
     sourcemap: true,
     reportCompressedSize: false,
     lib: { entry: 'src/main/index.ts', fileName: () => 'main.cjs', formats: ['cjs'] },
-    rolldownOptions: { external: ['better-sqlite3'] },
+    rolldownOptions: { external: ['better-sqlite3', 'font-list', 'fontkit'] },
   },
 });

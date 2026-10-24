@@ -40,6 +40,10 @@ export type LiquidGlassProps = HTMLAttributes<HTMLDivElement> & {
   saturation?: number
   /** Specular rim strength 0..1. */
   specular?: number
+  /** Width of the inner rim glow in CSS pixels. */
+  rimGlow?: number
+  /** Clear control lens with compressed interior sampling. */
+  handle?: boolean
   /** Light direction for the specular rim, degrees (-90 = top, -135 = top-left). */
   lightAngle?: number
   /** Press-to-grow + touch glow, like iOS controls. */
@@ -79,6 +83,8 @@ export function Material({
   blur = 3,
   saturation = 1.5,
   specular = 1,
+  rimGlow,
+  handle = false,
   lightAngle = -135,
   interactive = false,
   className,
@@ -121,9 +127,9 @@ export function Material({
     const minSide = Math.min(size.w, size.h)
     const bezel = bezelProp ?? Math.max(6, Math.min(minSide * 0.25, Math.min(radius, minSide / 2), 56))
     const thickness = thicknessProp ?? bezel * 1.5
-    const base = mapsFor({ width: size.w, height: size.h, radius, bezel, thickness, ior, profile, lightAngle, dpr, cornerK })
+    const base = mapsFor({ width: size.w, height: size.h, radius, bezel, thickness, ior, profile, lightAngle, dpr, cornerK, rimGlow, handle })
     return { ...base, scale: base.scale * refraction }
-  }, [size, radius, bezelProp, thicknessProp, ior, profile, refraction, lightAngle, dpr, cornerK])
+  }, [size, radius, bezelProp, thicknessProp, ior, profile, refraction, lightAngle, dpr, cornerK, rimGlow, handle])
 
   const setPointer = (e: ReactPointerEvent<HTMLDivElement>) => {
     const el = ref.current
@@ -135,7 +141,7 @@ export function Material({
 
   const useSvg = svgSupported && maps !== null
   const backdrop = useSvg
-    ? `blur(${blur}px) url(#${filterId}) saturate(${saturation}) brightness(1.04)`
+    ? `blur(${blur}px) url(#${filterId}) saturate(${saturation}) brightness(${handle ? 1 : 1.04})`
     : `blur(${Math.max(blur, 8)}px) saturate(${saturation}) brightness(1.05)`
 
   const s = maps?.scale ?? 0

@@ -29,7 +29,7 @@ import { WeatherPreferencesSchema } from '../shared/weather';
 import type { createAIConfigurationService } from './ai/configuration';
 import { AIMutationSchema } from '../shared/aiConfiguration';
 import { listLicenses, readLicense } from './services/licenses';
-import { openSettingsWindow } from './settingsWindow';
+import { openSettingsWindow, setSettingsSidebarTranslucent } from './settingsWindow';
 import { createAppService } from './services/apps';
 import { setAutoLaunch } from './platform/autostart';
 import { createMediaService } from './services/media';
@@ -38,6 +38,7 @@ import { RendererDiagnosticSchema, serializeDiagnosticError } from '../shared/di
 import { DiagnosticError, validationProblems } from '../shared/diagnosticError';
 import { withDiagnosticOperation } from './services/diagnosticScope';
 import type { AssistantEvent, AssistantResult } from '../shared/contracts';
+import type { createFontService } from './services/fonts';
 import { RGB_HEX } from '../shared/color';
 import { showNativeColorPicker } from './services/colorPicker';
 
@@ -71,6 +72,7 @@ interface NoticeService {
 }
 
 interface IPCServices {
+  fonts: ReturnType<typeof createFontService>;
   aiConfiguration: ReturnType<typeof createAIConfigurationService>;
   weather: { get(preferences: WeatherPreferences): Promise<WeatherSnapshot> };
   stateStore: StateStore;
@@ -280,6 +282,18 @@ function isInputRect(value: unknown): value is InputRect {
 }
 
 export function registerIPC(services: IPCServices) {
+  handle(services, 'list-system-fonts', (event) => {
+    if (getWindowRole(event.sender) !== 'settings')
+      throw new DiagnosticError('Fonts require Settings');
+    return services.fonts.listSystem();
+  });
+  handle(services, 'choose-font-files', (event) => {
+    if (getWindowRole(event.sender) !== 'settings')
+      throw new DiagnosticError('Fonts require Settings');
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (!window) throw new DiagnosticError('Settings window is unavailable');
+    return services.fonts.chooseFiles(window);
+  });
   ipcMain.on('renderer-diagnostic', (event, payload: unknown) => {
     if (!isAllowedIpcSender(event.sender)) return;
     const parsed = RendererDiagnosticSchema.safeParse(payload);
@@ -377,6 +391,8 @@ export function registerIPC(services: IPCServices) {
     if (typeof patch.settings?.showTray === 'boolean') {
       services.applyShowTray(patch.settings.showTray);
     }
+    if (patch.settings?.settingsSidebarTranslucent !== undefined)
+      setSettingsSidebarTranslucent(state.settings.settingsSidebarTranslucent);
     broadcastToRegisteredWindows('app-state-changed', state);
     return state;
   });

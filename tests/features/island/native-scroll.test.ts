@@ -33,6 +33,7 @@ async function harness(native = true) {
   Object.defineProperty(window, 'electronAPI', {
     configurable: true,
     value: {
+      platform: 'darwin',
       getNativeScrollAvailable: async () => native,
       onNativeScroll: nativeSubscribe,
       onScrollGestureStart: begin,
@@ -241,7 +242,7 @@ it('retains fractional positions during interruption and freezes the input width
   expect(h.onSelect).toHaveBeenCalledTimes(1);
   expect(Number(h.viewport.dataset.tabPosition)).toBeCloseTo(1);
 });
-it('handles Windows/Linux phase boundaries and fresh repeated gestures without waiting for silence', async () => {
+it('handles Chromium fallback phase boundaries and fresh repeated gestures without waiting for silence', async () => {
   const h = await harness(false);
   for (let index = 0; index < 4; index++) {
     await h.boundary('begin');

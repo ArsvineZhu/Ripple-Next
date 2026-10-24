@@ -1,6 +1,7 @@
 import { app, dialog, powerMonitor, safeStorage, screen } from 'electron';
 import os from 'node:os';
 import { configureApplicationProfile, requestApplicationInstanceLock } from './appProfile';
+import { createFontService, registerFontScheme } from './services/fonts';
 import { defaultAppState } from '../shared/appState';
 import { messages, resolveLocale } from '../shared/i18n';
 import { registerIPC } from './ipc';
@@ -31,9 +32,11 @@ import {
 } from './services/backgroundImage';
 
 registerBackgroundImageScheme();
+registerFontScheme();
 app.setName('Ripple Next');
 
 const userDataPath = configureApplicationProfile(app);
+const fonts = createFontService(userDataPath);
 if (process.platform === 'win32') app.setAppUserModelId('com.arsvinezhu.ripple-next');
 // LSUIElement agent: start accessory; Settings open switches to regular (LuLu-style).
 if (process.platform === 'darwin') app.setActivationPolicy('accessory');
@@ -151,6 +154,7 @@ async function startApplication() {
 
   void app.whenReady().then(async () => {
     installAppMenu(openSettingsWindow);
+    fonts.installProtocol();
     installBackgroundImageProtocol(
       async () => (await stateStore.load()).settings.backgroundImage,
       (error) => diagnosticsService.recordError('application', error),
@@ -233,8 +237,10 @@ async function startApplication() {
     configureSettingsWindow({
       diagnostics: diagnosticsService,
       onLoadError: reportWindowLoadError,
+      sidebarTranslucent: initialState.settings.settingsSidebarTranslucent,
     });
     closeMedia = registerIPC({
+      fonts,
       stateStore,
       secretStore,
       assistant,

@@ -56,11 +56,15 @@ Content owns ActionButton, TextEntry, EmptyState, Feedback and Surface. Preferen
 
 The page registry owns stable IDs, visibility/order, geometry and rendering. Feature pages own drafts. React Activity preserves them while hiding pages and pausing page effects. Media/device/clipboard observation and active assistant work stay above that lifecycle. The interaction machine owns collapse, menus, focus and active-assistant guards. Geometry exits use the normal delayed collapse path, held only while an interaction blocker is active. Window blur and hidden-page focus release input ownership. Hover scaling has its own immediate 160 ms transition. Hover quick view returns without a hold delay; fully expanded pages use the configured collapse delay; geometry follows current visible dimensions and fractional display/input coordinates.
 
-PageSwipe owns axis locking, finger distance, release velocity and the one-neighbor limit. usePageSwipe adapts app-local AppKit phases or DOM wheel input with Chromium boundaries; TabPanels owns one interruptible transform rail. Native momentum cannot select a page. New profiles use a padded 24-hour clock; existing explicit clock preferences remain intact.
+TabPanels renders one shared page rail. useWheelPageRail owns Windows/Linux directional paging, momentum-tail suppression, interruption and elastic return. useMacPageRail and usePageSwipe own macOS contact phases, reversible displacement and release-based selection; PageSwipe limits each contact to one neighbor. Native macOS momentum cannot select another page. New profiles use a padded 24-hour clock; existing explicit clock preferences remain intact.
+
+SettingsApp owns a persistent icon rail and an optional category panel. Sidebar expansion and translucency use main-owned settings; native window materials remain in settingsWindow. Windows settings retains the system frame, corners, caption buttons and window animations with a native acrylic backdrop. The content pane stays opaque, and sidebar changes retain mounted editors and navigation state. Free placement uses matching percentage anchors and translations so position follows visible width. Idle time/battery information enters quick view on hover and expands on click.
 
 Idle music omits the playback-control slot. Hover quick view adds that width and always includes the artist. Both card sizes measure text against the actual viewport and use a CSS marquee. Track changes retain one keyed current content layer, and hidden-page restoration restarts measurement/animation.
 
 ## Resources, validation and availability
+
+The persisted uiFont list owns font priority across Settings and Island. Main font service imports unchanged files into the profile, reads family/style metadata with fontkit and serves hash-addressed assets. Platform adapters own installed-family discovery; useUIFont registers browser FontFace resources and publishes the ordered CSS stack. Existing single-font preferences normalize into the same list on load.
 
 Fonts and third-party notices ship as original resources. Guide videos and promotional screenshots capture actual application flows with isolated demo data; English is the default capture language. Tests are organized by [platform, feature and shared ownership](../tests/README.md).
 

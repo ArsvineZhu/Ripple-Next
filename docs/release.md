@@ -2,7 +2,7 @@
 
 # Release procedure
 
-The [4.1.0-beta.1 prerelease](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.1) provides Linux x64, Windows x64 and macOS x64/arm64 packages. Versioned notes describe their corresponding packages; maintained guides describe the current application and supported release procedure.
+The [4.1.0-beta.2 release](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) provides Linux x64, Windows x64 and macOS x64/arm64 packages. Versioned notes describe their corresponding packages; maintained guides describe the current application and supported release procedure.
 
 ## CI and publication
 
@@ -21,7 +21,7 @@ pnpm check
 pnpm test
 pnpm package
 pnpm make
-node scripts/release-notes.mjs v4.1.0-beta.1
+node scripts/release-notes.mjs v4.1.0-beta.2
 ```
 
 `package` produces a runnable directory. `make` creates native installers and portable archives on the matching host. Linux needs `cc`, dpkg, fakeroot and rpm; Windows MSI needs WiX; macOS needs Xcode Command Line Tools. Forge builds/ships Linux's inotify executable and the target-architecture macOS window addon. macOS packages use an ad-hoc signature.

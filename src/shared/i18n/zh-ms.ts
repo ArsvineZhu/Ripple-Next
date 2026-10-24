@@ -57,7 +57,8 @@ export const zhMS = {
     '将需要的文字放入注入列表，启用并排序。它们会依次追加到系统提示词；上下文感知尚未开放。',
   guideEditorHelp:
     '看到箭头时，还有一个编辑页等着你。返回按钮带你回到原来的滚动位置；删除或清空之前，会请你确认。',
-  fontSettingsHint: '看看同样的字，试试不同的字体。选中后，设置与 Island 会一起使用你的选择。',
+  fontSettingsHint:
+    '添加需要的字体，再按优先顺序排列。设置与 Island 会按这个顺序选择每个字符的字形。',
   fontSample: 'Ripple Next。接下来，照你的方式来。',
   chineseStyleHint: '你可以换一种中文表达。操作含义、日期与数字格式保持一致。',
   chineseMicrosoftHint: '亲切的引导、认真得有些直译的表达，以及不经意的一句诗。',

@@ -11,6 +11,7 @@ interface MotionOptions {
   handleExpansion?: number;
   dragDeformation?: boolean;
   elasticity?: number;
+  hoverOnly?: boolean;
 }
 
 /** Native controls own input; motion observes their host and paints CSS variables. */
@@ -23,6 +24,7 @@ export function useGlassMotion({
   handleExpansion = 1.6,
   dragDeformation = false,
   elasticity = 0.15,
+  hoverOnly = false,
 }: MotionOptions) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotionPreference();
@@ -125,6 +127,7 @@ export function useGlassMotion({
       if (!frame) frame = requestAnimationFrame(paint);
     };
     const reset = () => {
+      window.removeEventListener('pointermove', heldMove);
       pointer = glowPoint = null;
       pressed = false;
       origin = null;
@@ -133,20 +136,44 @@ export function useGlassMotion({
     };
     const move = (event: PointerEvent) => {
       if (handle && !pressed) return;
+      if (hoverOnly && !pressed && !control.contains(event.target as Node)) {
+        if (pointer || glowPoint) reset();
+        return;
+      }
       glowPoint = { x: event.clientX, y: event.clientY };
       if (handle && origin && Math.hypot(glowPoint.x - origin.x, glowPoint.y - origin.y) >= 3)
         dragged = true;
       pointer = event.pointerType === 'mouse' ? glowPoint : null;
       schedule();
     };
+    const heldMove = (event: PointerEvent) => {
+      if (pressed && !control.contains(event.target as Node)) move(event);
+    };
     const down = (event: PointerEvent) => {
       if (event.button !== 0 || !event.isPrimary || !control.contains(event.target as Node)) return;
       pressed = true;
+      if (hoverOnly) window.addEventListener('pointermove', heldMove, { passive: true });
       origin = { x: event.clientX, y: event.clientY };
       dragged = false;
       move(event);
     };
+    const leaveControl = () => {
+      if (!pressed) reset();
+    };
     const up = () => {
+      window.removeEventListener('pointermove', heldMove);
+      if (hoverOnly && glowPoint) {
+        measure();
+        if (
+          glowPoint.x < anchor.left ||
+          glowPoint.x > anchor.left + anchor.width ||
+          glowPoint.y < anchor.top ||
+          glowPoint.y > anchor.top + anchor.height
+        ) {
+          reset();
+          return;
+        }
+      }
       pressed = false;
       dragged = false;
       origin = null;
@@ -176,9 +203,14 @@ export function useGlassMotion({
     const observer = new ResizeObserver(schedule);
     observer.observe(actor);
     observer.observe(host);
-    host.addEventListener('pointermove', move, { passive: true });
+    const inputHost = hoverOnly ? control : host;
+    inputHost.addEventListener('pointermove', move, { passive: true });
+    if (hoverOnly) {
+      control.addEventListener('pointerenter', move);
+      control.addEventListener('pointerleave', leaveControl);
+    }
     // Capture observes Radix controls even when their handlers stop propagation.
-    host.addEventListener('pointerdown', down, { capture: true, passive: true });
+    inputHost.addEventListener('pointerdown', down, { capture: true, passive: true });
     host.addEventListener('pointerleave', reset);
     window.addEventListener('pointerup', up, true);
     window.addEventListener('pointercancel', reset, true);
@@ -201,8 +233,11 @@ export function useGlassMotion({
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
-      host.removeEventListener('pointermove', move);
-      host.removeEventListener('pointerdown', down, true);
+      inputHost.removeEventListener('pointermove', move);
+      window.removeEventListener('pointermove', heldMove);
+      control.removeEventListener('pointerenter', move);
+      control.removeEventListener('pointerleave', leaveControl);
+      inputHost.removeEventListener('pointerdown', down, true);
       host.removeEventListener('pointerleave', reset);
       window.removeEventListener('pointerup', up, true);
       window.removeEventListener('pointercancel', reset, true);
@@ -239,6 +274,7 @@ export function useGlassMotion({
     actorRef,
     controlRef,
     elasticity,
+    hoverOnly,
   ]);
   return ref;
 }

@@ -19,8 +19,6 @@ export default function Island() {
     islandElementRef,
     setIsHovered,
     mode,
-    showInfoWhenIdleEnabled,
-    isPlaying,
     setMode,
     clearClickSuppression,
     consumeClickSuppression,
@@ -110,9 +108,7 @@ export default function Island() {
       onMouseEnter={(event) => {
         trackPointerPosition(event);
         setIsHovered(true);
-        if (mode === 'still' && showInfoWhenIdleEnabled && !isPlaying) {
-          setMode('large');
-        } else if (mode !== 'large') {
+        if (mode !== 'large') {
           setMode('quick');
         }
       }}

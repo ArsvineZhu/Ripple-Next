@@ -27,7 +27,7 @@ export function GlassBackButton({
       data-island-interactive
       data-glass-enabled={glass.settingsGlassEnabled}
     >
-      <GlassSurface controlRef={ref} actorRef={ref} radius={16} button />
+      <GlassSurface controlRef={ref} actorRef={ref} radius={16} button hoverOnly />
       <Icon size={18} className={styles.icon} aria-hidden="true" />
     </button>
   );

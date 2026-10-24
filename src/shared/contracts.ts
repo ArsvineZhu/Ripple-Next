@@ -1,3 +1,4 @@
+import type { FontImportResult } from './fonts';
 import type { RendererDiagnostic } from './diagnostics';
 import type { MediaCommand, MediaSnapshot, MediaOperationResult } from './media';
 import type { Application, LaunchTarget, LaunchResult } from './launch';
@@ -45,6 +46,7 @@ export type NoticeCode =
   | 'stateLoadFailed'
   | 'diagnosticsFolderOpenFailed'
   | 'colorPickerFailed'
+  | 'fontLoadFailed'
   | 'inputShapeFailed'
   | 'windowLoadFailed'
   | 'missingApiKey'
@@ -81,6 +83,7 @@ export function noticeAreaForCode(code: NoticeCode): NoticeArea {
     case 'stateSaveFailed':
     case 'diagnosticsFolderOpenFailed':
     case 'colorPickerFailed':
+    case 'fontLoadFailed':
     case 'secretStorageUnavailable':
       return 'settings';
     case 'stateLoadFailed':
@@ -118,6 +121,8 @@ interface AppBootstrap {
   hasWeatherApiKey: boolean;
 }
 export interface InvokeMap {
+  'list-system-fonts': { args: []; result: string[] };
+  'choose-font-files': { args: []; result: FontImportResult };
   'list-third-party-licenses': { args: []; result: LicenseMetadata[] };
   'read-third-party-license': { args: [id: string]; result: LicenseRecord };
   'ai-configuration-status': { args: []; result: Record<number, boolean> };
@@ -168,6 +173,8 @@ export interface InvokeMap {
   'quit-app': { args: []; result: void };
 }
 export interface ElectronAPI {
+  listSystemFonts(): Promise<string[]>;
+  chooseFontFiles(): Promise<FontImportResult>;
   systemEventCapabilities: { media: boolean; devices: boolean };
   reportDiagnostic(event: RendererDiagnostic): void;
   onMediaSnapshotChanged(callback: (snapshot: MediaSnapshot) => void): () => void;

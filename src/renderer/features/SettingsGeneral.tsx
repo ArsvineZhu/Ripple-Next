@@ -94,7 +94,9 @@ export function SettingsGeneral({ onOpenDetail }: { onOpenDetail(detail: Setting
         <SettingLink
           detail={{ page: 'fonts' }}
           label={t('fontSettings')}
-          value={t(uiFontLabels[p.settings.uiFont])}
+          value={p.settings.uiFont
+            .map((font) => (font.kind === 'builtin' ? t(uiFontLabels[font.id]) : font.family))
+            .join(' → ')}
           hint={t('fontSettingsRowHint')}
           navigate={onOpenDetail}
         />
@@ -171,6 +173,15 @@ export function SettingsGeneral({ onOpenDetail }: { onOpenDetail(detail: Setting
           </PreferenceRow>
         </PreferenceGroup>
       )}
+      <PreferenceGroup>
+        <PreferenceRow label={t('sidebarTranslucent')}>
+          <PreferenceSwitch
+            label={t('sidebarTranslucent')}
+            checked={p.settings.settingsSidebarTranslucent}
+            onCheckedChange={(value) => p.updateSettings({ settingsSidebarTranslucent: value })}
+          />
+        </PreferenceRow>
+      </PreferenceGroup>
     </>
   );
 }

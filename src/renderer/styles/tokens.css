@@ -22,5 +22,9 @@
 }
 [data-island][data-theme='win95'] {
   --control-radius: 0px;
-  font-family: 'w95', var(--font-cjk);
+  font-family: 'w95', 'HYPixel 11px U', var(--font-cjk);
+}
+
+:root[data-custom-ui-font] [data-island][data-theme='win95'] {
+  font-family: var(--font-ui), var(--font-cjk);
 }

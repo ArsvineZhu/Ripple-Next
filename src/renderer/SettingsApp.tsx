@@ -2,6 +2,8 @@ import { recordSettingsContext } from './lib/diagnostics';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { LayoutGroup, motion } from 'motion/react';
+import { PanelLeft } from 'lucide-react';
+import { productName, version } from '../../package.json';
 import { useTranslation } from 'react-i18next';
 import { SettingsTab } from './features/SettingsTab';
 import { useSettingsContext } from './components/SettingsProvider';
@@ -15,7 +17,7 @@ import { GlassPreferencesContext } from './components/liquidGlass/GlassPreferenc
 
 export default function SettingsApp() {
   const { t } = useTranslation();
-  const glass = useSettingsContext().settings;
+  const { settings: glass, updateSettings } = useSettingsContext();
   const { setContainer, setOpenId } = useOverlay();
   const [category, setCategory] = useState<SettingsCategoryId>('guide');
   const [detail, setDetail] = useState<SettingsDetail | null>(null);
@@ -120,27 +122,43 @@ export default function SettingsApp() {
       <div
         className={styles.app}
         data-settings
+        data-platform={window.electronAPI?.platform}
+        data-sidebar-expanded={glass.settingsSidebarExpanded || undefined}
+        data-sidebar-translucent={glass.settingsSidebarTranslucent || undefined}
         data-glass-host
         data-glass-enabled={glass.settingsGlassEnabled}
       >
         <aside className={styles.sidebar} aria-label={t('tabSettings')}>
           <LayoutGroup id="settings-navigation">
-            <nav className={styles.nav}>
-              {SETTINGS_CATEGORIES.map((item) => {
-                const selected = item.id === category;
-                return (
+            <div className={styles.rail}>
+              <button
+                type="button"
+                className={styles.sidebarToggle}
+                aria-label={t('toggleSettingsSidebar')}
+                aria-expanded={!!glass.settingsSidebarExpanded}
+                aria-controls="settings-sidebar-panel"
+                onClick={() =>
+                  updateSettings({ settingsSidebarExpanded: !glass.settingsSidebarExpanded })
+                }
+              >
+                <PanelLeft size={20} aria-hidden="true" />
+              </button>
+              <nav className={styles.nav}>
+                {SETTINGS_CATEGORIES.map((item) => (
                   <button
                     key={item.id}
                     type="button"
-                    className={`${styles.navItem} ${selected ? styles.navItemActive : ''}`}
-                    aria-current={selected ? 'page' : undefined}
+                    className={`${styles.navItem} ${item.id === category ? styles.navItemActive : ''}`}
+                    aria-label={t(item.labelKey)}
+                    title={t(item.labelKey)}
+                    aria-current={item.id === category ? 'page' : undefined}
                     data-settings-category={item.id}
                     onClick={() => selectCategory(item.id)}
                   >
-                    {selected && (
+                    {item.id === category && (
                       <motion.span
                         className={styles.navIndicator}
-                        layoutId="active-category"
+                        layoutId="settings-rail-selection"
                         initial={false}
                         transition={
                           reducedMotion
@@ -150,21 +168,57 @@ export default function SettingsApp() {
                         aria-hidden="true"
                       />
                     )}
-                    <item.icon size={18} className={styles.navIcon} aria-hidden="true" />
-                    <span className={styles.navLabel}>{t(item.labelKey)}</span>
+                    <item.icon size={21} aria-hidden="true" />
                   </button>
-                );
-              })}
-            </nav>
+                ))}
+              </nav>
+            </div>
+            <div
+              id="settings-sidebar-panel"
+              className={styles.sidebarPanel}
+              aria-hidden={!glass.settingsSidebarExpanded}
+              inert={!glass.settingsSidebarExpanded}
+            >
+              <div className={styles.sidebarPanelContent}>
+                <div className={styles.brand}>
+                  <strong>{productName}</strong>
+                  <span>{version}</span>
+                </div>
+                <nav className={styles.nav} aria-label={t('settingsSidebarCategories')}>
+                  {SETTINGS_CATEGORIES.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`${styles.categoryItem} ${item.id === category ? styles.navItemActive : ''}`}
+                      aria-current={item.id === category ? 'page' : undefined}
+                      onClick={() => selectCategory(item.id)}
+                    >
+                      {item.id === category && (
+                        <motion.span
+                          className={styles.navIndicator}
+                          layoutId="settings-panel-selection"
+                          initial={false}
+                          transition={
+                            reducedMotion
+                              ? { duration: 0 }
+                              : { type: 'spring', stiffness: 440, damping: 38 }
+                          }
+                          aria-hidden="true"
+                        />
+                      )}
+                      {t(item.labelKey)}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+            </div>
           </LayoutGroup>
         </aside>
         <div className={styles.pane}>
-          {detail && (
-            <header className={styles.detailHeader}>
-              <GlassBackButton label={t('backToSettings')} onClick={closeDetail} />
-              <h1>{t(detailLabels[detail.page])}</h1>
-            </header>
-          )}
+          <header className={styles.detailHeader}>
+            {detail && <GlassBackButton label={t('backToSettings')} onClick={closeDetail} />}
+            <h1>{t(detail ? detailLabels[detail.page] : active.labelKey)}</h1>
+          </header>
           <main className={styles.main}>
             <SettingsTab
               category={category}

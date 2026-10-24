@@ -162,30 +162,35 @@ it('provides A and player dots, keyboard selection, stable ordering and finite b
   );
   expect(x.onSelect).toHaveBeenLastCalledWith(null);
 });
-it('limits a wheel stroke including fluctuations and horizontal tail to one player; accepts fresh boundaries and gaps', async () => {
-  const x = await carousel(null, true);
-  for (const y of [100, 40, 60, 30, 15, 5]) await x.wheel(y, 2);
-  expect(x.onSelect.mock.calls).toEqual([['one']]);
-  expect(x.onTab).not.toHaveBeenCalled();
-  await x.wheel(0, 30);
-  expect(x.onTab).not.toHaveBeenCalled();
-  await act(async () => boundaries.forEach((callback) => callback({ at: Date.now() })));
-  await x.wheel(80);
-  expect(x.onSelect).toHaveBeenLastCalledWith('two');
-  await act(async () => ends.forEach((callback) => callback({ at: Date.now() })));
-  await act(async () => vi.advanceTimersByTimeAsync(200));
-  await x.wheel(-80);
-  expect(x.onSelect).toHaveBeenLastCalledWith('one');
-  await act(async () => vi.advanceTimersByTimeAsync(200));
-  const count = x.onSelect.mock.calls.length;
-  await act(async () => boundaries.forEach((callback) => callback({ at: Date.now() })));
-  await x.wheel(0, 240);
-  expect(x.onTab).not.toHaveBeenCalled();
-  await act(async () => ends.forEach((callback) => callback({ at: Date.now() })));
-  await act(async () => vi.advanceTimersByTimeAsync(200));
-  expect(x.onTab).toHaveBeenCalledWith(0);
-  expect(x.onSelect).toHaveBeenCalledTimes(count);
-});
+it.each(['win32', 'linux', 'darwin'])(
+  '%s limits a player stroke and accepts fresh boundaries and gaps',
+  async (platform) => {
+    Object.assign(window.electronAPI, { platform });
+    const x = await carousel(null, true);
+    for (const y of [100, 40, 60, 30, 15, 5]) await x.wheel(y, 2);
+    expect(x.onSelect.mock.calls).toEqual([['one']]);
+    expect(x.onTab).not.toHaveBeenCalled();
+    await x.wheel(0, 30);
+    expect(x.onTab).not.toHaveBeenCalled();
+    await act(async () => boundaries.forEach((callback) => callback({ at: Date.now() })));
+    await x.wheel(80);
+    expect(x.onSelect).toHaveBeenLastCalledWith('two');
+    await act(async () => ends.forEach((callback) => callback({ at: Date.now() })));
+    await act(async () => vi.advanceTimersByTimeAsync(200));
+    await x.wheel(-80);
+    expect(x.onSelect).toHaveBeenLastCalledWith('one');
+    await act(async () => vi.advanceTimersByTimeAsync(200));
+    const count = x.onSelect.mock.calls.length;
+    await act(async () => boundaries.forEach((callback) => callback({ at: Date.now() })));
+    await x.wheel(0, 240);
+    if (platform === 'darwin') expect(x.onTab).not.toHaveBeenCalled();
+    else expect(x.onTab).toHaveBeenCalledWith(0);
+    await act(async () => ends.forEach((callback) => callback({ at: Date.now() })));
+    await act(async () => vi.advanceTimersByTimeAsync(200));
+    expect(x.onTab).toHaveBeenCalledWith(0);
+    expect(x.onSelect).toHaveBeenCalledTimes(count);
+  },
+);
 it('recognizes a fresh rising vertical push after a decayed tail without paging from a spike', async () => {
   const x = await carousel();
   for (const y of [300, 150, 200, 400]) await x.wheel(y);

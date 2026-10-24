@@ -2,7 +2,7 @@
 
 # 发布流程
 
-[4.1.0-beta.1 预发布](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.1) 提供 Linux x64、Windows x64、macOS x64／arm64 软件包。版本说明对应指定软件包；维护中的指南描述当前应用及可用的发布流程。
+[4.1.0-beta.2 发布](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) 提供 Linux x64、Windows x64、macOS x64／arm64 软件包。版本说明对应指定软件包；维护中的指南描述当前应用及可用的发布流程。
 
 ## CI 与发布
 
@@ -21,7 +21,7 @@ pnpm check
 pnpm test
 pnpm package
 pnpm make
-node scripts/release-notes.mjs v4.1.0-beta.1
+node scripts/release-notes.mjs v4.1.0-beta.2
 ```
 
 `package` 生成可运行目录，`make` 在对应系统生成安装程序和便携归档。Linux 需要 cc、dpkg、fakeroot、rpm，Windows MSI 需要 WiX，macOS 需要 Xcode 命令行工具。Forge 构建／分发 Linux inotify 程序及目标架构 macOS 窗口模块；macOS 使用临时签名。

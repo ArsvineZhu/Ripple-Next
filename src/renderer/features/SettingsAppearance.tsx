@@ -67,20 +67,6 @@ export function SettingsAppearance({
             onValueChange={(value) => p.updateSettings({ islandCornerRadius: value })}
           />
         </PreferenceRow>
-        <PreferenceRow label={t('islandBorder')}>
-          <PreferenceSwitch
-            label={t('islandBorder')}
-            checked={p.settings.islandBorder}
-            onCheckedChange={(value) => p.updateSettings({ islandBorder: value })}
-          />
-        </PreferenceRow>
-        <PreferenceRow label={t('hideInactive')}>
-          <PreferenceSwitch
-            label={t('hideInactive')}
-            checked={p.settings.hideIslandWhenInactive}
-            onCheckedChange={(value) => p.updateSettings({ hideIslandWhenInactive: value })}
-          />
-        </PreferenceRow>
       </PreferenceGroup>
       <PreferenceCard caption={t('positionMode')}>
         <div className={styles.positionCard}>
@@ -183,6 +169,15 @@ export function SettingsAppearance({
             {t('backgroundImageFailed')}
           </p>
         )}
+      </PreferenceGroup>
+      <PreferenceGroup>
+        <PreferenceRow label={t('islandBorder')}>
+          <PreferenceSwitch
+            label={t('islandBorder')}
+            checked={p.settings.islandBorder}
+            onCheckedChange={(value) => p.updateSettings({ islandBorder: value })}
+          />
+        </PreferenceRow>
       </PreferenceGroup>
     </>
   );

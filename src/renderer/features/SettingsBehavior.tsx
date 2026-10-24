@@ -10,6 +10,14 @@ export function SettingsBehavior() {
   return (
     <>
       <PreferenceGroup>
+        <PreferenceRow label={t('hideInactive')}>
+          <PreferenceSwitch
+            label={t('hideInactive')}
+            checked={p.settings.hideIslandWhenInactive}
+            onCheckedChange={(value) => p.updateSettings({ hideIslandWhenInactive: value })}
+          />
+        </PreferenceRow>
+
         <PreferenceRow label={t('batteryAlerts')}>
           <PreferenceSwitch
             label={t('batteryAlerts')}

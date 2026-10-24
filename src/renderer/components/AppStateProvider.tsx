@@ -12,6 +12,7 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 import { useNotifications } from './NotificationProvider';
+import { useUIFont } from '../hooks/useUIFont';
 import { changeLanguagePreference } from '../i18n';
 
 interface AppStateContextValue {
@@ -38,9 +39,17 @@ export function AppStateProvider({
 }) {
   const [state, setState] = useState(initialState);
   const { notify } = useNotifications();
-  useEffect(() => {
-    document.documentElement.dataset.uiFont = state.settings.uiFont;
-  }, [state.settings.uiFont]);
+  const reportFontError = useCallback(
+    (family: string) =>
+      notify({
+        code: 'fontLoadFailed',
+        severity: 'warning',
+        area: 'settings',
+        detail: family,
+      }),
+    [notify],
+  );
+  useUIFont(state.settings.uiFont, reportFontError);
   useEffect(() => {
     void changeLanguagePreference(state.settings.language);
   }, [state.settings.language]);
