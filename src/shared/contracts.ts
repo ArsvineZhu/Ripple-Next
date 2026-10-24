@@ -19,6 +19,19 @@ export interface InputRect {
   height: number;
   scaleFactor: number;
 }
+export const NativeScrollSchema = z
+  .object({
+    at: z.number().finite().nonnegative(),
+    x: z.number().finite(),
+    y: z.number().finite(),
+    deltaX: z.number().finite(),
+    deltaY: z.number().finite(),
+    phase: z.enum(['begin', 'update', 'end', 'cancel', 'momentum', 'wheel']),
+    control: z.boolean(),
+  })
+  .strict();
+export type NativeScroll = z.infer<typeof NativeScrollSchema>;
+
 export type IslandMode = 'still' | 'quick' | 'large';
 export const ScrollGestureStartSchema = z
   .object({ at: z.number().finite().nonnegative() })
@@ -122,6 +135,7 @@ export interface InvokeMap {
   'get-island-preview': { args: []; result: boolean };
   'launch-targets': { args: [targets: LaunchTarget[]]; result: LaunchResult };
   'discover-apps': { args: [query: string]; result: Application[] };
+  'get-native-scroll-available': { args: []; result: boolean };
   'renderer-ready': { args: []; result: void };
   'start-assistant': {
     args: [requestId: string, prompt: string];
@@ -182,6 +196,9 @@ export interface ElectronAPI {
   onAppNotice(callback: (notice: AppNotice) => void): () => void;
   onAppStateChanged(callback: (state: AppState) => void): () => void;
   onAssistantEvent(callback: (event: AssistantEvent) => void): () => void;
+  getNativeScrollAvailable(): Promise<boolean>;
+  onNativeScroll(callback: (event: NativeScroll) => void): () => void;
+  onScrollGestureEnd(callback: (event: ScrollGestureStart) => void): () => void;
   onScrollGestureStart(callback: (event: ScrollGestureStart) => void): () => void;
   getSystemLocale(): Promise<string>;
   setUILocale(locale: Locale): Promise<void>;

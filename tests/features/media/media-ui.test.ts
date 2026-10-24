@@ -24,6 +24,7 @@ vi.mock('motion/react', async (original) => ({
 let host: HTMLDivElement;
 let root: ReturnType<typeof createRoot>;
 let boundaries: ((event: ScrollGestureStart) => void)[];
+let ends: ((event: ScrollGestureStart) => void)[];
 const session = (id: string): MediaSession => ({
   id,
   source: id,
@@ -38,9 +39,16 @@ beforeEach(() => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   vi.useFakeTimers();
   boundaries = [];
+  ends = [];
   Object.defineProperty(window, 'electronAPI', {
     configurable: true,
     value: {
+      onScrollGestureEnd: (callback: (event: ScrollGestureStart) => void) => {
+        ends.push(callback);
+        return () => {
+          ends = ends.filter((item) => item !== callback);
+        };
+      },
       onScrollGestureStart: (callback: (event: ScrollGestureStart) => void) => {
         boundaries.push(callback);
         return () => {
@@ -164,12 +172,17 @@ it('limits a wheel stroke including fluctuations and horizontal tail to one play
   await act(async () => boundaries.forEach((callback) => callback({ at: Date.now() })));
   await x.wheel(80);
   expect(x.onSelect).toHaveBeenLastCalledWith('two');
-  await act(async () => vi.advanceTimersByTimeAsync(151));
+  await act(async () => ends.forEach((callback) => callback({ at: Date.now() })));
+  await act(async () => vi.advanceTimersByTimeAsync(200));
   await x.wheel(-80);
   expect(x.onSelect).toHaveBeenLastCalledWith('one');
-  await act(async () => vi.advanceTimersByTimeAsync(151));
+  await act(async () => vi.advanceTimersByTimeAsync(200));
   const count = x.onSelect.mock.calls.length;
-  await x.wheel(0, 30);
+  await act(async () => boundaries.forEach((callback) => callback({ at: Date.now() })));
+  await x.wheel(0, 240);
+  expect(x.onTab).not.toHaveBeenCalled();
+  await act(async () => ends.forEach((callback) => callback({ at: Date.now() })));
+  await act(async () => vi.advanceTimersByTimeAsync(200));
   expect(x.onTab).toHaveBeenCalledWith(0);
   expect(x.onSelect).toHaveBeenCalledTimes(count);
 });

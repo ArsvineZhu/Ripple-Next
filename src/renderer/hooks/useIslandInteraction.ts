@@ -1,5 +1,5 @@
 import { useMachine } from '@xstate/react';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { IslandMode } from '../../shared/contracts';
 import { islandInteractionMachine } from '../lib/islandInteractionMachine';
@@ -8,25 +8,35 @@ import { useOverlay } from '../components/OverlayProvider';
 
 interface Options {
   setMode: Dispatch<SetStateAction<IslandMode>>;
+  mode: IslandMode;
   standby: boolean;
   largeStandby: boolean;
   leaveDelayMs: number;
 }
 
 function isFocusedControl(element: Element | null) {
-  return !!element && ['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName);
+  return (
+    !!element &&
+    ['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName) &&
+    !!element.closest('#Island') &&
+    !element.closest('[inert], [hidden]')
+  );
 }
 
 const initialBlockers: InteractionBlockers = {
-  dragging: false,
-  positionChanging: false,
   menuOpen: false,
   inputFocused: false,
 };
 
-export function useIslandInteraction({ setMode, standby, largeStandby, leaveDelayMs }: Options) {
+export function useIslandInteraction({
+  setMode,
+  mode,
+  standby,
+  largeStandby,
+  leaveDelayMs,
+}: Options) {
+  const collapseDelay = mode === 'quick' ? 0 : leaveDelayMs;
   const { openId } = useOverlay();
-  const [isDragging, setIsDragging] = useState(false);
   const blockersRef = useRef<InteractionBlockers>(initialBlockers);
   const callbacksRef = useRef({ setMode, standby, largeStandby });
   useLayoutEffect(() => {
@@ -34,7 +44,7 @@ export function useIslandInteraction({ setMode, standby, largeStandby, leaveDela
   }, [setMode, standby, largeStandby]);
   const [snapshot, send] = useMachine(islandInteractionMachine, {
     input: {
-      leaveDelayMs,
+      leaveDelayMs: collapseDelay,
       blockers: initialBlockers,
       setMousePassthrough: (ignore) => {
         void window.electronAPI?.setIgnoreMouseEvents(ignore, ignore);
@@ -48,6 +58,12 @@ export function useIslandInteraction({ setMode, standby, largeStandby, leaveDela
 
   const publishBlockers = useCallback(
     (patch: Partial<InteractionBlockers> = {}) => {
+      if (
+        Object.entries(patch).every(
+          ([key, value]) => blockersRef.current[key as keyof InteractionBlockers] === value,
+        )
+      )
+        return;
       blockersRef.current = { ...blockersRef.current, ...patch };
       send({ type: 'BLOCKERS_CHANGED', blockers: blockersRef.current });
     },
@@ -60,38 +76,47 @@ export function useIslandInteraction({ setMode, standby, largeStandby, leaveDela
   }, [openId, publishBlockers, send]);
 
   useEffect(() => {
-    send({ type: 'SET_DELAY', delayMs: leaveDelayMs });
-  }, [leaveDelayMs, send]);
+    send({ type: 'SET_DELAY', delayMs: collapseDelay });
+  }, [collapseDelay, send]);
 
   useEffect(() => {
     const onFocusIn = () =>
-      publishBlockers({ inputFocused: isFocusedControl(document.activeElement) });
+      publishBlockers({
+        inputFocused: document.hasFocus() && isFocusedControl(document.activeElement),
+      });
     const onFocusOut = (event: FocusEvent) => {
       const next = event.relatedTarget instanceof Element ? event.relatedTarget : null;
-      publishBlockers({ inputFocused: isFocusedControl(next) });
-      if (next?.closest('#Island')) return;
-      if (!snapshot.matches('inside')) send({ type: 'POINTER_LEAVE' });
+      publishBlockers({ inputFocused: document.hasFocus() && isFocusedControl(next) });
     };
+    const onWindowBlur = () => {
+      publishBlockers({ inputFocused: false });
+      send({ type: 'POINTER_LEAVE' });
+    };
+    // A page becoming inert or being removed need not emit a usable focusout.
+    const observer = new MutationObserver(() => {
+      if (blockersRef.current.inputFocused && !isFocusedControl(document.activeElement))
+        publishBlockers({ inputFocused: false });
+    });
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['inert', 'hidden'],
+    });
     window.addEventListener('focusin', onFocusIn);
     window.addEventListener('focusout', onFocusOut);
+    window.addEventListener('focus', onFocusIn);
+    window.addEventListener('blur', onWindowBlur);
+    onFocusIn();
     return () => {
+      observer.disconnect();
       window.removeEventListener('focusin', onFocusIn);
       window.removeEventListener('focusout', onFocusOut);
+      window.removeEventListener('focus', onFocusIn);
+      window.removeEventListener('blur', onWindowBlur);
     };
-  }, [publishBlockers, send, snapshot]);
+  }, [publishBlockers, send]);
 
-  const updateDragging = (value: boolean) => {
-    setIsDragging(value);
-    publishBlockers({ dragging: value });
-    if (!value && !snapshot.matches('inside')) {
-      void window.electronAPI?.setIgnoreMouseEvents(true, true);
-    }
-  };
-  const beginPositionChange = () => {
-    publishBlockers({ positionChanging: true });
-    callbacksRef.current.setMode('large');
-  };
-  const finishPositionChange = () => publishBlockers({ positionChanging: false });
   const setAssistantActive = useCallback(
     (assistantActive: boolean) => publishBlockers({ assistantActive }),
     [publishBlockers],
@@ -104,10 +129,6 @@ export function useIslandInteraction({ setMode, standby, largeStandby, leaveDela
   return {
     isHovered: snapshot.matches('inside'),
     setIsHovered,
-    isDragging,
-    updateDragging,
-    beginPositionChange,
-    finishPositionChange,
     setAssistantActive,
     leave,
     geometryExited,

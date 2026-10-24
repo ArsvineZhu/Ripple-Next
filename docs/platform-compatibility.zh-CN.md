@@ -10,18 +10,20 @@ Ripple Next 在 Windows、macOS、Linux 上共用界面和数据格式，通过�
 
 接口来源：[Windows ColorDialog](https://learn.microsoft.com/dotnet/api/system.windows.forms.colordialog)、[macOS 颜色对话框](https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/PromptforaColor.html)、[KDE 对话框](https://develop.kde.org/docs/administration/kdialog/)。
 
-| 功能           | Windows                              | macOS                                                 | Linux                                                     |
-| -------------- | ------------------------------------ | ----------------------------------------------------- | --------------------------------------------------------- |
-| 音乐           | GSMTC 会话、控制能力与封面           | AppleScript 读取运行中的 Spotify、Music；Spotify 封面 | 会话 D-Bus 上的 MPRIS、控制能力与封面                     |
-| 唤起播放器     | 缓存的应用标识／路径                 | 激活正在运行的应用                                    | MPRIS Raise 或同一会话的托盘 Activate                     |
-| 已安装快捷应用 | 开始菜单 `.lnk` 与 Store 标识        | 系统、共享、用户 Applications，含 Utilities           | XDG 桌面条目，经 `gio launch` 启动                        |
-| 登录启动       | 打包应用的系统登录设置               | 打包应用的原生登录项                                  | 当前 XDG 自启动目录中的 `ripple-next.desktop`             |
-| 透明窗口输入   | 按原生光标／岛边界切换穿透           | Electron 岛外点击穿透                                 | XWayland 上的 X11 `ShapeInput`                            |
-| 设备状态       | WinRT 蓝牙；摄像头／麦克风注册表探测 | 蓝牙与采集设备注册表探测                              | BlueZ D-Bus、inotify + `fuser`、PipeWire／PulseAudio 事件 |
+| 功能           | Windows                              | macOS                                          | Linux                                                     |
+| -------------- | ------------------------------------ | ---------------------------------------------- | --------------------------------------------------------- |
+| 音乐           | GSMTC 会话、控制能力与封面           | AppleScript 读取运行中的 Spotify、Music 及封面 | 会话 D-Bus 上的 MPRIS、控制能力与封面                     |
+| 唤起播放器     | 缓存的应用标识／路径                 | 激活正在运行的应用                             | MPRIS Raise 或同一会话的托盘 Activate                     |
+| 已安装快捷应用 | 开始菜单 `.lnk` 与 Store 标识        | 系统、共享、用户 Applications，含 Utilities    | XDG 桌面条目，经 `gio launch` 启动                        |
+| 登录启动       | 打包应用的系统登录设置               | 打包应用的原生登录项                           | 当前 XDG 自启动目录中的 `ripple-next.desktop`             |
+| 透明窗口输入   | 按原生光标／岛边界切换穿透           | Electron 岛外点击穿透                          | XWayland 上的 X11 `ShapeInput`                            |
+| 设备状态       | WinRT 蓝牙；摄像头／麦克风注册表探测 | 蓝牙与采集设备注册表探测                       | BlueZ D-Bus、inotify + `fuser`、PipeWire／PulseAudio 事件 |
 
-播放器发布受支持的媒体会话后才会出现；控制可用性由其能力决定。macOS 当前接入 Spotify／Music，Music 适配器读取元数据和控制，但尚未读取封面。摄像头／麦克风提示依据系统和驱动提供的探测信息。
+播放器发布受支持的媒体会话后才会出现；控制可用性由其能力决定。macOS 当前接入 Spotify／Music，不会发现任意系统媒体会话。摄像头／麦克风提示依据系统和驱动提供的探测信息。
 
 ## 封面与多播放器
+
+macOS 读取 Spotify 封面 URL 和 Apple Music 当前曲目的封面数据。Music 封面在本地解码为边长不超过 512 px 的 PNG 缩略图，按曲目身份缓存，在元数据之后异步发布；换曲后丢弃旧请求结果。封面缺失时 30 秒后重试，不阻塞播放控制；原始数据上限为 5 MiB，不向外部服务发送曲库搜索请求。
 
 Linux 从 `mpris:artUrl` 获取封面，本地读取上限为 5 MiB。已识别扩展名决定图片格式；扩展名无法识别时，根据 PNG／JPEG／GIF／WebP 文件签名决定 data URL 的 MIME。文件缺失、过大或无法读取时，歌曲和控制仍保持可用。图片解码失败显示音乐占位图，切换会话或封面 URL 后重试。
 
@@ -59,13 +61,17 @@ Windows 按 DIP 比较光标和 Island 边界，拖动时保留输入捕获，�
 
 macOS 发现应用程序包时不遍历包内部；AppleScript 媒体控制可能需要自动化权限。登录项仅供打包应用使用，注册后检查系统返回的实际状态。当前打包使用 ad-hoc 签名，开发构建会提示登录项注册不可用；原生注册失败时保留已保存的设置。
 
+macOS Island 使用原生 Stationary 窗口行为，在显示桌面和 Mission Control 时保持原位。原生模块统一管理窗口行为，包括所有空间和全屏辅助可见性，排除与 Stationary 互斥的 Transient、Managed 标志。主进程在显示或聚焦 Island 后应用并校验该策略，避免 Electron 在这些操作中恢复 Managed 标志；设置窗口保持普通窗口行为。原生探针检查标志读回、隐藏后重新显示及设置窗口隔离；桌面手势和台前调度需要在目标 macOS 版本上实际验证。
+
 切换开发系统后从锁文件重新安装依赖。已安装应用的标识依赖平台，迁移配置后重新选择这些快捷应用；系统加密的 API 密钥也可能需要重新填写。
 
 ## 手势与反馈
 
-较长面板使用原生纵向滚动。连续横向输入最多前进一个循环相邻页，保留稳定页面标识、连续动画、模糊和尺寸插值，额外位移产生有界弹性。允许少量横向手势漂移；明显的纵向输入由内容持有。
+较长面板保留原生纵向滚动。功能页按手指横向位移跟手，每次手势固定输入宽度；方向轴与起始页保持锁定，暂停和反复回拉都不重置。停住后抬手仅在可见进度超过一半时完成切换；短距离甩动依据释放前最后一段明确运动的方向与速度，反向甩动的预测位移必须克服当前可见偏移，才能到达起始页另一侧的相邻页；偏移越大，所需反向速度越高，较轻的反向甩动返回起始页。两条路径均最多选择一个循环相邻页。位移完整累计，即使显示达到一页边界，沿原路回拉也仍能准确返回。新手势可接管归位动画，页面节点保持不变。跟手阶段不使用缓动；释放后使用固定的单调三次曲线，每页 300 毫秒（最短 180 毫秒），不继承手指速度，起止速度均为零，输入边界在每帧 DOM 更新后统一测量一次。
 
-主进程合并 Chromium `gestureScrollBegin`／`gestureFlingCancel` 后，以仅含时间戳的事件传给 preload。没有原生边界的设备使用 150 ms 静默间隔，以及持续衰减尾部／重新上升输入规则。主进程和 preload 的修改需要重启应用才能验证。
+macOS 通过应用内 NSEvent 监听器，只为 Island 提供滚动增量以及独立的接触／惯性阶段。主进程按页面缩放归一化坐标，preload 校验载荷。惯性被消耗，不计入翻页距离。原生回调队列有界，过载时取消中断的输入流；窗口与运行环境销毁时移除监听。原生模块不可用时降级到 DOM 输入。
+
+Windows／Linux 使用 DOM 滚轮增量（像素、行、页单位），并在可用时使用 Chromium ScrollBegin／ScrollEnd／FlingStart 边界；FlingCancel 本身不启动新一次翻页。明确的 ScrollBegin 将接触保持到 ScrollEnd／FlingStart；静止计时器不会结算该接触，后续惯性也不会重新启动它。按行／页的离散鼠标滚轮可接替已完成的触控板输入流。无阶段信息的来源在一段静默后归位，并在间隔前消耗剩余尾流；这类来源无法提供与 AppKit 等价的物理手指边界。捕获阶段的滚轮路由在子元素阻止冒泡之前观察输入。可滚动内容优先接管模糊斜向输入；横向一旦锁定，就同时阻止浏览器纵向滚动与子元素滚轮处理。暂停、改向、惯性和滚动边界均不改变所属方向。嵌套滚动控件与纵向手势保持所属输入。主进程、preload 或原生模块修改后需重启；硬件验收应覆盖 macOS、Windows 精密触控板、Linux X11／Wayland 和普通滚轮。
 
 启动、媒体、设置和剪贴板复制错误显示在对应功能旁。电池／设备提醒保留用户已展开的页面。分钟时钟按分钟边界更新，原生滚动避免持续动画循环；剪贴板采样与原生设备监听在岛折叠后继续运行。
 

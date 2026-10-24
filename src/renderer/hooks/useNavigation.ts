@@ -10,12 +10,10 @@ import { useAppState } from '../components/AppStateProvider';
 export function useNavigation({
   mediaAvailable,
   mode,
-  isDragging,
   setMode,
 }: {
   mediaAvailable: boolean;
   mode: IslandMode;
-  isDragging: boolean;
   setMode: Dispatch<SetStateAction<IslandMode>>;
 }) {
   const { state } = useAppState();
@@ -86,7 +84,6 @@ export function useNavigation({
     }
     if (
       mode !== 'large' ||
-      isDragging ||
       isInteractiveTarget(target) ||
       target?.closest('#userinput') ||
       target?.id === 'userinput'
@@ -117,7 +114,7 @@ export function useNavigation({
     const startY = swipeStartY.current;
     swipeStartX.current = null;
 
-    if (mode !== 'large' || isDragging) return;
+    if (mode !== 'large') return;
     if (!swipeMoved.current) return;
 
     const dx = e.clientX - startX;

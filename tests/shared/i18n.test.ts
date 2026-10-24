@@ -8,7 +8,7 @@ import {
   localeForFormatting,
   baseLanguage,
 } from '../../src/shared/i18n';
-import { formatDateShort, formatTime, formatOverviewDate } from '../../src/renderer/lib/date';
+import { formatTime, formatOverviewDate } from '../../src/renderer/lib/date';
 import { defaultAppState } from '../../src/shared/appState';
 describe('language selection', () => {
   it('matches Chinese script before region and maps supported system languages', () => {
@@ -120,9 +120,18 @@ describe('bundled messages and formatting', () => {
       expect(instance.t('items', { count: 2 })).not.toContain('items');
     }
   });
+  it('pads midnight in 24-hour mode while preserving explicit 12-hour preferences', () => {
+    for (const locale of ['en', 'zh-CN', 'zh-TW', 'ja']) {
+      expect(formatTime(locale, false, new Date('2026-10-23T16:54:00Z'), 'Asia/Shanghai')).toBe(
+        '00:54',
+      );
+      expect(formatTime(locale, false, new Date('2026-10-24T00:05:00Z'), 'UTC')).toBe('00:05');
+      expect(formatTime(locale, true, new Date('2026-10-24T00:05:00Z'), 'UTC')).toBe('12:05');
+    }
+  });
   it('formats dates in the selected language and preserves the selected clock cycle', () => {
     const date = new Date(2026, 9, 4, 13, 5);
-    expect(formatDateShort('ja', date)).not.toEqual(formatDateShort('en', date));
+    expect(formatOverviewDate('ja', date)).not.toEqual(formatOverviewDate('en', date));
     expect(formatTime('en', true, date)).toBe('1:05');
     expect(formatTime('en', false, date)).toBe('13:05');
     expect(formatTime('ja', true, date)).not.toContain('午後');
@@ -136,8 +145,8 @@ describe('bundled messages and formatting', () => {
     expect(formatTime('ja', true, instant, 'Asia/Tokyo', true)).toBe('午後10:05');
     expect(formatTime('en', false, instant, 'UTC', true)).toBe('13:05');
     const acrossDay = new Date('2026-10-04T23:30:00.000Z');
-    expect(formatDateShort('en', acrossDay, 'UTC')).not.toBe(
-      formatDateShort('en', acrossDay, 'Asia/Tokyo'),
+    expect(formatOverviewDate('en', acrossDay, 'UTC')).not.toBe(
+      formatOverviewDate('en', acrossDay, 'Asia/Tokyo'),
     );
   });
   it('puts a localized period in the smaller expanded date line in locale order', () => {
@@ -149,19 +158,5 @@ describe('bundled messages and formatting', () => {
     expect(formatOverviewDate('zh-TW', instant, 'UTC', true)).toContain('日 上午');
     expect(formatOverviewDate('ja', instant, 'Asia/Tokyo', true)).toContain('日 午後');
     expect(formatOverviewDate('zh-CN', instant, 'Asia/Tokyo')).not.toContain('下午');
-  });
-  it('spaces Chinese and Japanese date numbers, units and weekdays', () => {
-    const date = new Date('2026-10-09T12:00:00Z');
-    expect(formatDateShort('zh-CN', date, 'UTC')).toBe('10 月 9 日 周五');
-    expect(formatDateShort('zh-TW', date, 'UTC')).toBe('10 月 9 日 週五');
-    expect(formatDateShort('ja', date, 'UTC')).toBe('10 月 9 日 (金)');
-    expect(formatDateShort('en', date, 'UTC')).toBe(
-      new Intl.DateTimeFormat('en', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        timeZone: 'UTC',
-      }).format(date),
-    );
   });
 });

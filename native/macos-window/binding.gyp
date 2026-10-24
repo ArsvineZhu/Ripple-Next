@@ -3,7 +3,7 @@
     {
       "target_name": "macos_window",
       "conditions": [
-        ["OS=='mac'", { "sources": ["window_behavior.mm"] }]
+        ["OS=='mac'", { "sources": ["window_behavior.mm", "scroll_events.mm"] }]
       ],
       "link_settings": { "libraries": ["-framework AppKit"] },
       "xcode_settings": {

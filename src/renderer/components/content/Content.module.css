@@ -15,15 +15,16 @@
 }
 .primary {
   background: var(--settings-accent, var(--island-text-color));
-  color: var(--settings-bg, var(--island-bg-color));
+  color: var(--action-primary-fg, var(--settings-bg, var(--island-bg-color)));
 }
 .secondary {
   background: var(--control-bg, color-mix(in srgb, var(--island-text-color), transparent 90%));
   color: var(--settings-fg, var(--island-text-color));
 }
 .regular {
-  padding: 8px 14px;
-  font-size: 14px;
+  padding: var(--action-padding, 8px 14px);
+  min-height: var(--action-min-height, 0px);
+  font-size: var(--action-font-size, 14px);
 }
 .small {
   padding: 3px 10px;

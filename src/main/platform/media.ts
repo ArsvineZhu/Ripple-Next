@@ -28,6 +28,8 @@ export const nativeMedia: MediaBackend =
           getMediaSessions: macos.getMediaSessions,
           controlSystemMedia: macos.controlSystemMedia,
           openMediaSession: macos.openMediaSession,
+          subscribe: macos.subscribe,
+          close: macos.close,
         }
       : {
           getMediaSessions: linux.getMediaSessions,

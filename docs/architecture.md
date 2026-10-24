@@ -44,7 +44,9 @@ AppStateProvider keeps pending edits separate from committed state and coalesces
 
 ## Native observation
 
-Windows uses the supervised MTA executor for GSMTC, Bluetooth DeviceWatcher and capture registry events. Linux uses MPRIS and BlueZ signals, incremental PipeWire/PulseAudio streams and the bundled C inotify camera listener. Healthy event backends do not run periodic samplers. macOS queries the dictionaries of running Spotify/Music and uses its native device probes. See [native observation](native-observation.md) and [platform support](platform-compatibility.md).
+The macOS window adapter applies and verifies the native Island collection behavior after visibility and focus changes. The native module owns the Stationary policy; Settings retains ordinary window behavior. See [platform support](platform-compatibility.md) for desktop behavior and validation.
+
+Windows uses the supervised MTA executor for GSMTC, Bluetooth DeviceWatcher and capture registry events. Linux uses MPRIS and BlueZ signals, incremental PipeWire/PulseAudio streams and the bundled C inotify camera listener. Healthy event backends do not run periodic samplers. macOS samples the dictionaries of running Spotify/Music every five seconds and uses its native device probes. Its media adapter owns asynchronous, generation-guarded Apple Music cover decoding and caching; cover completion notifies the shared media service immediately. See [native observation](native-observation.md) and [platform support](platform-compatibility.md).
 
 MPRIS session IDs include the unique D-Bus owner. Property signals update cached metadata directly; local cover reads use per-session generations so late results cannot overwrite the current track. Every window subscribes to the same main-owned snapshot and selection.
 
@@ -52,7 +54,9 @@ MPRIS session IDs include the unique D-Bus owner. Property signals update cached
 
 Content owns ActionButton, TextEntry, EmptyState, Feedback and Surface. Preferences compose those primitives with reusable rows/cards/fields; specialized switches, sliders, selectors and colors share their own modules. LaunchButton, MediaControl, MediaArtwork, MediaMarquee, MediaTransition and MarkdownContent own behavior reused by feature surfaces.
 
-The page registry owns stable IDs, visibility/order, geometry and rendering. Feature pages own drafts. React Activity preserves them while hiding pages and pausing page effects. Media/device/clipboard observation and active assistant work stay above that lifecycle. The interaction machine owns collapse, re-entry, menus, focus and drag guards; geometry follows current visible dimensions and fractional display/input coordinates.
+The page registry owns stable IDs, visibility/order, geometry and rendering. Feature pages own drafts. React Activity preserves them while hiding pages and pausing page effects. Media/device/clipboard observation and active assistant work stay above that lifecycle. The interaction machine owns collapse, menus, focus and active-assistant guards. Geometry exits use the normal delayed collapse path, held only while an interaction blocker is active. Window blur and hidden-page focus release input ownership. Hover scaling has its own immediate 160 ms transition. Hover quick view returns without a hold delay; fully expanded pages use the configured collapse delay; geometry follows current visible dimensions and fractional display/input coordinates.
+
+PageSwipe owns axis locking, finger distance, release velocity and the one-neighbor limit. usePageSwipe adapts app-local AppKit phases or DOM wheel input with Chromium boundaries; TabPanels owns one interruptible transform rail. Native momentum cannot select a page. New profiles use a padded 24-hour clock; existing explicit clock preferences remain intact.
 
 Idle music omits the playback-control slot. Hover quick view adds that width and always includes the artist. Both card sizes measure text against the actual viewport and use a CSS marquee. Track changes retain one keyed current content layer, and hidden-page restoration restarts measurement/animation.
 
@@ -61,3 +65,5 @@ Idle music omits the playback-control slot. Hover quick view adds that width and
 Fonts and third-party notices ship as original resources. Guide videos and promotional screenshots capture actual application flows with isolated demo data; English is the default capture language. Tests are organized by [platform, feature and shared ownership](../tests/README.md).
 
 Island Liquid Glass and AI context awareness are unavailable. Windows/Linux keep the tray visible. The application does not collect desktop content for AI context awareness or maintain a completed-task archive. These states are reflected in the interface and usage guide.
+
+Settings controls share compact dimensions, blue accent states and OS light/dark surface tokens. Slider hit testing uses the same thumb width as its CSS geometry; glass handles reveal a restrained lens while pressed without moving the value axis.

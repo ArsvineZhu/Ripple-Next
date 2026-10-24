@@ -44,7 +44,9 @@ AppStateProvider 分离待提交与已提交状态，合并写入。主进程只
 
 ## 原生监听
 
-Windows 使用常驻 MTA 执行器监听 GSMTC、蓝牙 DeviceWatcher 和采集注册表。Linux 使用 MPRIS／BlueZ 信号、PipeWire／PulseAudio 增量流及内置 C inotify 摄像头监听器。事件后端正常时没有周期采样；macOS 查询运行中 Spotify／Music 的字典并使用设备探测。见[原生监听](native-observation.zh-CN.md)和[平台支持](platform-compatibility.zh-CN.md)。
+macOS 窗口适配器在 Island 显示或聚焦后应用并校验原生窗口行为；原生模块负责 Stationary 策略，设置窗口保持普通窗口行为。桌面行为及验证方式见[平台支持](platform-compatibility.zh-CN.md)。
+
+Windows 使用常驻 MTA 执行器监听 GSMTC、蓝牙 DeviceWatcher 和采集注册表。Linux 使用 MPRIS／BlueZ 信号、PipeWire／PulseAudio 增量流及内置 C inotify 摄像头监听器。事件后端正常时没有周期采样；macOS 每五秒查询运行中 Spotify／Music 的字典并使用设备探测。媒体适配器负责 Apple Music 封面的异步解码、按代次校验及缓存，封面完成后立即通知共用媒体服务。见[原生监听](native-observation.zh-CN.md)和[平台支持](platform-compatibility.zh-CN.md)。
 
 MPRIS 会话 ID 包含唯一 D-Bus owner。属性信号直接更新缓存元数据，本地封面按会话代次读取，迟到结果不能覆盖当前曲目。双窗订阅相同的主进程快照及选择。
 
@@ -52,7 +54,9 @@ MPRIS 会话 ID 包含唯一 D-Bus owner。属性信号直接更新缓存元数�
 
 公共内容模块管理 ActionButton、TextEntry、EmptyState、Feedback、Surface；偏好模块基于这些控件组合行、卡片和字段。开关、滑杆、选择器与颜色使用各自的公共模块。LaunchButton、MediaControl、MediaArtwork、MediaMarquee、MediaTransition、MarkdownContent 管理跨功能复用的行为。
 
-页面注册表管理稳定 ID、可见性、顺序、几何和渲染。功能页持有草稿，React Activity 隐藏页面并暂停效果时保留草稿；媒体、设备、剪贴板和活动助手位于这个生命周期之上。交互状态机管理折叠、重入、菜单、焦点和拖动，几何跟随当前可见尺寸及分数缩放坐标。
+页面注册表管理稳定 ID、可见性、顺序、几何和渲染。功能页持有草稿，React Activity 隐藏页面并暂停效果时保留草稿；媒体、设备、剪贴板和活动助手位于这个生命周期之上。交互状态机管理折叠、菜单、焦点和活动助手状态。几何退出走正常的延时收起流程，仅在交互阻止条件有效时保持展开；窗口失焦或输入页隐藏时释放输入占用。悬停缩放使用独立的 160 毫秒即时过渡，悬停快览离开后不额外等待，完整展开页才使用设置中的收起延时；几何跟随当前可见尺寸及分数缩放坐标。
+
+PageSwipe 管理方向锁定、手指距离、释放速度与单次最多相邻一页。usePageSwipe 将应用内 AppKit 阶段或带 Chromium 边界的 DOM 滚轮输入适配到同一模型；TabPanels 管理可随时接管的单条位移动画。原生惯性不能选择新页面。新配置默认使用补零的 24 小时制，已有明确时间偏好保持不变。
 
 音乐 idle 不预留播放键空间；悬停快览加宽并始终显示歌手。两种卡片按实际 DOM 文字和裁切区宽度执行 CSS 滚动，换曲只保留一个当前层；隐藏页面恢复后重测并重新启动动画。
 
@@ -61,3 +65,5 @@ MPRIS 会话 ID 包含唯一 D-Bus owner。属性信号直接更新缓存元数�
 字体及第三方声明以原始资源分发。指南和宣传素材来自独立演示配置中的实际操作，默认使用英文。测试按[平台、功能与公共契约](../tests/README.zh-CN.md)分类。
 
 Island 液态玻璃与 AI 上下文感知尚未开放；Windows／Linux 保持托盘可见。应用不会为上下文感知收集桌面内容，也不维护已完成任务归档；界面和指南明确表达这些状态。
+
+设置控件共用紧凑尺寸、蓝色强调状态和系统明暗表面 token。滑块命中计算与 CSS 几何使用同一手柄宽度；按下时呈现克制的玻璃透镜，不偏移数值轴。
