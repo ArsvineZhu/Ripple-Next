@@ -3,15 +3,21 @@ import { animate, useMotionValue } from 'motion/react';
 import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
 import { nextTabId } from '../lib/navigation';
 import {
-  isClearVerticalSample,
   isResumedWheelPush,
   isTailDecay,
-  isVerticalStroke,
   isVerticalTakeover,
   wheelEventAxis,
 } from '../lib/wheelGesture';
 
 import { tabAt, type PageRailOptions } from '../lib/pageRail';
+function isVerticalStroke(accumulatedX: number, accumulatedY: number): boolean {
+  return accumulatedY >= 12 && accumulatedY >= accumulatedX * 2;
+}
+
+function isClearVerticalSample(deltaX: number, deltaY: number): boolean {
+  return wheelEventAxis(deltaX, deltaY) === 'vertical' && Math.abs(deltaY) >= 32;
+}
+
 /**
  * Island motion. Two different models, because that is what the platform does.
  *
