@@ -14,7 +14,7 @@
 
 閒置時簡短顯示，懸停查看更多，點擊展開完整頁面；獨立設定視窗負責配置，摺疊時草稿仍然保留。
 
-Ripple Next 4.2.0。[官網](https://ripple.arsvine.com) · [下載](https://github.com/ArsvineZhu/Ripple-Next/releases) · [使用指南（簡體中文）](instructions.zh-CN.md) · [回饋](https://github.com/ArsvineZhu/Ripple-Next/issues)
+Ripple Next 4.2.0。[官網](https://ripple.arsvine.com) · [下載](https://github.com/ArsvineZhu/Ripple-Next/releases/latest) · [使用指南（簡體中文）](instructions.zh-CN.md) · [回饋](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > 截圖與影片來自獨立示範設定中的實際應用。助手展示本機示範服務傳回的範例回答，媒體來自示範播放器；中文圖片介紹對應語言功能。
 
@@ -72,6 +72,7 @@ Ripple Next 4.2.0。[官網](https://ripple.arsvine.com) · [下載](https://git
 
 應用指南首先介紹按鍵，實際錄製字體、中文表達、玻璃、工作流程和 AI 編輯。除中文特有示範外使用英文；文字可選取，影片由使用者控制播放，離開可視區時暫停。
 
+- [介面介紹](src/assets/guide/interface.webm)
 - [字體](src/assets/guide/typography.webm)
 - [中文表達](src/assets/guide/expression.webm)
 - [玻璃](src/assets/guide/appearance.webm)

@@ -20,12 +20,20 @@ export const en = {
   clipboardReadFailed: 'Could not read the clipboard. Existing history is still available.',
   findingApplications: 'Finding installed applications…',
   workflowQuickApp: 'Add a saved quick app',
+  guideInterfaceTitle: 'Find your way around Settings',
+  guideInterfaceBody:
+    'Keep the icon rail close, expand the labels when you need them, and move between settings without losing your place.',
+  guideInterfaceStep1: 'Use the top-left sidebar button to expand or collapse the category labels.',
+  guideInterfaceStep2:
+    'Choose a category, then open a row with a chevron for its details. Use Back to return.',
+  guideInterfaceStep3:
+    'General includes the independent translucent-sidebar switch. Preferences save as you change them.',
   guideTypographyStep3:
-    'The chosen font applies to Settings and the Island. Bundled fonts load locally when selected.',
+    'Edit the mixed-script preview to compare the result. The ordered list applies to Settings and the Island.',
   guideTypographyStep2:
-    'Select System or OpenRunde to compare their samples, then choose the font you want to keep.',
+    'Move fonts up or down to set priority. Each character uses the first selected font containing its glyph.',
   guideTypographyStep1:
-    'In General, open Font. Compare the default Alibaba PuHuiTi 3, System and OpenRunde; select your preferred sample.',
+    'In General, open Font. Add bundled or installed fonts, or use Choose files to import TTF, OTF, WOFF or WOFF2 files.',
   guideTypographyBody:
     'Choose a font by comparing the same text and numbers. The setting applies across the Island and Settings.',
   guideTypographyTitle: 'Typography: choose how it reads',

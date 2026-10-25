@@ -19,10 +19,15 @@ export const zhTW: Messages = {
   clipboardReadFailed: '無法讀取剪貼簿。仍可複製已有的歷史內容。',
   findingApplications: '正在尋找已安裝應用程式…',
   workflowQuickApp: '加入已儲存的快捷應用程式',
-  guideTypographyStep3: '字體同時套用於設定和 Island，內建字體在選用時從本機載入。',
-  guideTypographyStep2: '選擇系統字體或 OpenRunde 比較相同樣例，再選希望保留的字體。',
+  guideInterfaceTitle: '認識設定視窗',
+  guideInterfaceBody: '圖示列隨時可用，需要時展開分類文字，在設定間切換並保留編輯位置。',
+  guideInterfaceStep1: '點擊左上角側欄按鈕，展開或收起分類名稱。',
+  guideInterfaceStep2: '選擇分類，點擊帶箭頭的項目開啟詳細設定，透過返回按鈕回到上一頁。',
+  guideInterfaceStep3: '一般頁末尾可獨立切換側欄半透明樣式。偏好設定隨修改自動儲存。',
+  guideTypographyStep3: '編輯混合文字預覽，比較顯示效果。字體順序同時套用於設定和 Island。',
+  guideTypographyStep2: '使用上下箭頭調整優先順序。每個字元使用清單中第一個具有對應字形的字體。',
   guideTypographyStep1:
-    '在「一般」開啟「字體」，比較預設的阿里巴巴普惠體 3、系統字體及 OpenRunde，選擇喜歡的樣張。',
+    '在「一般」開啟「字體」，加入內建或系統字體，也可透過「選擇檔案」匯入 TTF、OTF、WOFF 或 WOFF2。',
   guideTypographyBody: '以相同文字及數字比較字體。選擇會同步套用至 Island 與設定視窗。',
   guideTypographyTitle: '字體：選一種讀起來舒服的樣子',
   guideEditorHelp:

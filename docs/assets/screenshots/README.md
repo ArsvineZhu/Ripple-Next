@@ -1,8 +1,8 @@
 # Screenshot gallery
 
-Captured on 2026-10-15 from the actual Ripple Next 4.1.0-beta.1 Electron 44.5.1 renderer on Linux at DPR 2, using an isolated demo profile. English is used throughout except the Microsoft/Apple Chinese feature examples. Settings uses a 920 × 640 CSS-pixel viewport; Island images are native captures cropped around their actual bounds with transparent surroundings.
+Captured on 2026-10-25 from the actual Ripple Next 4.2.0 Electron 44.5.1 application on Windows, using an isolated demo profile. English is used except the Microsoft/Apple Chinese examples. Settings uses a 1120 × 780 CSS-pixel viewport; screenshots are saved at CSS resolution from the host's 150% display scale. Island images are cropped to their actual animated bounds with transparent surroundings.
 
-Two private MPRIS players supply fictional track/artist data and original SVG album art. Workflows use reserved example domains; tasks and clipboard text are demonstration content. The assistant image is rendered from a local Chat Completions streaming fixture. Overview uses the host battery and a manual Tokyo weather reading; these values are capture data, not fixed product values. No personal service credentials or user clipboard content appear.
+Two fictional media sessions supply track/artist data and original SVG album art. Tasks, clipboard and workflows contain demonstration text and reserved example domains. The assistant uses a local streaming fixture, with no external model request. Overview shows the host clock/battery; those are capture values. Personal clipboard content and service credentials are excluded.
 
 | View                                | Asset                                                  |
 | ----------------------------------- | ------------------------------------------------------ |
@@ -19,14 +19,15 @@ Two private MPRIS players supply fictional track/artist data and original SVG al
 | Browser search                      | [search.png](search.png)                               |
 | General settings                    | [settings.png](settings.png)                           |
 | Keyboard-first guide                | [guide.png](guide.png)                                 |
-| Font specimens                      | [font-settings.png](font-settings.png)                 |
+| Ordered font selection              | [font-settings.png](font-settings.png)                 |
 | Liquid Glass preview and parameters | [liquid-glass-settings.png](liquid-glass-settings.png) |
 | Resting preview controls            | [glass-controls-rest.png](glass-controls-rest.png)     |
 | Held switch lens                    | [glass-switch-held.png](glass-switch-held.png)         |
 | Held slider lens                    | [glass-slider-held.png](glass-slider-held.png)         |
 | About                               | [about.png](about.png)                                 |
 | API endpoints                       | [ai-endpoints.png](ai-endpoints.png)                   |
-| Model customization                 | [ai-customization.png](ai-customization.png)           |
+| Model parameters                    | [ai-customization.png](ai-customization.png)           |
+| Shared instruction and perception   | [ai-shared.png](ai-shared.png)                         |
 | Microsoft Chinese                   | [chinese-microsoft.png](chinese-microsoft.png)         |
 | Apple Chinese                       | [chinese-apple.png](chinese-apple.png)                 |
 

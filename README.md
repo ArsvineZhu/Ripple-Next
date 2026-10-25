@@ -14,7 +14,7 @@ Music is playing. A link needs opening. A copied command is waiting in the clipb
 
 Glance while idle, hover for more, click to open a full page. Configure everything in a dedicated Settings window. Your drafts stay with you when the Island folds.
 
-Ripple Next 4.2.0. [Website](https://ripple.arsvine.com) · [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
+Ripple Next 4.2.0. [Website](https://ripple.arsvine.com) · [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases/latest) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > Screenshots and recordings show the actual application with isolated demo content. The assistant example uses a local fixture response, and the media sessions use demonstration players. Chinese images demonstrate the corresponding language feature.
 
@@ -72,6 +72,7 @@ Simplified Chinese has Standard, Microsoft Chinese and Apple Chinese expressions
 
 The in-app guide starts with keyboard controls and contains real recordings of font, Chinese expression, glass, workflow and AI editing. English is the capture language except for the Chinese-specific demonstration. Prose stays selectable; videos play only when you choose and pause offscreen.
 
+- [Interface tour](src/assets/guide/interface.webm)
 - [Font](src/assets/guide/typography.webm)
 - [Chinese expression](src/assets/guide/expression.webm)
 - [Glass](src/assets/guide/appearance.webm)

@@ -5,11 +5,13 @@
     "src/preload/index.ts",
     ".config/forge.config.ts",
     ".config/vite.*.config.mts",
+    "scripts/*.{ts,mjs,cjs}",
+    "scripts/capture/app.cjs",
     "tests/**/*.test.{ts,tsx}"
   ],
   "project": [
     "src/**/*.{ts,tsx}",
-    "scripts/**/*.ts",
+    "scripts/**/*.{ts,mjs,cjs}",
     "tests/**/*.{ts,tsx}",
     ".config/**/*.ts",
     ".config/**/*.mts"

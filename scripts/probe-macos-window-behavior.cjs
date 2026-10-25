@@ -42,101 +42,104 @@ const hardTimer = setTimeout(() => {
   finish({ ok: false, error: 'hard-timeout' }, 3);
 }, 15000);
 
-app.whenReady().then(async () => {
-  log('ready');
-  let native;
-  try {
-    native = loadNative();
-  } catch (error) {
+app
+  .whenReady()
+  .then(async () => {
+    log('ready');
+    let native;
+    try {
+      native = loadNative();
+    } catch (error) {
+      clearTimeout(hardTimer);
+      finish({ ok: false, error: String(error), stack: error?.stack }, 1);
+      return;
+    }
+
+    const report = {
+      expectedIslandMask: native.expectedIslandMask(),
+      expectedConstant: EXPECTED,
+    };
+
+    const win = new BrowserWindow({
+      width: 400,
+      height: 120,
+      show: false,
+      frame: false,
+      transparent: true,
+      alwaysOnTop: true,
+      skipTaskbar: true,
+      type: 'panel',
+      title: TITLE,
+    });
+    win.setTitle(TITLE);
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    const settings = new BrowserWindow({ show: false, title: 'Ripple Settings Probe' });
+    report.settingsBefore = native.readIslandBehavior('Ripple Settings Probe');
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    log('describing');
+
+    report.beforeDescribe = native.describeAppWindows();
+    report.beforeRead = native.readIslandBehavior(TITLE);
+    report.matchedBefore = report.beforeDescribe.find((w) => w.title === TITLE) || null;
+    log('beforeRead=' + report.beforeRead + ' windows=' + report.beforeDescribe.length);
+
+    try {
+      report.applied = native.applyIslandBehavior(TITLE);
+    } catch (error) {
+      clearTimeout(hardTimer);
+      report.error = String(error);
+      report.describeOnError = native.describeAppWindows();
+      finish(report, 2);
+      return;
+    }
+
+    report.afterRead = native.readIslandBehavior(TITLE);
+    report.afterDescribe = native.describeAppWindows();
+    report.matchedAfter = report.afterDescribe.find((w) => w.title === TITLE) || null;
+    const restorePolicy = () => native.applyIslandBehavior(TITLE);
+    win.on('show', restorePolicy);
+    win.on('focus', restorePolicy);
+    win.showInactive();
+    restorePolicy();
+    report.afterFirstShow = native.readIslandBehavior(TITLE);
+    win.hide();
+    win.setAlwaysOnTop(true, 'floating');
+    win.showInactive();
+    restorePolicy();
+    report.afterReshow = native.readIslandBehavior(TITLE);
+    win.focus();
+    restorePolicy();
+    report.afterFocus = native.readIslandBehavior(TITLE);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    report.afterSettled = native.readIslandBehavior(TITLE);
+    report.settingsAfter = native.readIslandBehavior('Ripple Settings Probe');
+    log('afterRead=' + report.afterRead + ' applied=' + report.applied);
+
+    report.ok =
+      report.expectedIslandMask === EXPECTED &&
+      report.applied === EXPECTED &&
+      report.afterRead === EXPECTED &&
+      report.afterFirstShow === EXPECTED &&
+      report.afterReshow === EXPECTED &&
+      report.afterFocus === EXPECTED &&
+      report.afterSettled === EXPECTED &&
+      report.settingsBefore !== null &&
+      report.settingsAfter === report.settingsBefore &&
+      Array.isArray(report.matchedAfter?.flags) &&
+      report.matchedAfter.flags.includes('stationary') &&
+      !report.matchedAfter.flags.includes('transient') &&
+      !report.matchedAfter.flags.includes('managed') &&
+      report.matchedAfter.flags.includes('canJoinAllSpaces') &&
+      report.matchedAfter.flags.includes('fullScreenAuxiliary');
+
     clearTimeout(hardTimer);
+    win.destroy();
+    settings.destroy();
+    finish(report, report.ok ? 0 : 2);
+  })
+  .catch((error) => {
+    clearTimeout(hardTimer);
+    log('whenReady reject ' + error);
     finish({ ok: false, error: String(error), stack: error?.stack }, 1);
-    return;
-  }
-
-  const report = {
-    expectedIslandMask: native.expectedIslandMask(),
-    expectedConstant: EXPECTED,
-  };
-
-  const win = new BrowserWindow({
-    width: 400,
-    height: 120,
-    show: false,
-    frame: false,
-    transparent: true,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    type: 'panel',
-    title: TITLE,
   });
-  win.setTitle(TITLE);
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  const settings = new BrowserWindow({ show: false, title: 'Ripple Settings Probe' });
-  report.settingsBefore = native.readIslandBehavior('Ripple Settings Probe');
-
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  log('describing');
-
-  report.beforeDescribe = native.describeAppWindows();
-  report.beforeRead = native.readIslandBehavior(TITLE);
-  report.matchedBefore = report.beforeDescribe.find((w) => w.title === TITLE) || null;
-  log('beforeRead=' + report.beforeRead + ' windows=' + report.beforeDescribe.length);
-
-  try {
-    report.applied = native.applyIslandBehavior(TITLE);
-  } catch (error) {
-    clearTimeout(hardTimer);
-    report.error = String(error);
-    report.describeOnError = native.describeAppWindows();
-    finish(report, 2);
-    return;
-  }
-
-  report.afterRead = native.readIslandBehavior(TITLE);
-  report.afterDescribe = native.describeAppWindows();
-  report.matchedAfter = report.afterDescribe.find((w) => w.title === TITLE) || null;
-  const restorePolicy = () => native.applyIslandBehavior(TITLE);
-  win.on('show', restorePolicy);
-  win.on('focus', restorePolicy);
-  win.showInactive();
-  restorePolicy();
-  report.afterFirstShow = native.readIslandBehavior(TITLE);
-  win.hide();
-  win.setAlwaysOnTop(true, 'floating');
-  win.showInactive();
-  restorePolicy();
-  report.afterReshow = native.readIslandBehavior(TITLE);
-  win.focus();
-  restorePolicy();
-  report.afterFocus = native.readIslandBehavior(TITLE);
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  report.afterSettled = native.readIslandBehavior(TITLE);
-  report.settingsAfter = native.readIslandBehavior('Ripple Settings Probe');
-  log('afterRead=' + report.afterRead + ' applied=' + report.applied);
-
-  report.ok =
-    report.expectedIslandMask === EXPECTED &&
-    report.applied === EXPECTED &&
-    report.afterRead === EXPECTED &&
-    report.afterFirstShow === EXPECTED &&
-    report.afterReshow === EXPECTED &&
-    report.afterFocus === EXPECTED &&
-    report.afterSettled === EXPECTED &&
-    report.settingsBefore !== null &&
-    report.settingsAfter === report.settingsBefore &&
-    Array.isArray(report.matchedAfter?.flags) &&
-    report.matchedAfter.flags.includes('stationary') &&
-    !report.matchedAfter.flags.includes('transient') &&
-    !report.matchedAfter.flags.includes('managed') &&
-    report.matchedAfter.flags.includes('canJoinAllSpaces') &&
-    report.matchedAfter.flags.includes('fullScreenAuxiliary');
-
-  clearTimeout(hardTimer);
-  win.destroy();
-  settings.destroy();
-  finish(report, report.ok ? 0 : 2);
-}).catch((error) => {
-  clearTimeout(hardTimer);
-  log('whenReady reject ' + error);
-  finish({ ok: false, error: String(error), stack: error?.stack }, 1);
-});

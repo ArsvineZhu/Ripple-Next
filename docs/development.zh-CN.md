@@ -44,6 +44,6 @@ Windows 媒体／设备使用常驻执行器；Linux 媒体／蓝牙使用内置
 
 测试按[平台、功能及公共契约](../tests/README.zh-CN.md)归类，可用 `pnpm test tests/platform/linux` 或 `pnpm test tests/features/media` 选择范围。内核测试跳过不支持的主机，私有 broker 和夹具隔离系统／播放器操作。
 
-拍摄使用独立配置与演示内容，实际录制英文界面，中文表达演示使用对应语言，逐张／逐段检查。临时工具与中间资料保存在忽略的 out/，原始字体、供应方算法和声明保持完整。
+拍摄使用独立配置与演示内容，实际录制英文界面，中文表达演示使用对应语言，逐张／逐段检查。使用 pnpm capture 运行 scripts/capture 中维护的录制流程，先安装支持 VP9 编码的 FFmpeg 和 Playwright 录制工具，参见[脚本使用](../scripts/README.md)。原始录像与时间清单保存在忽略的 out/，原始字体、供应方算法和声明保持完整。
 
 见[使用](../instructions.zh-CN.md)、[平台支持](platform-compatibility.zh-CN.md)、[原生监听](native-observation.zh-CN.md)、[诊断](diagnostics.zh-CN.md)和[发布](release.zh-CN.md)。

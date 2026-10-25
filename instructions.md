@@ -48,7 +48,7 @@ Clipboard history collects nonempty text for this run, at most 100 entries/one m
 
 ## Settings, fonts and glass
 
-Settings begins with the keyboard-first guide and actual recordings. The icon rail opens each category; its top button reveals category names and the app version. The last option in General, Translucent sidebar, controls the desktop backdrop independently of control glass and is enabled by default. Chevron rows open editors; the back button restores scroll and focus. Valid ordinary edits save automatically. Credentials require Save/Change; deletion/clearing requires confirmation. A failed native preference operation retains the committed value.
+Settings begins with the keyboard-first guide and 4.2.0 interface and operation recordings. The icon rail opens each category; its top button reveals category names and the app version. The last option in General, Translucent sidebar, controls the desktop backdrop independently of control glass and is enabled by default. Chevron rows open editors; the back button restores scroll and focus. Valid ordinary edits save automatically. Credentials require Save/Change; deletion/clearing requires confirmation. A failed native preference operation retains the committed value.
 
 Choose Default, Sleek Black or Windows 95 (W95FA Latin and HYPixel 11px U Chinese); adjust colors/background, display, snap/free placement, corners, borders and behavior. Appearance displays a live Island preview and ends with Show Island border (Debug). Hide Island when inactive is in Behavior. Idle time/battery information opens quick view on hover and the full page on click. Native RGB selection preserves alpha and Cancel retains the color. Windows/Linux keep the tray visible; macOS offers menu-bar visibility.
 
@@ -62,4 +62,4 @@ Preferences, tasks, workflows, quick apps and encrypted credential records live 
 
 If a saved profile does not match the current schema, Ripple Next leaves it unchanged and opens a centered screen. Back up copies the store, including its write-ahead files, into a timestamped folder under the user-data directory and shows that path. Start fresh replaces the live store with an empty current profile only after that backup, or after a confirmation that names the loss. Old records are not converted.
 
-Settings → About → Diagnostics opens bounded local logs and crash data. Inspect crash dumps before sharing because they can contain process memory. See [platform support](docs/platform-compatibility.md), [diagnostics](docs/diagnostics.md) and the [release page](https://github.com/ArsvineZhu/Ripple-Next/releases).
+Settings → About → Diagnostics opens bounded local logs and crash data. Inspect crash dumps before sharing because they can contain process memory. See [platform support](docs/platform-compatibility.md), [diagnostics](docs/diagnostics.md) and the [release page](https://github.com/ArsvineZhu/Ripple-Next/releases/latest).

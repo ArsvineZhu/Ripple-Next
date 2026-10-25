@@ -4,6 +4,8 @@ import { ArrowRight, Command } from 'lucide-react';
 import type { SettingsCategoryId } from '../lib/settingsCategories';
 import { PreferenceCard } from '../components/preferences';
 import typographyVideo from '../../assets/guide/typography.webm';
+import interfaceVideo from '../../assets/guide/interface.webm';
+import interfacePoster from '../../assets/guide/interface.png';
 import typographyPoster from '../../assets/guide/typography.png';
 import appearanceVideo from '../../assets/guide/appearance.webm';
 import appearancePoster from '../../assets/guide/appearance.png';
@@ -61,6 +63,15 @@ export function SettingsGuide({ navigate }: { navigate(category: SettingsCategor
     { keys: ['←', '→', 'Shift', 'Home', 'End'], title: 'guideSliders', text: 'guideSlidersHint' },
   ] as const;
   const topics = [
+    {
+      id: 'interface',
+      title: 'guideInterfaceTitle',
+      body: 'guideInterfaceBody',
+      steps: ['guideInterfaceStep1', 'guideInterfaceStep2', 'guideInterfaceStep3'],
+      video: interfaceVideo,
+      poster: interfacePoster,
+      category: 'general',
+    },
     {
       id: 'typography',
       title: 'guideTypographyTitle',

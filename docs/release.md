@@ -4,17 +4,24 @@
 
 The [4.1.0-beta.2 release](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) provides Linux x64, Windows x64 and macOS x64/arm64 packages. Versioned notes describe their corresponding packages; maintained guides describe the current application and supported release procedure.
 
-## CI and publication
+## Publish with one command
 
-Publish from an approved, reviewed commit on main by pushing a version tag that matches package.json. Tag CI verifies the version, runs checks/tests on Linux, Windows and macOS, builds all four targets, and creates the GitHub Release only after every build succeeds. Tags containing a prerelease suffix create prereleases; ordinary version tags create stable releases.
+Every announcement starts with Highlights, followed by a direct-download table covering all nine packages, a complete product introduction, installation and first-use instructions. Maintain both English and Simplified Chinese editions.
 
-PR checks do not publish. Manual workflow dispatch runs checks for the selected ref without publishing. For fork contributions, use the version-tag route after integration: `actions/checkout@v7` blocks fork checkout in a `pull_request_target` event, including the workflow's PR #14 merged-event route. Keep that protection enabled.
+Prepare package.json and paired versioned notes, then integrate the approved release commit into main. With GitHub CLI authenticated and a clean checkout at that commit:
 
-Publication reads both English/Simplified Chinese notes and resolves repository links to the release tag through `scripts/release-notes.mjs`. An existing release keeps its original artifacts. Preserve published tags and packages; corrections belong to a new version.
+```sh
+pnpm release --dry-run
+pnpm release
+```
 
-For a new release, update package.json and the lockfile together, prepare both versioned notes, obtain publication approval and verify the intended commit before creating/pushing its tag. Confirm the final run succeeds, the tag resolves to that commit, the notes match and all nine assets are uploaded and downloadable. Direct documentation pushes to main do not publish a release.
+The dry run reads the version and renders both notes without creating a tag or publishing. The release command checks the checkout against origin/main, pushes the matching tag, follows CI and reports the published URL. CI runs checks/tests on Linux, Windows and macOS, builds four targets and attaches all nine packages to a regular GitHub Release. Published releases are marked latest, including versions whose names contain a beta suffix.
 
-To publish a prepared regular-release draft from an existing successful build, dispatch **Publish existing release artifacts** with its tag and build run ID. The workflow attaches that run’s packages and publishes the draft without rebuilding.
+Run the same command to resume an interrupted release for the same commit. Failed jobs are retried; existing published tags and assets stay unchanged. PR and manual check runs do not publish. A tag push is the publication trigger.
+
+Publication renders English/Simplified Chinese notes through scripts/release-notes.mjs. An unfinished draft can receive its completed build artifacts. For recovery from an existing successful build, the Publish existing release artifacts workflow takes the draft tag and build run ID without rebuilding. Corrections to published packages require a new version.
+
+The website download buttons use the [latest release](https://github.com/ArsvineZhu/Ripple-Next/releases/latest), so future releases need no download-link edits. Website product snapshots and media are refreshed separately; see the [website repository](https://github.com/Arsvine-Devs/ripple-website).
 
 ## Commands and artifacts
 

@@ -25,10 +25,9 @@ export const zhApple = {
   guideTypographyTitle: '字里行间，读出你的选择。',
   guideTypographyBody:
     '同一段话，读出不同感觉。比较文字和数字，选择字体；从设置到 Island，处处一致。',
-  guideTypographyStep1:
-    '在“常规”中打开“字体”。阿里巴巴普惠体 3、系统字体、OpenRunde，选你读得舒服的那一种。',
-  guideTypographyStep2: '同样的字，不同的感觉。看看系统字体与 OpenRunde，再选你读得舒服的那一种。',
-  guideTypographyStep3: '从设置到 Island，字体一致。内置字体按需从本地加载。',
+  guideTypographyStep1: '在“常规”中打开“字体”。内置的、系统的、从文件导入的，好字体，一起用。',
+  guideTypographyStep2: '调好先后，字有所属。每个字符，都由顺序里第一个拥有它的字体呈现。',
+  guideTypographyStep3: '编辑预览，读出组合。从设置到 Island，同一份顺序，处处一致。',
   guideWorkflowTitle: '一触即达，一组齐发。',
   guideWorkflowBody:
     '快捷应用打开一个目标，工作流打开一整组。视频从命名到逐行添加地址，再回到列表，把准备工作串成一次操作。',

@@ -14,7 +14,7 @@
 
 闲置时简短显示，悬停查看更多，点击展开完整页面；独立设置窗口负责配置，折叠时草稿仍然保留。
 
-Ripple Next 4.2.0。[官网](https://ripple.arsvine.com) · [下载](https://github.com/ArsvineZhu/Ripple-Next/releases) · [使用指南](instructions.zh-CN.md) · [反馈](https://github.com/ArsvineZhu/Ripple-Next/issues)
+Ripple Next 4.2.0。[官网](https://ripple.arsvine.com) · [下载](https://github.com/ArsvineZhu/Ripple-Next/releases/latest) · [使用指南](instructions.zh-CN.md) · [反馈](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > 截图与录像来自独立演示配置中的实际应用。助手展示本地演示服务返回的示例回答，媒体来自演示播放器；中文图片用于介绍对应语言功能。
 
@@ -72,6 +72,7 @@ Ripple Next 4.2.0。[官网](https://ripple.arsvine.com) · [下载](https://git
 
 应用指南首先介绍键位，再用实际录像演示字体、中文表达、玻璃、工作流和 AI 编辑。除中文特有演示外使用英文；文字可选择，视频由用户控制播放并在离开可视区时暂停。
 
+- [界面介绍](src/assets/guide/interface.webm)
 - [字体](src/assets/guide/typography.webm)
 - [中文表达](src/assets/guide/expression.webm)
 - [玻璃](src/assets/guide/appearance.webm)

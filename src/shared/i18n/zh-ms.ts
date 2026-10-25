@@ -29,9 +29,10 @@ export const zhMS = {
   guideTypographyBody:
     '相同的文字，不同的感受。比较文字与数字样例，再选择你喜欢的字体；Island 和设置会一起采用它。',
   guideTypographyStep1:
-    '在“常规”中打开“字体”。看看阿里巴巴普惠体 3、系统字体和 OpenRunde，选择读起来最舒适的一种。',
-  guideTypographyStep2: '选择系统字体或 OpenRunde，比较同样的文字与数字。找到你喜欢的，就保留它。',
-  guideTypographyStep3: '设置与 Island 会一起使用你的选择。内置字体在需要时从本地加载。',
+    '在“常规”中打开“字体”。添加内置或系统字体，也可以选择文件，让喜欢的字体加入你的列表。',
+  guideTypographyStep2: '用上下箭头安排先后。每个字符，都在列表中找到第一个适合它的字形。',
+  guideTypographyStep3:
+    '编辑混合文字预览，看看它们如何一起显示。设置与 Island 会一起采用这份顺序。',
   guideWorkflowTitle: '准备一个工作流，开始一组事情',
   guideWorkflowBody:
     '有些事情，适合一起打开。快捷应用负责一个目标，工作流按顺序打开一组目标；视频演示命名、逐行添加地址与返回列表。',

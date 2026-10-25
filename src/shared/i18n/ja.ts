@@ -22,11 +22,20 @@ export const ja: Messages = {
   clipboardReadFailed: 'クリップボードを読み取れません。既存の履歴は引き続きコピーできます。',
   findingApplications: 'インストール済みアプリを検索中…',
   workflowQuickApp: '保存済みクイックアプリを追加',
+  guideInterfaceTitle: '設定画面を使う',
+  guideInterfaceBody:
+    'アイコン列はいつもそばに。必要なときに分類名を展開し、編集位置を保ちながら設定を切り替えます。',
+  guideInterfaceStep1: '左上のサイドバーボタンで分類名を展開・折りたたみます。',
+  guideInterfaceStep2:
+    '分類を選び、矢印のある項目で詳細を開きます。戻るボタンで前の画面へ戻ります。',
+  guideInterfaceStep3:
+    '一般設定の末尾でサイドバーの半透明表示を切り替えます。変更は自動保存されます。',
   guideTypographyStep3:
-    '設定と Island に同じ書体が適用され、内蔵書体は選択時にローカルから読み込まれます。',
-  guideTypographyStep2: 'System と OpenRunde を同じ例文で比べ、使いたい書体を選びます。',
+    '複数の文字種を含むプレビューを編集して比較します。優先順位は設定と Island の両方に適用されます。',
+  guideTypographyStep2:
+    '上下の矢印で優先順位を変更します。各文字は、字形を持つ最初のフォントで表示されます。',
   guideTypographyStep1:
-    '「一般」の「フォント」で、既定の Alibaba PuHuiTi 3、システム、OpenRunde の見本を比較して選択します。',
+    '「一般」の「フォント」で内蔵・システムフォントを追加します。「ファイルを選択」で TTF、OTF、WOFF、WOFF2 を読み込めます。',
   guideTypographyBody: '同じ文章と数字でフォントを比較します。選択は Island と設定に反映されます。',
   guideTypographyTitle: '書体：読みやすさを選ぶ',
   guideEditorHelp:

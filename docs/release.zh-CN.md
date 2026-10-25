@@ -4,17 +4,24 @@
 
 [4.1.0-beta.2 发布](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) 提供 Linux x64、Windows x64、macOS x64／arm64 软件包。版本说明对应指定软件包；维护中的指南描述当前应用及可用的发布流程。
 
-## CI 与发布
+## 一个命令发布
 
-在 main 上经审查并获准发布的提交创建版本标签，标签必须与 package.json 一致。标签 CI 校验版本，在 Linux、Windows、macOS 上运行检查和测试，再构建四个目标；全部构建成功后才创建 GitHub Release。带预发布后缀的标签创建预发布，普通版本标签创建稳定发布。
+每次发布公告均以 Highlights 概括本次更新，随后提供九个软件包的直接下载表、完整产品介绍、安装与入门说明。中英文公告同步维护。
 
-PR 检查不发布版本，手动运行工作流只检查所选 ref，也不发布。来自 fork 的贡献应在集成后使用版本标签流程：`actions/checkout@v7` 拒绝在 `pull_request_target` 事件中检出 fork 代码，工作流中的 PR #14 合并事件路径也受此限制。保持这项保护开启。
+准备 package.json 和中英文版本说明，将获准发布的提交集成到 main。GitHub CLI 已登录，且工作区干净并位于该提交时：
 
-发布读取英文／简体中文说明，通过 `scripts/release-notes.mjs` 将仓库链接解析到发布标签。已有发布保留原始附件；已发布标签和软件包保持不变，修正应使用新版本。
+```sh
+pnpm release --dry-run
+pnpm release
+```
 
-准备新版本时，同步更新 package.json 和锁文件，准备两份版本说明，取得发布批准，确认目标提交后再创建并推送标签。最后核对工作流成功、标签指向该提交、说明一致，以及九个附件均已上传且可下载。直接向 main 推送文档不会发布新版本。
+预演读取版本并生成两份说明，不创建标签或发布。发布命令核对本地提交与 origin/main，推送匹配标签，跟随 CI 并返回发布地址。CI 在 Linux、Windows、macOS 上运行检查与测试，构建四个目标，将九个软件包附到正式 GitHub Release，并标记为最新版本。版本名含 beta 后缀也按正式版本发布。
 
-已有构建成功的软件包时，可运行 **Publish existing release artifacts**，传入标签和构建运行 ID。该工作流将对应产物附到已准备的正式发布草稿并公开，无需重新构建。
+同一提交的发布中断后，可再次运行同一命令继续。失败任务会重试，已经公开的标签和附件保持不变。PR 和手动检查不发布，版本标签推送才触发发布。
+
+scripts/release-notes.mjs 整合英文与简体中文说明。尚未公开的草稿可接收构建产物。若已有成功构建，可通过 Publish existing release artifacts 工作流传入草稿标签与构建运行 ID，直接发布而不重新构建。修正已发布软件包时使用新版本。
+
+官网下载按钮指向[最新发行版](https://github.com/ArsvineZhu/Ripple-Next/releases/latest)，后续发版无需修改下载地址。官网产品快照和素材单独同步，见[官网仓库](https://github.com/Arsvine-Devs/ripple-website)。
 
 ## 命令与产物
 

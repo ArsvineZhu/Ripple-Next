@@ -44,6 +44,6 @@ Windows media/devices use the persistent native executor. Linux media/Bluetooth 
 
 Tests follow [platform, feature and shared ownership](../tests/README.md). Use `pnpm test tests/platform/linux` or `pnpm test tests/features/media` for a focused suite. Kernel-only cases skip unsupported hosts; private brokers and fixtures isolate system/player operations.
 
-Use a separate profile and reserved demo content for recordings. Capture actual renderer flows in English, except Chinese-expression demonstrations, and review each image/video. Temporary capture tools and intermediates belong under ignored out/. Preserve font bytes, vendor algorithms and their original notices.
+Use a separate profile and reserved demo content for recordings. Capture actual renderer flows in English, except Chinese-expression demonstrations, and review each image/video. Run pnpm capture for the maintained recording flows in scripts/capture. Install FFmpeg with VP9 encoding and the Playwright recording helper first; see [script usage](../scripts/README.md). Raw footage and timing manifests belong under ignored out/. Preserve font bytes, vendor algorithms and their original notices.
 
 See [usage](../instructions.md), [platform support](platform-compatibility.md), [native observation](native-observation.md), [diagnostics](diagnostics.md) and [release](release.md).

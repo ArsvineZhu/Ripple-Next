@@ -7,11 +7,20 @@ import path from 'node:path';
 if (process.platform === 'linux') {
   const directory = path.resolve('out/native');
   mkdirSync(directory, { recursive: true });
-  execFileSync(process.env.CC || 'cc', [
-    '-O2', '-std=c11', '-Wall', '-Wextra', '-Werror',
-    path.resolve('native/linux-events/device_events.c'),
-    '-o', path.join(directory, 'ripple-device-events'),
-  ], { stdio: 'inherit' });
+  execFileSync(
+    process.env.CC || 'cc',
+    [
+      '-O2',
+      '-std=c11',
+      '-Wall',
+      '-Wextra',
+      '-Werror',
+      path.resolve('native/linux-events/device_events.c'),
+      '-o',
+      path.join(directory, 'ripple-device-events'),
+    ],
+    { stdio: 'inherit' },
+  );
   console.log('[native] built Linux inotify listener');
   process.exit(0);
 }
@@ -40,7 +49,16 @@ if (!nodeGyp) {
 // <installation>/bin/node -> the headers live in <installation>/include/node.
 const nodeDir = path.resolve(process.execPath, '../..');
 console.log(`[native] building native/macos-window against ${nodeDir}`);
-execFileSync(process.execPath, [nodeGyp, 'rebuild', `--nodedir=${nodeDir}`, `--arch=${process.argv.find((argument) => argument.startsWith('--arch='))?.slice(7) || process.arch}`], {
-  cwd: path.resolve('native/macos-window'),
-  stdio: 'inherit',
-});
+execFileSync(
+  process.execPath,
+  [
+    nodeGyp,
+    'rebuild',
+    `--nodedir=${nodeDir}`,
+    `--arch=${process.argv.find((argument) => argument.startsWith('--arch='))?.slice(7) || process.arch}`,
+  ],
+  {
+    cwd: path.resolve('native/macos-window'),
+    stdio: 'inherit',
+  },
+);

@@ -14,7 +14,7 @@
 
 待機中にひと目、ホバーでもう少し、クリックでページを展開。設定は専用ウィンドウで行い、折りたたんでも下書きを保ちます。
 
-Ripple Next 4.2.0。[ウェブサイト](https://ripple.arsvine.com) · [ダウンロード](https://github.com/ArsvineZhu/Ripple-Next/releases) · [使い方（英語）](instructions.md) · [フィードバック](https://github.com/ArsvineZhu/Ripple-Next/issues)
+Ripple Next 4.2.0。[ウェブサイト](https://ripple.arsvine.com) · [ダウンロード](https://github.com/ArsvineZhu/Ripple-Next/releases/latest) · [使い方（英語）](instructions.md) · [フィードバック](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > 画像と動画は独立デモ設定の実際のアプリです。アシスタントはローカルのサンプル応答、音楽はデモプレイヤーを使用。中国語画像は言語固有機能を紹介します。
 
@@ -72,6 +72,7 @@ Chat Completions、OpenAI Responses、Anthropic Messages の接続先と暗号�
 
 アプリ内ガイドはキー操作から始まり、書体、中国語表現、Glass、ワークフロー、AI 編集を実際に録画しています。中国語固有の例以外は英語です。文章は選択でき、動画は自分で再生し、画面外で停止します。
 
+- [画面の使い方](src/assets/guide/interface.webm)
 - [書体](src/assets/guide/typography.webm)
 - [中国語表現](src/assets/guide/expression.webm)
 - [Glass](src/assets/guide/appearance.webm)
