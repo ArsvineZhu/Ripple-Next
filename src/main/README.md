@@ -2,7 +2,7 @@
 
 # Main process
 
-Main owns application lifetime, windows, tray, native effects and durable state. `index.ts` initializes the application profile, diagnostics, SQLite and secure store before renderer bootstrap. A native lock keeps one instance; launching again opens Settings. Development and installed builds use separate data/cache profiles.
+Main owns application lifetime, windows, tray, native effects and durable state. `index.ts` initializes the application profile, diagnostics, SQLite and secure store before renderer bootstrap. A native lock keeps one instance; launching again opens Settings. Launch at login opens only the Island. Development and installed builds use separate data/cache profiles.
 
 `ipc.ts` validates sender roles and payloads, applies system effects before preference commits and broadcasts committed state. Settings owns editor/credential writes; Island owns daily interaction. `appStateStore.ts` owns the SQLite schema, prepared statements and transactions. Read errors remain errors. A profile the schema rejects is backed up or replaced only through the recovery actions; related AI graph and credential deletion is atomic.
 

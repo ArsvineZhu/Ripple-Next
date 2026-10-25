@@ -10,7 +10,7 @@ Paths consumed by pnpm tasks and analysis tools refer to the repository root. Ty
 
 See [development](../docs/development.md) and the [repository map](../INDEX.md).
 
-Windows MSI configuration supplies the bundled `.ico` explicitly. Its optional native EXE icon extractor is disabled in `allowBuilds`; installer creation uses the supplied icon directly.
+Windows MSI configuration supplies the bundled `.ico`, points the installer at `ripple-next.exe` (the packaged `executableName`), and uses `com.arsvinezhu.ripple-next` as the shortcut AppUserModelID. `allowBuilds` disables the unused native EXE icon extractor; installer creation uses the supplied icon directly.
 
 Forge ships `src/assets/third-party/liquid-glass-notices.txt` as an extra resource. Pinned glass vendor sources retain their original formatting and are excluded from lint, format, Knip and duplication reports; the scoped TypeScript checks still include them.
 

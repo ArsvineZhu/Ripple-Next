@@ -33,7 +33,7 @@ pnpm make
 node scripts/release-notes.mjs v<version>
 ```
 
-`package` produces a runnable directory. `make` creates native installers and portable archives on the matching host. Linux needs `cc`, dpkg, fakeroot and rpm; Windows MSI needs WiX; macOS needs Xcode Command Line Tools. Forge builds/ships Linux's inotify executable and the target-architecture macOS window addon. macOS packages use an ad-hoc signature.
+`package` produces a runnable directory. `make` creates native installers and portable archives on the matching host. Linux needs `cc`, dpkg, fakeroot and rpm; Windows MSI needs WiX Toolset 3 (`candle.exe` and `light.exe` on PATH); macOS needs Xcode Command Line Tools. Without those WiX 3 tools, the Windows portable zip is still produced and the MSI is skipped. WiX 4 does not provide them. The install command is in [development](development.md). Forge builds/ships Linux's inotify executable and the target-architecture macOS window addon. macOS packages use an ad-hoc signature.
 
 Names follow `RippleNext-<OS>[-<macOS arch>]-v<version>[-Portable].<ext>` for DEB/RPM, MSI, DMG and ZIP. Artifacts and temporary build/capture files remain under ignored out/.
 

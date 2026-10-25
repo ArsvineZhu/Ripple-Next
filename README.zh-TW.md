@@ -83,7 +83,7 @@ Ripple Next 4.2.0。[官網](https://ripple.arsvine.com) · [下載](https://git
 
 ## 開始使用 Ripple Next
 
-下載對應軟體包，安裝或解壓縮可攜式 ZIP 後啟動。設定先開啟，關閉設定保留 Island；再次啟動或透過系統匣重新開啟設定。
+下載對應軟體包，安裝或解壓縮可攜式 ZIP 後啟動。設定先開啟，關閉設定保留 Island。開機自動啟動只開啟 Island。再次啟動或透過系統匣重新開啟設定。
 
 | 平台    | 架構       | 軟體包               |
 | ------- | ---------- | -------------------- |
@@ -97,7 +97,7 @@ macOS 使用臨時簽章。Linux 需要 X11／XWayland，金鑰需要系統安�
 
 ## 開發與貢獻
 
-使用 `.node-version` 的 Node 與 `package.json` 的 pnpm。[開發](docs/development.zh-CN.md)、[架構](docs/architecture.zh-CN.md)、[測試](tests/README.zh-CN.md)和[倉庫地圖](INDEX.zh-CN.md)說明目前歸屬與流程。
+使用 `.node-version` 的 Node 與 pnpm。pnpm 12 更快。[開發](docs/development.zh-CN.md)、[架構](docs/architecture.zh-CN.md)、[測試](tests/README.zh-CN.md)和[倉庫地圖](INDEX.zh-CN.md)說明目前歸屬與流程。
 
 ```sh
 pnpm install --frozen-lockfile

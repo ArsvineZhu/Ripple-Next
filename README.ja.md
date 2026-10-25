@@ -83,7 +83,7 @@ Chat Completions、OpenAI Responses、Anthropic Messages の接続先と暗号�
 
 ## Ripple Next を使い始める
 
-対応パッケージをインストールするか、ポータブル ZIP を展開して起動。最初に設定が開き、閉じても Island は動きます。アプリをもう一度起動するか、トレイから設定を開けます。
+対応パッケージをインストールするか、ポータブル ZIP を展開して起動。最初に設定が開き、閉じても Island は動きます。ログイン時の自動起動では Island だけを開きます。アプリをもう一度起動するか、トレイから設定を開けます。
 
 | OS      | アーキテクチャ | パッケージ                 |
 | ------- | -------------- | -------------------------- |
@@ -97,7 +97,7 @@ macOS はアドホック署名です。Linux は X11/XWayland とキー用の OS
 
 ## 開発と貢献
 
-`.node-version` の Node と `package.json` の pnpm を使用します。[開発](docs/development.md)、[構成](docs/architecture.md)、[テスト](tests/README.md)、[リポジトリ地図](INDEX.md)が現在の責務と手順を示します。
+`.node-version` の Node と pnpm を使用します。pnpm 12 の方が高速です。[開発](docs/development.md)、[構成](docs/architecture.md)、[テスト](tests/README.md)、[リポジトリ地図](INDEX.md)が現在の責務と手順を示します。
 
 ```sh
 pnpm install --frozen-lockfile

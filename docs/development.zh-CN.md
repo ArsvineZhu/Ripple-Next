@@ -2,7 +2,7 @@
 
 # 开发
 
-使用 [.node-version](../.node-version) 的 Node `22.23.3` 和 package.json 的 pnpm `12.9.1`，按提交的锁文件安装。原生打包在对应主机运行：Linux 使用 cc、dpkg、fakeroot、rpm，Windows MSI 使用 WiX，macOS 使用 Xcode 命令行工具。
+使用 [.node-version](../.node-version) 的 Node `22.23.3`，用 pnpm 按提交的锁文件安装。pnpm 12 更快。原生打包在对应主机运行：Linux 使用 cc、dpkg、fakeroot、rpm，Windows MSI 使用 WiX Toolset 3（PATH 中的 `candle.exe` 和 `light.exe`），macOS 使用 Xcode 命令行工具。WiX 4 不提供这两个工具。缺少它们时，`pnpm make` 仍写出 Windows 便携 zip，并跳过 MSI。
 
 ```sh
 pnpm install --frozen-lockfile
@@ -12,6 +12,8 @@ pnpm test
 pnpm package
 pnpm make
 ```
+
+安装 WiX Toolset 3.14：`winget install --id WiXToolset.WiXToolset -e`，或 `choco install wixtoolset --no-progress -y`，然后新开终端。两个工具位于 `C:\Program Files (x86)\WiX Toolset v3.14\bin`。CI 在 Chocolatey 安装后将该目录加入 PATH。
 
 Linux 开发需要有效 Chromium 沙盒。Electron 二进制旁存在 `chrome-sandbox` 时 Chromium 使用该文件，仅在其不存在时读取 `CHROME_DEVEL_SANDBOX`。helper 须为 root 所有且权限为 4755。当 `/usr/lib/ripple-next/chrome-sandbox` 满足该权限且与开发版二进制字节相同时，`pnpm start` 会移开开发版 helper 并选用它。需要其他匹配 helper 时设置 `CHROME_DEVEL_SANDBOX`。Forge 使用 X11／XWayland 运行透明窗口；修改主进程／preload 后重启应用。
 

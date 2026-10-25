@@ -2,7 +2,7 @@
 
 # Using Ripple Next
 
-Ripple Next keeps seven daily-action pages in a floating Island and configuration in a separate Settings window. Launching the application opens Settings; closing that window leaves the Island running. Launching again or using the tray opens the existing settings window.
+Ripple Next keeps seven daily-action pages in a floating Island and configuration in a separate Settings window. Launching the application opens Settings; closing that window leaves the Island running. Launch at login opens only the Island. Launching again or using the tray opens the existing settings window.
 
 ## Expand, glance and navigate
 

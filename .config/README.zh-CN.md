@@ -10,7 +10,7 @@ pnpm 任务和分析工具使用的项目路径相对于仓库根目录；TS 的
 
 参见 [开发指南](../docs/development.zh-CN.md) 和 [仓库地图](../INDEX.zh-CN.md)。
 
-Windows MSI 已显式指定随仓库提供的 `.ico`，`allowBuilds` 禁用未使用的原生 EXE 图标提取器，安装包直接使用提供的图标。
+Windows MSI 已显式指定随仓库提供的 `.ico`，安装程序指向打包出的 `ripple-next.exe`（即 `executableName`），快捷方式 AppUserModelID 为 `com.arsvinezhu.ripple-next`。`allowBuilds` 禁用未使用的原生 EXE 图标提取器，安装包直接使用提供的图标。
 
 Forge 将 src/assets/third-party/liquid-glass-notices.txt 作为额外资源分发。锁定的玻璃 vendor 源码保留原始格式，不参与 lint、format、Knip 和重复代码报告；类型检查仍包含这些文件。
 

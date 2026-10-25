@@ -1,6 +1,6 @@
 # Ripple Next working rules
 
-- Use Node from .node-version and pnpm 12+; package.json owns product identity/version and pnpm-lock.yaml stays synchronized.
+- Use Node from .node-version and pnpm; pnpm 12 is faster. package.json owns product identity/version and pnpm-lock.yaml stays synchronized.
 - Read the nearest source-scope README and AGENTS before changing a boundary. Use CodeGraph first when .codegraph exists.
 - Main owns persistence, OS effects and native caches. Shared owns serializable schemas/pure policies. Renderer features own layout/domain operations and compose shared controls.
 - Preserve page drafts across navigation/collapse; continuous media/device/clipboard observation and active assistant work stay above hidden pages.

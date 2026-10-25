@@ -10,14 +10,16 @@ Color fields open the operating system's picker through Settings-only IPC: Windo
 
 API references: [Windows ColorDialog](https://learn.microsoft.com/dotnet/api/system.windows.forms.colordialog), [macOS color prompt](https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/PromptforaColor.html), [KDE dialogs](https://develop.kde.org/docs/administration/kdialog/).
 
-| Feature              | Windows                                                | macOS                                                            | Linux                                                        |
-| -------------------- | ------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------ |
-| Music                | GSMTC sessions, capabilities and artwork               | Running Spotify and Music through AppleScript, including artwork | MPRIS over session D-Bus, capabilities and artwork           |
-| Open a player        | Cached app identity/path                               | Activate the running application                                 | MPRIS Raise or same-owner tray Activate                      |
-| Installed quick apps | Start Menu `.lnk` files and Store identifiers          | System/shared/user Applications, including Utilities             | XDG desktop entries launched with `gio launch`               |
-| Launch at login      | Native login settings for packaged apps                | Native login items for packaged apps                             | `ripple-next.desktop` in the active XDG autostart directory  |
-| Transparent input    | Native cursor/bounds with click-through outside Island | Electron click-through outside Island                            | X11 `ShapeInput` through XWayland                            |
-| Device status        | WinRT Bluetooth; camera/microphone registry probes     | Bluetooth and capture-device registry probes                     | BlueZ D-Bus, inotify + `fuser`, PipeWire / PulseAudio events |
+| Feature              | Windows                                                   | macOS                                                            | Linux                                                                              |
+| -------------------- | --------------------------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Music                | GSMTC sessions, capabilities and artwork                  | Running Spotify and Music through AppleScript, including artwork | MPRIS over session D-Bus, capabilities and artwork                                 |
+| Open a player        | Cached app identity/path                                  | Activate the running application                                 | MPRIS Raise or same-owner tray Activate                                            |
+| Installed quick apps | Start Menu `.lnk` files and Store identifiers             | System/shared/user Applications, including Utilities             | XDG desktop entries launched with `gio launch`                                     |
+| Launch at login      | Packaged login settings with `--ripple-launched-at-login` | Packaged login items; `wasOpenedAtLogin` identifies that launch  | `ripple-next.desktop` with `--ozone-platform=x11` and `--ripple-launched-at-login` |
+| Transparent input    | Native cursor/bounds with click-through outside Island    | Electron click-through outside Island                            | X11 `ShapeInput` through XWayland                                                  |
+| Device status        | WinRT Bluetooth; camera/microphone registry probes        | Bluetooth and capture-device registry probes                     | BlueZ D-Bus, inotify + `fuser`, PipeWire / PulseAudio events                       |
+
+A login launch opens only the Island. Starting the application yourself, or opening it from the tray, still opens Settings. An existing login entry receives the login argument the next time that packaged application starts with launch at login enabled.
 
 A player must publish a supported session to appear. Controls follow its reported capabilities. macOS discovers supported Spotify/Music players rather than arbitrary system media sessions. Camera/microphone indicators reflect the available OS or driver probes.
 
@@ -35,7 +37,7 @@ The music page presents A followed by stable player dots. Continuous vertical ge
 
 ## Linux setup and recovery
 
-Ripple runs its transparent window on X11/XWayland. The window occupies the selected display's work area; only `ShapeInput` follows the animated Island. Preserve the statically bundled X11 client and `--ozone-platform=x11` in autostart entries. Using `ShapeBounding` for animation can produce black flashes. Startup waits for renderer readiness and confirmation of the first input region before showing the window.
+Ripple runs its transparent window on X11/XWayland. The window occupies the selected display's work area; only `ShapeInput` follows the animated Island. Preserve the statically bundled X11 client, `--ozone-platform=x11`, and `--ripple-launched-at-login` in autostart entries. Using `ShapeBounding` for animation can produce black flashes. Startup waits for renderer readiness and confirmation of the first input region before showing the window.
 
 Snap players can restrict MPRIS access through AppArmor. A Ripple process launched from an IDE or coding tool can inherit its AppArmor label, causing a player such as Snap Spotify to reject reads while other players remain visible. When D-Bus reports `AccessDenied` with an AppArmor sender label, launch Ripple from the desktop or the normal user session and check the player again.
 

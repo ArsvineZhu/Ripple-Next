@@ -2,7 +2,7 @@
 
 # Development
 
-Use Node `22.23.3` from [.node-version](../.node-version) and pnpm `12.9.1` from package.json. Install with the committed lockfile. Native packaging runs on the corresponding host: Linux uses cc, dpkg, fakeroot and rpm; Windows MSI uses WiX; macOS uses Xcode Command Line Tools.
+Use Node `22.23.3` from [.node-version](../.node-version) and pnpm with the committed lockfile. pnpm 12 is faster. Native packaging runs on the corresponding host: Linux uses cc, dpkg, fakeroot and rpm; Windows MSI uses WiX Toolset 3 (`candle.exe` and `light.exe` on PATH); macOS uses Xcode Command Line Tools. WiX 4 does not provide those tools. When they are absent, `pnpm make` still writes the portable Windows zip and skips the MSI.
 
 ```sh
 pnpm install --frozen-lockfile
@@ -12,6 +12,8 @@ pnpm test
 pnpm package
 pnpm make
 ```
+
+Install WiX Toolset 3.14 with `winget install --id WiXToolset.WiXToolset -e` or `choco install wixtoolset --no-progress -y`, then open a new shell. Both tools are in `C:\Program Files (x86)\WiX Toolset v3.14\bin`. CI appends that directory to PATH after Chocolatey.
 
 Linux development requires a working Chromium sandbox. Chromium uses the `chrome-sandbox` beside the Electron binary when that file is present, and reads `CHROME_DEVEL_SANDBOX` only while it is absent. The helper must be root-owned with mode 4755. `pnpm start` moves the development helper aside and selects `/usr/lib/ripple-next/chrome-sandbox` when that installed file has those permissions and the same bytes. Set `CHROME_DEVEL_SANDBOX` to use another matching helper. Forge starts the transparent window through X11/XWayland. Restart the application after main/preload changes.
 

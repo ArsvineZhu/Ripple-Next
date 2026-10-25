@@ -10,14 +10,16 @@ Ripple Next 在 Windows、macOS、Linux 上共用界面和数据格式，通过�
 
 接口来源：[Windows ColorDialog](https://learn.microsoft.com/dotnet/api/system.windows.forms.colordialog)、[macOS 颜色对话框](https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/PromptforaColor.html)、[KDE 对话框](https://develop.kde.org/docs/administration/kdialog/)。
 
-| 功能           | Windows                              | macOS                                          | Linux                                                     |
-| -------------- | ------------------------------------ | ---------------------------------------------- | --------------------------------------------------------- |
-| 音乐           | GSMTC 会话、控制能力与封面           | AppleScript 读取运行中的 Spotify、Music 及封面 | 会话 D-Bus 上的 MPRIS、控制能力与封面                     |
-| 唤起播放器     | 缓存的应用标识／路径                 | 激活正在运行的应用                             | MPRIS Raise 或同一会话的托盘 Activate                     |
-| 已安装快捷应用 | 开始菜单 `.lnk` 与 Store 标识        | 系统、共享、用户 Applications，含 Utilities    | XDG 桌面条目，经 `gio launch` 启动                        |
-| 登录启动       | 打包应用的系统登录设置               | 打包应用的原生登录项                           | 当前 XDG 自启动目录中的 `ripple-next.desktop`             |
-| 透明窗口输入   | 按原生光标／岛边界切换穿透           | Electron 岛外点击穿透                          | XWayland 上的 X11 `ShapeInput`                            |
-| 设备状态       | WinRT 蓝牙；摄像头／麦克风注册表探测 | 蓝牙与采集设备注册表探测                       | BlueZ D-Bus、inotify + `fuser`、PipeWire／PulseAudio 事件 |
+| 功能           | Windows                                           | macOS                                                 | Linux                                                                                                    |
+| -------------- | ------------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 音乐           | GSMTC 会话、控制能力与封面                        | AppleScript 读取运行中的 Spotify、Music 及封面        | 会话 D-Bus 上的 MPRIS、控制能力与封面                                                                    |
+| 唤起播放器     | 缓存的应用标识／路径                              | 激活正在运行的应用                                    | MPRIS Raise 或同一会话的托盘 Activate                                                                    |
+| 已安装快捷应用 | 开始菜单 `.lnk` 与 Store 标识                     | 系统、共享、用户 Applications，含 Utilities           | XDG 桌面条目，经 `gio launch` 启动                                                                       |
+| 登录启动       | 打包应用的登录项，带 `--ripple-launched-at-login` | 打包应用的原生登录项；`wasOpenedAtLogin` 识别本次启动 | 当前 XDG 自启动目录中的 `ripple-next.desktop`，含 `--ozone-platform=x11` 与 `--ripple-launched-at-login` |
+| 透明窗口输入   | 按原生光标／岛边界切换穿透                        | Electron 岛外点击穿透                                 | XWayland 上的 X11 `ShapeInput`                                                                           |
+| 设备状态       | WinRT 蓝牙；摄像头／麦克风注册表探测              | 蓝牙与采集设备注册表探测                              | BlueZ D-Bus、inotify + `fuser`、PipeWire／PulseAudio 事件                                                |
+
+登录启动只打开 Island。自己启动应用，或从托盘打开，仍然打开设置。已有的登录项会在下次以“登录时启动”开启的打包应用启动时写入这个参数。
 
 播放器发布受支持的媒体会话后才会出现；控制可用性由其能力决定。macOS 当前接入 Spotify／Music，不会发现任意系统媒体会话。摄像头／麦克风提示依据系统和驱动提供的探测信息。
 
@@ -37,7 +39,7 @@ Windows 通过共用的类型化 CLR 桥接读取 GSMTC 元数据、封面和控
 
 ## Linux 配置与恢复
 
-透明窗口使用 X11／XWayland，占据所选显示器的工作区；只有 `ShapeInput` 随 Island 动画变化。保持 X11 客户端静态打包，自启动入口保留 `--ozone-platform=x11`。用 `ShapeBounding` 做动画会导致黑色闪烁。启动先等待 renderer 就绪并确认首次输入区域，再显示窗口。
+透明窗口使用 X11／XWayland，占据所选显示器的工作区；只有 `ShapeInput` 随 Island 动画变化。保持 X11 客户端静态打包，自启动入口保留 `--ozone-platform=x11` 和 `--ripple-launched-at-login`。用 `ShapeBounding` 做动画会导致黑色闪烁。启动先等待 renderer 就绪并确认首次输入区域，再显示窗口。
 
 Snap 播放器可通过 AppArmor 限制 MPRIS 访问。从 IDE 或编程工具启动的 Ripple 可能继承其 AppArmor 标签，使 Snap Spotify 等播放器拒绝读取，而其他播放器仍然可见。D-Bus 报告 `AccessDenied` 并指出发送方 AppArmor 标签时，从桌面入口或正常用户会话启动 Ripple，再检查该播放器。
 

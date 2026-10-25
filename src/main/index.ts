@@ -22,6 +22,8 @@ import { hasTray, setTrayVisible } from './tray';
 import { installAppMenu } from './appMenu';
 import { shouldQuitAfterLastWindow } from './appLifecycle';
 import { configureSettingsWindow, openSettingsWindow } from './settingsWindow';
+import { loginLaunchRegistered, setAutoLaunch } from './platform/autostart';
+import { launchedAtLogin } from './platform/loginLaunch';
 import { createAppStateStore } from './services/appStateStore';
 import { createSecretStore } from './services/secretStore';
 import { createAssistantService } from './ai/assistant';
@@ -274,9 +276,18 @@ async function startApplication() {
       applyShowTray,
     });
     initializeLinuxInputShape(diagnosticsService, reportInputShapeError);
+    if (initialState.settings.autoLaunch && !(await loginLaunchRegistered())) {
+      await setAutoLaunch(true).catch((error) =>
+        diagnosticsService.recordError('application', error),
+      );
+    }
     createWindow(diagnosticsService, reportWindowLoadError, initialState.settings.displayId);
     startupComplete = true;
-    presentApplication();
+    const openedAtLogin = launchedAtLogin(
+      process.argv,
+      process.platform === 'darwin' && app.getLoginItemSettings().wasOpenedAtLogin,
+    );
+    if (!openedAtLogin) await presentApplication();
   });
 
   app.on('before-quit', () => {

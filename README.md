@@ -83,7 +83,7 @@ The in-app guide starts with keyboard controls and contains real recordings of f
 
 ## Start using Ripple Next
 
-Download the package for your platform, install it or extract the portable ZIP, then launch Ripple Next. Settings opens first; closing it leaves the Island running. Launch again or use the tray to reopen Settings.
+Download the package for your platform, install it or extract the portable ZIP, then launch Ripple Next. Settings opens first; closing it leaves the Island running. Launch at login opens only the Island. Launch again or use the tray to reopen Settings.
 
 | Platform | Architecture | Packages                 |
 | -------- | ------------ | ------------------------ |
@@ -97,7 +97,7 @@ Preferences, workflows, quick apps and tasks persist in Ripple Next’s user-dat
 
 ## Develop and contribute
 
-Use Node from `.node-version` and pnpm from `package.json`. [Development](docs/development.md), [architecture](docs/architecture.md), [tests](tests/README.md) and the [repository map](INDEX.md) describe the current owners and workflows.
+Use Node from `.node-version` and pnpm. pnpm 12 is faster. [Development](docs/development.md), [architecture](docs/architecture.md), [tests](tests/README.md) and the [repository map](INDEX.md) describe the current owners and workflows.
 
 ```sh
 pnpm install --frozen-lockfile

@@ -41,7 +41,6 @@
     "email": "arsvinezhu@gmail.com"
   },
   "license": "MIT",
-  "packageManager": "pnpm@12.9.1",
   "devDependencies": {
     "@ai-sdk/anthropic": "4.0.79",
     "@ai-sdk/openai": "4.0.92",

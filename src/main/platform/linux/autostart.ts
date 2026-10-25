@@ -3,18 +3,32 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { getIconPath } from '../../assets';
+import { loginLaunchArgument } from '../loginLaunch';
 
 function desktopExecArgument(value: string) {
   return `"${value.replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('%', '%%')}"`;
 }
 
-export async function setAutoLaunch(enable: boolean): Promise<void> {
+function autostartEntryPath() {
   const defaultConfigHome = path.join(app.getPath('home'), '.config');
   const configuredHome = process.env.XDG_CONFIG_HOME;
   const configHome =
     configuredHome && path.isAbsolute(configuredHome) ? configuredHome : defaultConfigHome;
-  const autostartPath = path.join(configHome, 'autostart');
-  const nextEntryPath = path.join(autostartPath, 'ripple-next.desktop');
+  return path.join(configHome, 'autostart', 'ripple-next.desktop');
+}
+
+export async function loginLaunchRegistered() {
+  try {
+    const content = await fs.readFile(autostartEntryPath(), 'utf8');
+    return content.includes(loginLaunchArgument);
+  } catch {
+    return false;
+  }
+}
+
+export async function setAutoLaunch(enable: boolean): Promise<void> {
+  const nextEntryPath = autostartEntryPath();
+  const autostartPath = path.dirname(nextEntryPath);
 
   if (!enable) {
     await fs.rm(nextEntryPath, { force: true });
@@ -29,7 +43,7 @@ Version=1.0
 Name=Ripple Next
 StartupWMClass=ripple-next
 Comment=Ripple Next Desktop Island
-Exec=${desktopExecArgument(app.getPath('exe'))} --ozone-platform=x11
+Exec=${desktopExecArgument(app.getPath('exe'))} --ozone-platform=x11 ${loginLaunchArgument}
 Icon=${getIconPath()}
 Terminal=false
 StartupNotify=false

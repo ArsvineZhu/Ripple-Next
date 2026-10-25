@@ -33,7 +33,7 @@ pnpm make
 node scripts/release-notes.mjs v<version>
 ```
 
-`package` 生成可运行目录，`make` 在对应系统生成安装程序和便携归档。Linux 需要 cc、dpkg、fakeroot、rpm，Windows MSI 需要 WiX，macOS 需要 Xcode 命令行工具。Forge 构建／分发 Linux inotify 程序及目标架构 macOS 窗口模块；macOS 使用临时签名。
+`package` 生成可运行目录，`make` 在对应系统生成安装程序和便携归档。Linux 需要 cc、dpkg、fakeroot、rpm，Windows MSI 需要 WiX Toolset 3（PATH 中的 `candle.exe` 和 `light.exe`），macOS 需要 Xcode 命令行工具。缺少这些 WiX 3 工具时，仍生成 Windows 便携 zip 并跳过 MSI。WiX 4 不提供这两个工具。安装命令见[开发指南](development.zh-CN.md)。Forge 构建／分发 Linux inotify 程序及目标架构 macOS 窗口模块；macOS 使用临时签名。
 
 DEB／RPM、MSI、DMG 和 ZIP 命名为 `RippleNext-<OS>[-<macOS arch>]-v<version>[-Portable].<ext>`。软件包和临时构建／拍摄资料保存在忽略的 out/。
 

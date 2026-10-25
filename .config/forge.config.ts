@@ -4,7 +4,7 @@ import { MakerZIP } from '@electron-forge/maker-zip';
 import { MakerRpm } from '@electron-forge/maker-rpm';
 import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerDMG } from '@electron-forge/maker-dmg';
-import { MakerWix } from '@electron-forge/maker-wix';
+import { MakerWixOptional } from './maker-wix';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import fs from 'node:fs';
@@ -14,6 +14,8 @@ import path from 'node:path';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
 const projectRoot = path.resolve(__dirname, '..');
+const executableName = 'ripple-next';
+const appId = 'com.arsvinezhu.ripple-next';
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -22,8 +24,8 @@ const config: ForgeConfig = {
       if (!file) return false;
       return !file.startsWith('/.vite') && !file.startsWith('/node_modules');
     },
-    executableName: 'ripple-next',
-    appBundleId: 'com.arsvinezhu.ripple-next',
+    executableName,
+    appBundleId: appId,
     icon: 'src/assets/icons/icon',
     extraResource: [
       path.join(projectRoot, 'src/assets/icons/icon.png'),
@@ -134,11 +136,13 @@ const config: ForgeConfig = {
   },
   rebuildConfig: {},
   makers: [
-    new MakerWix({
+    new MakerWixOptional({
       language: 1033,
       manufacturer: 'Arsvine Zhu',
       description: 'A Dynamic Island for All',
       name: 'Ripple Next',
+      exe: `${executableName}.exe`,
+      appUserModelId: appId,
       icon: path.join(projectRoot, 'src/assets/icons/icon.ico'),
       shortcutFolderName: 'Ripple Next',
       programFilesFolderName: 'Ripple Next',
