@@ -4,7 +4,14 @@ import { configureApplicationProfile, requestApplicationInstanceLock } from './a
 import { createFontService, registerFontScheme } from './services/fonts';
 import { defaultAppState } from '../shared/appState';
 import { messages, resolveLocale } from '../shared/i18n';
-import { registerIPC } from './ipc';
+import { registerIPC, registerProfileRecoveryIPC } from './ipc';
+import {
+  focusProfileRecoveryWindow,
+  hasProfileRecoveryWindow,
+  openProfileRecoveryWindow,
+  relaunchAfterProfileReset,
+} from './recoveryWindow';
+import { IncompatibleProfileError } from '../shared/profileRecovery';
 import {
   closeInputConnection,
   createWindow,
@@ -68,6 +75,10 @@ async function startApplication() {
   }
 
   const presentApplication = async () => {
+    if (hasProfileRecoveryWindow()) {
+      focusProfileRecoveryWindow();
+      return;
+    }
     if (!startupComplete || !diagnostics) return;
     if (!getMainWindow())
       createWindow(
@@ -228,6 +239,15 @@ async function startApplication() {
       initialState = await stateStore.load();
     } catch (error) {
       diagnosticsService.recordError('application', error);
+      if (error instanceof IncompatibleProfileError) {
+        registerProfileRecoveryIPC({
+          stateStore,
+          relaunch: relaunchAfterProfileReset,
+        });
+        openProfileRecoveryWindow(diagnosticsService, reportWindowLoadError);
+        startupComplete = true;
+        return;
+      }
       notices.report(
         'stateLoadFailed',
         error instanceof Error ? error.message : String(error),

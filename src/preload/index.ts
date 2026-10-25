@@ -48,6 +48,9 @@ const api: ElectronAPI = {
   getSystemLocale: () => invoke('get-system-locale'),
   setUILocale: (locale) => invoke('set-ui-locale', locale),
   getAppBootstrap: () => invoke('get-app-bootstrap'),
+  backupIncompatibleProfile: () => invoke('backup-incompatible-profile'),
+  resetIncompatibleProfile: (confirmedDiscard) =>
+    invoke('reset-incompatible-profile', confirmedDiscard),
   updateAppState: (patch) => invoke('update-app-state', patch),
   setIslandPreview: (active) => invoke('set-island-preview', active),
   getIslandPreview: () => invoke('get-island-preview'),

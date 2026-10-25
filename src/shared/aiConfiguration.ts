@@ -23,13 +23,7 @@ const ModelCustomizationObject = z
   })
   .strict();
 
-function withoutLegacyAwareness(value: unknown) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
-  const { contextAwareness: _legacy, ...rest } = value as Record<string, unknown>;
-  return rest;
-}
-
-const ModelCustomizationSchema = z.preprocess(withoutLegacyAwareness, ModelCustomizationObject);
+const ModelCustomizationSchema = ModelCustomizationObject;
 export type ModelCustomization = z.infer<typeof ModelCustomizationSchema>;
 const ModelCustomizationPatchSchema = z
   .object({
@@ -134,49 +128,7 @@ const AIConfigurationObject = z
       });
   });
 
-function migrateSharedAI(value: unknown) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
-  const input = { ...(value as Record<string, unknown>) };
-  const models = Array.isArray(input.models) ? input.models : [];
-  const active = models.find(
-    (item) =>
-      item && typeof item === 'object' && (item as { id?: unknown }).id === input.activeModelId,
-  ) as { customization?: Record<string, unknown> } | undefined;
-  const first = models.find((item) => item && typeof item === 'object') as
-    { customization?: Record<string, unknown> } | undefined;
-  const source = active?.customization ?? first?.customization;
-  if (typeof input.instruction !== 'string') {
-    const injections = Array.isArray(source?.injections) ? source.injections : [];
-    input.instruction = injections
-      .filter(
-        (item) =>
-          item && typeof item === 'object' && (item as { enabled?: boolean }).enabled !== false,
-      )
-      .map((item) => String((item as { text?: unknown }).text ?? '').trim())
-      .filter(Boolean)
-      .join('\n\n');
-  }
-  if (input.perception === undefined && source?.perception) input.perception = source.perception;
-  input.models = models.map((item) => {
-    if (!item || typeof item !== 'object') return item;
-    const model = { ...(item as Record<string, unknown>) };
-    const customization = model.customization;
-    if (!customization || typeof customization !== 'object' || Array.isArray(customization))
-      return model;
-    const {
-      injections: _injections,
-      perception: _perception,
-      systemPrompt: _systemPrompt,
-      contextAwareness: _contextAwareness,
-      ...rest
-    } = customization as Record<string, unknown>;
-    model.customization = rest;
-    return model;
-  });
-  return input;
-}
-
-export const AIConfigurationSchema = z.preprocess(migrateSharedAI, AIConfigurationObject);
+export const AIConfigurationSchema = AIConfigurationObject;
 export type AIConfiguration = z.infer<typeof AIConfigurationSchema>;
 
 export function defaultAIConfiguration(): AIConfiguration {

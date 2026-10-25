@@ -47,6 +47,7 @@ import { withDiagnosticOperation } from './services/diagnosticScope';
 import type { AssistantEvent, AssistantResult } from '../shared/contracts';
 import { AssistantBatterySchema } from '../shared/aiPerception';
 import type { AssistantBattery, AssistantContextPreview } from '../shared/aiPerception';
+import type { ProfileResetConsent } from '../shared/profileRecovery';
 import type { createFontService } from './services/fonts';
 import { RGB_HEX } from '../shared/color';
 import { showNativeColorPicker } from './services/colorPicker';
@@ -615,4 +616,40 @@ export function registerIPC(services: IPCServices) {
     unsubscribeMedia();
     unsubscribeDevices?.();
   };
+}
+
+export function registerProfileRecoveryIPC(input: {
+  stateStore: {
+    backupIncompatibleProfile(instant: Date): string;
+    discardIncompatibleStore(consent: ProfileResetConsent): void;
+  };
+  relaunch(): void;
+}) {
+  let backupDirectory: string | undefined;
+  const allow = (event: IpcMainInvokeEvent) => {
+    if (!isAllowedIpcSender(event.sender)) throw new DiagnosticError('Unknown IPC sender');
+  };
+  ipcMain.handle('get-system-locale', (event) => {
+    allow(event);
+    return app.getLocale();
+  });
+  ipcMain.handle('set-ui-locale', (event, locale) => {
+    allow(event);
+    if (!isLocale(locale)) throw new DiagnosticError('Invalid locale');
+    setTrayLocale(locale);
+  });
+  ipcMain.handle('backup-incompatible-profile', (event) => {
+    allow(event);
+    const directory = input.stateStore.backupIncompatibleProfile(new Date());
+    backupDirectory = directory;
+    return { path: directory };
+  });
+  ipcMain.handle('reset-incompatible-profile', (event, confirmedDiscard: unknown) => {
+    allow(event);
+    input.stateStore.discardIncompatibleStore({
+      backupCompleted: backupDirectory !== undefined,
+      confirmedDiscard: confirmedDiscard === true,
+    });
+    input.relaunch();
+  });
 }

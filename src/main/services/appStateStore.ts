@@ -4,6 +4,14 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { defaultAppState, AppStateSchema, AppStatePatchSchema } from '../../shared/appState';
 import type { AppState, AppStatePatch } from '../../shared/appState';
+import {
+  assertProfileResetAllowed,
+  incompatibleProfileBackupPath,
+  IncompatibleProfileError,
+  profileStoreFileName,
+  profileStoreRelatedNames,
+  type ProfileResetConsent,
+} from '../../shared/profileRecovery';
 import schema from '../database/schema.sql?raw';
 
 export function createAppStateStore(userDataPath: string) {
@@ -98,10 +106,7 @@ export function createAppStateStore(userDataPath: string) {
     }));
     const parsed = AppStateSchema.safeParse({ settings, tasks, workflows, quickApps });
     if (!parsed.success)
-      throw new DiagnosticError(
-        'Ripple Next database state does not match its schema',
-        validationProblems(parsed.error.issues),
-      );
+      throw new IncompatibleProfileError(validationProblems(parsed.error.issues));
     current = parsed.data;
     return current;
   };
@@ -141,6 +146,29 @@ export function createAppStateStore(userDataPath: string) {
     setSecretCiphertext: (key: string, ciphertext: Buffer) => secretWrite.run(key, ciphertext),
     deleteSecret: (key: string) => secretDelete.run(key),
     hasSecret: (key: string): boolean => secretExists.get(key) !== undefined,
+    backupIncompatibleProfile: (instant: Date) => {
+      const destinationDirectory = incompatibleProfileBackupPath(userDataPath, instant);
+      if (fs.existsSync(destinationDirectory))
+        throw new DiagnosticError('Backup directory already exists');
+      fs.mkdirSync(destinationDirectory, { recursive: true, mode: 0o700 });
+      database.pragma('wal_checkpoint(TRUNCATE)');
+      for (const name of profileStoreRelatedNames) {
+        const source = path.join(userDataPath, name);
+        if (!fs.existsSync(source)) continue;
+        const target = path.join(destinationDirectory, name);
+        fs.copyFileSync(source, target);
+        fs.chmodSync(target, 0o600);
+      }
+      if (!fs.existsSync(path.join(destinationDirectory, profileStoreFileName)))
+        throw new DiagnosticError('Could not back up the profile store');
+      return destinationDirectory;
+    },
+    discardIncompatibleStore: (consent: ProfileResetConsent) => {
+      assertProfileResetAllowed(consent);
+      if (database.open) database.close();
+      for (const name of profileStoreRelatedNames)
+        fs.rmSync(path.join(userDataPath, name), { force: true });
+    },
     close: () => {
       if (database.open) database.close();
     },

@@ -87,9 +87,9 @@ it('rejects cross-endpoint keys and preserves model customization when its crede
   expect(f.read().models[0].credentialId).toBeNull();
   expect(f.read().models[0].customization.temperature).toBe(0.4);
 });
-it('lifts legacy per-model instructions and perception into shared settings', () => {
+it('rejects legacy per-model instructions instead of rewriting them', () => {
   const { instruction: _instruction, perception: _perception, ...base } = defaultAIConfiguration();
-  const parsed = AIConfigurationSchema.parse({
+  const parsed = AIConfigurationSchema.safeParse({
     ...base,
     nextId: { endpoint: 2, credential: 1, model: 2 },
     models: [
@@ -111,10 +111,7 @@ it('lifts legacy per-model instructions and perception into shared settings', ()
       },
     ],
   });
-  expect(parsed.instruction).toBe('Hello');
-  expect(parsed.perception.battery).toBe(false);
-  expect(parsed.perception.clock).toBe(true);
-  expect(parsed.models[0].customization.vision).toBe('unknown');
+  expect(parsed.success).toBe(false);
 });
 it('merges one shared perception channel without changing model parameters', async () => {
   const f = fixture();
