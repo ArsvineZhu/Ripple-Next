@@ -15,7 +15,9 @@ export function ClipboardTab({ clipboard, clipboardReadFailed, copyToClipboard }
     >
       {clipboardReadFailed && <Feedback>{t('clipboardReadFailed')}</Feedback>}
       {clipboard.length === 0 && !clipboardReadFailed ? (
-        <EmptyState className={styles.emptyState}>{t('clipboardEmpty')}</EmptyState>
+        <EmptyState prominent className={styles.emptyState}>
+          {t('clipboardEmpty')}
+        </EmptyState>
       ) : (
         clipboard.map((item, index) => (
           <Surface className={styles.row} interactive key={index}>
