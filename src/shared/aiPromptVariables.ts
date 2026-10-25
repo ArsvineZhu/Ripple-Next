@@ -1,0 +1,30 @@
+/** Ordered injection names available in system/user prompt templates. */
+const promptInjectionNames = [
+  'product',
+  'version',
+  'developer',
+  'license',
+  'repository',
+  'website',
+  'tracker',
+  'timezone',
+  'current_time',
+  'locale',
+  'location',
+  'os',
+  'arch',
+  'weather',
+  'temperature',
+  'memory',
+  'storage',
+  'network',
+  'battery',
+  'music',
+  'diagnose',
+  'settings',
+  'desktop',
+  'customizations',
+  'user_input',
+] as const;
+
+export type PromptInjectionName = (typeof promptInjectionNames)[number];

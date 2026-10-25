@@ -1,9 +1,10 @@
-import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AnimatePresence, motion } from 'motion/react';
-import type { ModelCustomization } from '../../shared/aiConfiguration';
+import type { ModelCustomization, ModelCustomizationPatch } from '../../shared/aiConfiguration';
+import type { AssistantContextPreview, PerceptionChannelId } from '../../shared/aiPerception';
+import { perceptionChannelIds } from '../../shared/aiPerception';
 import type { useAIConfiguration } from '../hooks/useAIConfiguration';
-import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
+import { useBattery } from '../hooks/useBattery';
 import { Select } from '../components/Select';
 import { PreferenceSwitch } from '../components/PreferenceSwitch';
 import {
@@ -12,11 +13,93 @@ import {
   PreferenceRow,
   PreferenceNumberField,
   PreferenceButton,
+  PreferenceLink,
 } from '../components/preferences';
+import { detailEntryId, type SettingsDetail } from '../lib/settingsDetails';
 import { AIField } from './AIField';
 import styles from '../components/preferences/Preferences.module.css';
-import { aiDisplayLabel, aiDisplayNumber } from '../lib/aiDisplay';
-import { DangerAction } from '../components/DangerAction';
+
+const perceptionLabels = {
+  clock: ['perceptionClock', 'perceptionClockHint'],
+  locale: ['perceptionLocale', 'perceptionLocaleHint'],
+  place: ['perceptionPlace', 'perceptionPlaceHint'],
+  host: ['perceptionHost', 'perceptionHostHint'],
+  resources: ['perceptionResources', 'perceptionResourcesHint'],
+  battery: ['perceptionBattery', 'perceptionBatteryHint'],
+  music: ['perceptionMusic', 'perceptionMusicHint'],
+  weather: ['perceptionWeather', 'perceptionWeatherHint'],
+  diagnose: ['perceptionDiagnose', 'perceptionDiagnoseHint'],
+  settings: ['perceptionSettings', 'perceptionSettingsHint'],
+  desktop: ['perceptionDesktop', 'perceptionDesktopHint'],
+} as const satisfies Record<PerceptionChannelId, readonly [string, string]>;
+
+function perceptionDetail(channel: PerceptionChannelId, preview: AssistantContextPreview) {
+  const values = preview.values;
+  switch (channel) {
+    case 'clock':
+      return `Timezone: ${values.timezone}\nCurrent Time: ${values.current_time}`;
+    case 'locale':
+      return values.locale;
+    case 'place':
+      return values.location;
+    case 'host':
+      return `Operating System: ${values.os}\nArchitecture: ${values.arch}`;
+    case 'resources':
+      return `Memory: ${values.memory}\nStorage: ${values.storage}\nNetwork: ${values.network}`;
+    case 'battery':
+      return values.battery;
+    case 'music':
+      return values.music;
+    case 'weather':
+      return `Condition: ${values.weather}\nTemperature: ${values.temperature}`;
+    case 'diagnose':
+      return values.diagnose;
+    case 'settings':
+      return values.settings;
+    case 'desktop':
+      return '';
+  }
+}
+
+function usePerceptionPreview() {
+  const battery = useBattery();
+  const [preview, setPreview] = useState<AssistantContextPreview | null>(null);
+  useEffect(() => {
+    const previewContext = window.electronAPI?.previewAssistantContext;
+    if (!previewContext) return;
+    let active = true;
+    const percent = typeof battery.percent === 'number' ? battery.percent : null;
+    void previewContext({ percent, charging: battery.charging })
+      .then((value) => {
+        if (active) setPreview(value);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [battery.percent, battery.charging]);
+  return preview;
+}
+
+export function PerceptionChannelPage({ channel }: { channel: PerceptionChannelId }) {
+  const { t } = useTranslation();
+  const preview = usePerceptionPreview();
+  const hint = perceptionLabels[channel][1];
+  const text = preview && channel !== 'desktop' ? perceptionDetail(channel, preview) : '';
+  return (
+    <PreferenceCard>
+      <div className={styles.prefStack}>
+        <p className={styles.hint}>{t(hint)}</p>
+        {text && (
+          <>
+            <span className={styles.label}>{t('perceptionCurrentValue')}</span>
+            <pre className={styles.perceptionValue}>{text}</pre>
+          </>
+        )}
+      </div>
+    </PreferenceCard>
+  );
+}
 
 export function AIModelCustomization({
   controller: p,
@@ -26,152 +109,56 @@ export function AIModelCustomization({
   id: number;
 }) {
   const { t } = useTranslation();
-  const reduced = useReducedMotionPreference();
+  const [probing, setProbing] = useState(false);
+  const [probeDetail, setProbeDetail] = useState<string | null>(null);
   const model = p.ai.models.find((item) => item.id === id);
   if (!model) return null;
   const endpoint = p.ai.endpoints.find((item) => item.id === model.endpointId);
   if (!endpoint) return null;
   const profile = model.customization;
-  const update = (customization: Partial<ModelCustomization>) =>
+  const update = (customization: ModelCustomizationPatch) =>
     void p.mutate({ kind: 'customize-model', id, customization });
-  const injections = profile.injections;
-  const updateInjection = (
-    injectionId: string,
-    patch: { name?: string; text?: string; enabled?: boolean },
-  ) => void p.mutate({ kind: 'edit-injection', id, injectionId, ...patch });
   const efforts =
     endpoint.protocol === 'anthropic'
       ? ['default', 'low', 'medium', 'high', 'max']
       : ['default', 'none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'];
   return (
     <>
-      <PreferenceCard>
+      <PreferenceCard caption={t('visionCapability')}>
         <div className={styles.prefStack}>
-          <span className={styles.label}>{aiDisplayLabel(p.ai.models, model, model.name)}</span>
-          <p
-            className={styles.bindingSummary}
-          >{`${t('baseUrlNumber', { count: aiDisplayNumber(p.ai.endpoints, endpoint.id) })}: ${endpoint.baseUrl}`}</p>
-          <p className={styles.bindingSummary}>{`${t('aiModel')}: ${model.name}`}</p>
-          <p className={styles.hint}>{t('aiModelBindingLocked')}</p>
-        </div>
-      </PreferenceCard>
-      <PreferenceCard caption={t('systemPrompt')}>
-        <div className={styles.prefStack}>
-          <PreferenceRow label={t('useDefaultSystemPrompt')}>
-            <PreferenceSwitch
-              label={t('useDefaultSystemPrompt')}
-              checked={profile.systemPrompt === null}
-              onCheckedChange={(value) => update({ systemPrompt: value ? null : '' })}
+          <PreferenceRow label={t('visionCapability')}>
+            <Select
+              label={t('visionCapability')}
+              value={profile.vision}
+              onValueChange={(value) => update({ vision: value as ModelCustomization['vision'] })}
+              options={[
+                { value: 'unknown', label: t('visionUnknown') },
+                { value: 'supported', label: t('visionSupported') },
+                { value: 'unsupported', label: t('visionUnsupported') },
+              ]}
             />
           </PreferenceRow>
-          <AnimatePresence initial={false}>
-            {profile.systemPrompt !== null && (
-              <motion.div
-                key="system-prompt"
-                className={styles.animatedFields}
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: reduced ? 0 : 0.2 }}
-              >
-                <AIField
-                  label={t('systemPrompt')}
-                  value={profile.systemPrompt}
-                  multiline
-                  onChange={(systemPrompt) => update({ systemPrompt })}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <p className={styles.hint}>
-            {t('promptVariablesHint', {
-              variables: '{{product}}, {{version}}, {{timezone}}, {{current_time}}',
-            })}
-          </p>
-        </div>
-      </PreferenceCard>
-      <PreferenceCard caption={t('injectionList')}>
-        <div className={styles.prefStack}>
-          <p className={styles.hint}>{t('injectionsHint')}</p>
-          <AnimatePresence initial={false}>
-            {injections.map((item, index) => (
-              <motion.div
-                key={item.id}
-                className={styles.injectionItem}
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: reduced ? 0 : 0.2 }}
-              >
-                <div className={styles.row}>
-                  <span className={styles.label}>{`#${index + 1}`}</span>
-                  <PreferenceSwitch
-                    label={t('enableInjection', { count: index + 1 })}
-                    checked={item.enabled}
-                    onCheckedChange={(enabled) => updateInjection(item.id, { enabled })}
-                  />
-                  <button
-                    type="button"
-                    className={styles.iconButton}
-                    disabled={index === 0}
-                    aria-label={t('moveInjectionUp')}
-                    onClick={() =>
-                      void p.mutate({
-                        kind: 'move-injection',
-                        id,
-                        injectionId: item.id,
-                        direction: -1,
-                      })
-                    }
-                  >
-                    <ArrowUp size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.iconButton}
-                    disabled={index === injections.length - 1}
-                    aria-label={t('moveInjectionDown')}
-                    onClick={() =>
-                      void p.mutate({
-                        kind: 'move-injection',
-                        id,
-                        injectionId: item.id,
-                        direction: 1,
-                      })
-                    }
-                  >
-                    <ArrowDown size={16} />
-                  </button>
-                  <DangerAction
-                    label={`${t('removeInjection')} #${index + 1}${item.name ? ` · ${item.name}` : ''}`}
-                    onConfirm={() =>
-                      p.mutate({ kind: 'remove-injection', id, injectionId: item.id })
-                    }
-                  >
-                    <X size={16} />
-                  </DangerAction>
-                </div>
-                <AIField
-                  label={t('injectionName')}
-                  value={item.name}
-                  onChange={(name) => updateInjection(item.id, { name })}
-                />
-                <AIField
-                  label={t('injectionText')}
-                  value={item.text}
-                  multiline
-                  onChange={(text) => updateInjection(item.id, { text })}
-                />
-              </motion.div>
-            ))}
-          </AnimatePresence>
           <PreferenceButton
             variant="secondary"
-            onClick={() => void p.mutate({ kind: 'add-injection', id })}
+            disabled={probing}
+            onClick={() => {
+              setProbing(true);
+              setProbeDetail(null);
+              void window.electronAPI
+                .probeModelVision(id)
+                .then((result) => {
+                  if (result.status !== 'supported')
+                    setProbeDetail(result.detail ?? t('probeVisionFailed'));
+                })
+                .catch((error) => {
+                  setProbeDetail(error instanceof Error ? error.message : t('probeVisionFailed'));
+                })
+                .finally(() => setProbing(false));
+            }}
           >
-            <Plus size={16} />
-            {t('addInjection')}
+            {probing ? t('probingVision') : t('probeVision')}
           </PreferenceButton>
+          {probeDetail && <p className={styles.hint}>{probeDetail}</p>}
         </div>
       </PreferenceCard>
       <PreferenceGroup caption={t('modelParameters')}>
@@ -248,14 +235,55 @@ export function AIModelCustomization({
           onChange={(contextLimitCharacters) => update({ contextLimitCharacters })}
         />
         <p className={`${styles.hint} ${styles.groupHint}`}>{t('modelParametersHint')}</p>
-        <PreferenceRow label={t('contextAwareness')} hint={t('contextAwarenessReserved')}>
-          <PreferenceSwitch
-            label={t('contextAwareness')}
-            checked={false}
-            disabled
-            onCheckedChange={() => {}}
+      </PreferenceGroup>
+    </>
+  );
+}
+
+export function AISharedSettings({
+  controller: p,
+  navigate,
+}: {
+  controller: ReturnType<typeof useAIConfiguration>;
+  navigate(detail: SettingsDetail): void;
+}) {
+  const { t } = useTranslation();
+  const perception = p.ai.perception;
+  return (
+    <>
+      <PreferenceCard caption={t('customInstruction')}>
+        <div className={styles.prefStack}>
+          <AIField
+            label={t('customInstruction')}
+            value={p.ai.instruction}
+            multiline
+            onChange={(instruction) => void p.mutate({ kind: 'edit-shared', instruction })}
           />
-        </PreferenceRow>
+          <p className={styles.hint}>{t('customInstructionHint')}</p>
+        </div>
+      </PreferenceCard>
+      <PreferenceGroup>
+        {perceptionChannelIds.map((channel) => {
+          const [label, hint] = perceptionLabels[channel];
+          const next = { page: 'perceptionChannel' as const, channel };
+          return (
+            <div key={channel} className={styles.compactItem}>
+              <PreferenceLink
+                entry={detailEntryId(next)}
+                label={t(label)}
+                hint={t(hint)}
+                onClick={() => navigate(next)}
+              />
+              <PreferenceSwitch
+                label={t(label)}
+                checked={perception[channel]}
+                onCheckedChange={(enabled) =>
+                  void p.mutate({ kind: 'edit-shared', perception: { [channel]: enabled } })
+                }
+              />
+            </div>
+          );
+        })}
       </PreferenceGroup>
     </>
   );

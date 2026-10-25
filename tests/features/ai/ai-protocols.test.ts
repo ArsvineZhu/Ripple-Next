@@ -2,6 +2,8 @@ import { expect, it, vi } from 'vitest';
 import { streamCompatibleChat } from '../../../src/main/ai/stream';
 import { defaultCustomization } from '../../../src/shared/aiConfiguration';
 import type { AIProtocol } from '../../../src/shared/aiConfiguration';
+import { defaultPerception } from '../../../src/shared/aiPerception';
+import { defaultWeatherPreferences } from '../../../src/shared/weather';
 
 function stream(events: unknown[]) {
   const body = events.map((event) => `data: ${JSON.stringify(event)}\n\n`).join('');
@@ -85,39 +87,46 @@ it.each(['completion', 'responses', 'anthropic'] as const)(
     }) as typeof fetch;
     const customization = {
       ...defaultCustomization(),
-      systemPrompt: 'Custom {{product}}',
       temperature: 0.3,
       maxOutputTokens: 2048,
-      injections: [
-        { id: 'first', name: 'First', enabled: true, text: 'First {{version}}' },
-        { id: 'hidden', name: 'Hidden', enabled: false, text: 'HIDDEN' },
-        { id: 'last', name: 'Last', enabled: true, text: 'Last {{timezone}}' },
-      ],
     };
     const onDelta = vi.fn();
     expect(
-      await streamCompatibleChat(
-        {
-          endpoint: { id: 1, label: 'Fixture', protocol, baseUrl: 'https://fixture.test/v1/' },
-          apiKey: 'fixture-key',
-          model: {
-            id: 1,
-            endpointId: 1,
-            credentialId: 1,
-            name: 'fixture-model',
-            label: 'Fixture',
-            customization,
+      (
+        await streamCompatibleChat(
+          {
+            endpoint: { id: 1, label: 'Fixture', protocol, baseUrl: 'https://fixture.test/v1/' },
+            apiKey: 'fixture-key',
+            model: {
+              id: 1,
+              endpointId: 1,
+              credentialId: 1,
+              name: 'fixture-model',
+              label: 'Fixture',
+              customization,
+            },
+            prompt: 'Question',
+            version: '4.0.0',
+            timeZone: 'UTC',
+            locale: 'en',
+            weatherPreferences: defaultWeatherPreferences,
+            diagnose: 'session fixture\nRipple Next 4.0.0 starting on win32/x64',
+            instruction: 'First {{version}}\n\nLast {{timezone}}',
+            perception: defaultPerception,
           },
-          prompt: 'Question',
-          version: '4.0.0',
-          timeZone: 'UTC',
-        },
-        { fetchImpl, onDelta },
-      ),
+          { fetchImpl, onDelta },
+        )
+      ).text,
     ).toBe('OK');
     expect(onDelta.mock.calls.map(([text]) => text).join('')).toBe('OK');
     const text = JSON.stringify(body);
-    expect(text).toContain('Custom Ripple Next');
+    expect(text).not.toContain('Custom Ripple Next');
+    expect(text).toContain('lightweight desktop assistant');
+    expect(text).toContain('Question');
+    expect(text).toContain('First 4.0.0');
+    expect(text).toContain('Last UTC');
+    expect(text).toContain('session fixture');
+    expect(text).toContain('Ripple Next 4.0.0 starting on win32/x64');
     expect(text.indexOf('First 4.0.0')).toBeLessThan(text.indexOf('Last UTC'));
     expect(text).not.toContain('HIDDEN');
     expect(body.model).toBe('fixture-model');
@@ -148,13 +157,16 @@ it('enforces configured context limits before any network request', async () => 
           label: 'Fixture',
           customization: {
             ...defaultCustomization(),
-            systemPrompt: '',
             contextLimitCharacters: 100,
           },
         },
         prompt: 'x'.repeat(101),
         version: '4.0.0',
         timeZone: 'UTC',
+        locale: 'en',
+        weatherPreferences: defaultWeatherPreferences,
+        instruction: '',
+        perception: defaultPerception,
       },
       { fetchImpl, onDelta: vi.fn() },
     ),

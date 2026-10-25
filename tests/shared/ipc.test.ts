@@ -1,4 +1,4 @@
-import { DiagnosticError } from '../../src/shared/diagnosticError';
+import { DiagnosticError, serializeDiagnosticError } from '../../src/shared/diagnosticError';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mock = vi.hoisted(() => ({
   sender: { id: 99, isDestroyed: () => false, send: vi.fn(), once: vi.fn() },
@@ -93,6 +93,7 @@ vi.mock('../../src/main/services/colorPicker', () => ({
 import { setTrayLocale } from '../../src/main/tray';
 import { registerIPC } from '../../src/main/ipc';
 import { defaultAppState } from '../../src/shared/appState';
+import type { AssistantRunLog } from '../../src/shared/diagnosticFacts';
 import { clearWindowRoles, registerWindowRole } from '../../src/main/windowRoles';
 import type { WebContents } from 'electron';
 
@@ -105,6 +106,9 @@ const services = {
   },
   aiConfiguration: {
     activeModel: async () => {
+      throw new Error('Not configured');
+    },
+    modelBinding: async () => {
       throw new Error('Not configured');
     },
     status: async () => ({}),
@@ -121,8 +125,33 @@ const services = {
     hasSecret: async () => false,
   },
   assistant: {
-    start: async () => ({ status: 'cancelled' as const }),
+    start: async (): Promise<AssistantRunLog> => ({
+      result: { status: 'cancelled' },
+      outcome: 'cancelled',
+    }),
     cancel: () => {},
+    useMedia: () => {},
+    preview: async () => ({
+      settings: '',
+      values: {
+        timezone: 'UTC',
+        current_time: '2026-01-01 00:00:00',
+        locale: 'en',
+        location: 'unavailable',
+        os: 'test',
+        arch: 'x64',
+        memory: 'unavailable',
+        storage: 'unavailable',
+        network: 'unavailable',
+        battery: 'unavailable',
+        music: 'idle',
+        weather: 'unavailable',
+        temperature: 'unavailable',
+        diagnose: 'unavailable',
+        settings: 'unavailable',
+      },
+    }),
+    probeVision: async () => ({ status: 'inconclusive' as const }),
   },
   notices: {
     report: vi.fn(),
@@ -405,5 +434,88 @@ describe('IPC boundary', () => {
         phase: 'failed',
       }),
     );
+  });
+  it('records one assistant result with safe facts and leaves the answer out of the log', async () => {
+    const start = services.assistant.start;
+    try {
+      mock.recordDiagnostic.mockClear();
+      mock.recordApplicationError.mockClear();
+      services.assistant.start = async () => ({
+        result: { status: 'complete', text: 'SECRET_ANSWER' },
+        outcome:
+          'complete model=3 protocol=completion prompt=12 chars=13 desktop=attached vision=supported',
+      });
+      await expect(
+        mock.handlers.get('start-assistant')!(
+          { sender: mock.island },
+          'request',
+          'PRIVATE_PROMPT',
+          { percent: null, charging: false },
+        ),
+      ).resolves.toEqual({ status: 'complete', text: 'SECRET_ANSWER' });
+      const completed = mock.recordDiagnostic.mock.calls.find(
+        ([entry]) => entry.phase === 'completed',
+      )![0];
+      expect(completed.outcome).toContain('model=3');
+      expect(completed.outcome).toContain('desktop=attached');
+      expect(JSON.stringify(mock.recordDiagnostic.mock.calls)).not.toContain('SECRET_ANSWER');
+      expect(JSON.stringify(mock.recordDiagnostic.mock.calls)).not.toContain('PRIVATE_PROMPT');
+
+      mock.recordDiagnostic.mockClear();
+      services.assistant.start = async () => ({
+        result: { status: 'error', code: 'aiRequestFailed', detail: 'PRIVATE_PROMPT' },
+        outcome: 'error model=3 protocol=completion prompt=12 desktop=unavailable vision=supported',
+        error: serializeDiagnosticError(
+          Object.assign(new Error('PRIVATE_PROVIDER'), { statusCode: 401 }),
+        ),
+      });
+      await expect(
+        mock.handlers.get('start-assistant')!(
+          { sender: mock.island },
+          'request',
+          'PRIVATE_PROMPT',
+          { percent: null, charging: false },
+        ),
+      ).resolves.toEqual({
+        status: 'error',
+        code: 'aiRequestFailed',
+        detail: 'PRIVATE_PROMPT',
+      });
+      const failed = mock.recordDiagnostic.mock.calls.filter(([entry]) => entry.phase === 'failed');
+      expect(failed).toHaveLength(1);
+      expect(failed[0]![0].outcome).toContain('model=3');
+      expect(failed[0]![0].outcome).toContain('desktop=unavailable');
+      expect(failed[0]![0].error.message).toContain('HTTP 401');
+      expect(JSON.stringify(mock.recordDiagnostic.mock.calls)).not.toContain('PRIVATE_PROMPT');
+      expect(mock.recordApplicationError).not.toHaveBeenCalled();
+    } finally {
+      services.assistant.start = start;
+    }
+  });
+  it('names an AI mutation without instruction text or the base URL', async () => {
+    mock.recordDiagnostic.mockClear();
+    const mutate = mock.handlers.get('mutate-ai-configuration')!;
+    await mutate(
+      { sender: mock.settings },
+      { kind: 'edit-shared', instruction: 'PRIVATE_INSTRUCTION' },
+    );
+    await mutate({ sender: mock.settings }, { kind: 'edit-shared', perception: { desktop: true } });
+    await mutate(
+      { sender: mock.settings },
+      { kind: 'edit-endpoint', id: 1, baseUrl: 'https://secret.example/v1' },
+    );
+    const completed = mock.recordDiagnostic.mock.calls
+      .filter(([entry]) => entry.phase === 'completed')
+      .map(([entry]) => entry);
+    expect(completed.map((entry) => entry.outcome)).toEqual([
+      'edit-shared instruction',
+      'perception.desktop=on',
+      'edit-endpoint id=1 baseUrl',
+    ]);
+    expect(completed[0].significance).toBe('continuous');
+    expect(completed[1].significance).toBe('discrete');
+    const text = JSON.stringify(mock.recordDiagnostic.mock.calls);
+    expect(text).not.toContain('PRIVATE_INSTRUCTION');
+    expect(text).not.toContain('secret.example');
   });
 });

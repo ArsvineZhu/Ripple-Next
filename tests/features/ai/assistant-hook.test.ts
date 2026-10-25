@@ -28,7 +28,7 @@ it('keeps partial text on failure and ignores stale deltas/results after reset',
   } as unknown as ElectronAPI;
   let assistant!: ReturnType<typeof useAssistant>;
   function View() {
-    const value = useAssistant();
+    const value = useAssistant({ percent: 80, charging: false });
     useLayoutEffect(() => {
       assistant = value;
     });

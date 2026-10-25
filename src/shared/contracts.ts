@@ -5,6 +5,7 @@ import type { Application, LaunchTarget, LaunchResult } from './launch';
 import type { Locale } from './i18n';
 import type { WeatherSnapshot, WeatherPreferences } from './weather';
 import type { AIMutation } from './aiConfiguration';
+import type { AssistantBattery, AssistantContextPreview } from './aiPerception';
 import type { LicenseMetadata, LicenseRecord } from './licenses';
 import type { AppState, AppStatePatch } from './appState';
 import { z } from 'zod';
@@ -143,8 +144,16 @@ export interface InvokeMap {
   'get-native-scroll-available': { args: []; result: boolean };
   'renderer-ready': { args: []; result: void };
   'start-assistant': {
-    args: [requestId: string, prompt: string];
+    args: [requestId: string, prompt: string, battery: AssistantBattery];
     result: AssistantResult;
+  };
+  'preview-assistant-context': {
+    args: [battery: AssistantBattery];
+    result: AssistantContextPreview;
+  };
+  'probe-model-vision': {
+    args: [modelId: number];
+    result: { status: 'supported' | 'unsupported' | 'inconclusive'; detail?: string };
   };
   'cancel-assistant': { args: [requestId: string]; result: void };
   'get-system-locale': { args: []; result: string };
@@ -198,7 +207,15 @@ export interface ElectronAPI {
   launchTargets(targets: LaunchTarget[]): Promise<LaunchResult>;
   discoverApps(query: string): Promise<Application[]>;
   rendererReady(): Promise<void>;
-  startAssistant(requestId: string, prompt: string): Promise<AssistantResult>;
+  startAssistant(
+    requestId: string,
+    prompt: string,
+    battery: AssistantBattery,
+  ): Promise<AssistantResult>;
+  previewAssistantContext(battery: AssistantBattery): Promise<AssistantContextPreview>;
+  probeModelVision(
+    modelId: number,
+  ): Promise<{ status: 'supported' | 'unsupported' | 'inconclusive'; detail?: string }>;
   cancelAssistant(requestId: string): Promise<void>;
   onAppNotice(callback: (notice: AppNotice) => void): () => void;
   onAppStateChanged(callback: (state: AppState) => void): () => void;

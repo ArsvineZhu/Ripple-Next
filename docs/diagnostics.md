@@ -22,7 +22,9 @@ Settings errors include their current category/editor. Island errors include pag
 
 ## Choose detail
 
-Default `info` output includes startup, important actions, failures and recovery. Healthy polling and input-region updates stay quiet; continuous numeric preference edits use debug output. Repeated identical polling failures are counted and summarized at most once per minute.
+Default `info` output includes startup, important actions, failures and recovery. Healthy polling and input-region updates stay quiet. Continuous numeric preference edits, AI instruction text, names, labels, Base URLs and numeric model parameters use debug output. Discrete AI changes stay at info and name the change, such as `perception.desktop=on` or `vision=supported`. An assistant completion stays at info and records model id, protocol, prompt and output sizes, desktop-frame state and vision; token counts are added when the provider reports them. Prompts, answers and endpoint URLs stay out of every level.
+
+Repeated identical polling failures, and repeated identical continuous edits, are counted and summarized at most once per minute. A continuous-edit summary is a separate debug line and is not attached to the next operation.
 
 Use `debug` for queries and window lifecycle. Use `trace` for individual operation starts, polling and view/region changes. Both console and file use the same readable format. Restart with one of these settings:
 

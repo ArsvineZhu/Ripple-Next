@@ -1,7 +1,6 @@
 import { expect, it } from 'vitest';
 import {
   AIConfigurationSchema,
-  ModelCustomizationSchema,
   aiSecretName,
   defaultAIConfiguration,
 } from '../../../src/shared/aiConfiguration';
@@ -78,18 +77,54 @@ it('rejects cross-endpoint keys and preserves model customization when its crede
     f.service.mutate({ kind: 'add-model', endpointId: 2, credentialId: 1 }),
   ).rejects.toThrow('Select an endpoint');
   await f.service.mutate({ kind: 'add-model', endpointId: 1, credentialId: 1 });
-  const customization = { ...f.read().models[0].customization, systemPrompt: 'My prompt' };
-  await f.service.mutate({ kind: 'customize-model', id: 1, customization });
+  await f.service.mutate({
+    kind: 'customize-model',
+    id: 1,
+    customization: { temperature: 0.4 },
+  });
   await f.service.mutate({ kind: 'remove-credential', id: 1 });
   expect(f.has(1)).toBe(false);
   expect(f.read().models[0].credentialId).toBeNull();
-  expect(f.read().models[0].customization.systemPrompt).toBe('My prompt');
+  expect(f.read().models[0].customization.temperature).toBe(0.4);
 });
-it('validates graph counters and forbids screenshot awareness in the reserved capability', () => {
-  const config = defaultAIConfiguration();
-  config.nextId.endpoint = 1;
-  expect(AIConfigurationSchema.safeParse(config).success).toBe(false);
-  expect(ModelCustomizationSchema.safeParse({ contextAwareness: true }).success).toBe(false);
+it('lifts legacy per-model instructions and perception into shared settings', () => {
+  const { instruction: _instruction, perception: _perception, ...base } = defaultAIConfiguration();
+  const parsed = AIConfigurationSchema.parse({
+    ...base,
+    nextId: { endpoint: 2, credential: 1, model: 2 },
+    models: [
+      {
+        id: 1,
+        endpointId: 1,
+        credentialId: null,
+        name: 'm',
+        label: '',
+        customization: {
+          injections: [
+            { id: 'a', name: 'A', text: 'Hello', enabled: true },
+            { id: 'b', name: 'B', text: 'Hidden', enabled: false },
+          ],
+          perception: { battery: false },
+          systemPrompt: 'ignored',
+          contextAwareness: false,
+        },
+      },
+    ],
+  });
+  expect(parsed.instruction).toBe('Hello');
+  expect(parsed.perception.battery).toBe(false);
+  expect(parsed.perception.clock).toBe(true);
+  expect(parsed.models[0].customization.vision).toBe('unknown');
+});
+it('merges one shared perception channel without changing model parameters', async () => {
+  const f = fixture();
+  await f.service.mutate({ kind: 'edit-shared', perception: { battery: false, desktop: true } });
+  expect(f.read().perception.battery).toBe(false);
+  expect(f.read().perception.clock).toBe(true);
+  expect(f.read().perception.desktop).toBe(true);
+  await f.service.mutate({ kind: 'edit-shared', instruction: 'Stay concise' });
+  expect(f.read().instruction).toBe('Stay concise');
+  expect(f.read().perception.battery).toBe(false);
 });
 
 it('merges concurrent field and injection edits against the current graph', async () => {
@@ -120,15 +155,7 @@ it('merges concurrent field and injection edits against the current graph', asyn
       id: 1,
       customization: { reasoningEffort: 'high' },
     }),
-    f.service.mutate({ kind: 'add-injection', id: 1 }),
-    f.service.mutate({ kind: 'add-injection', id: 1 }),
-  ]);
-  const [first, second] = f.read().models[0].customization.injections;
-  await Promise.all([
-    f.service.mutate({ kind: 'edit-injection', id: 1, injectionId: first.id, name: 'Context' }),
-    f.service.mutate({ kind: 'edit-injection', id: 1, injectionId: first.id, text: '{{product}}' }),
-    f.service.mutate({ kind: 'edit-injection', id: 1, injectionId: second.id, enabled: false }),
-    f.service.mutate({ kind: 'move-injection', id: 1, injectionId: second.id, direction: -1 }),
+    f.service.mutate({ kind: 'edit-shared', instruction: 'Hello {{product}}' }),
   ]);
   expect(f.read().endpoints[0]).toMatchObject({
     label: 'Local',
@@ -139,8 +166,5 @@ it('merges concurrent field and injection edits against the current graph', asyn
     label: 'Personal',
     customization: { temperature: 0.3, reasoningEffort: 'high' },
   });
-  expect(f.read().models[0].customization.injections).toEqual([
-    { ...second, enabled: false },
-    { ...first, name: 'Context', text: '{{product}}' },
-  ]);
+  expect(f.read().instruction).toBe('Hello {{product}}');
 });

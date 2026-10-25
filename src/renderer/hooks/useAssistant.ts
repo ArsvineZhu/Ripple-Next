@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { NoticeCode } from '../../shared/contracts';
+import type { AssistantBattery } from '../../shared/aiPerception';
 import { recordRendererError, recordRendererAnswerCharacters } from '../lib/diagnostics';
 
-export function useAssistant() {
+export function useAssistant(battery: { percent: number | string | null; charging: boolean }) {
   const [assistantError, setAssistantError] = useState<{
     kind: NoticeCode;
     detail?: string;
@@ -38,7 +39,11 @@ export function useAssistant() {
     setAIAnswer('');
     setAsked(true);
     try {
-      const result = await window.electronAPI.startAssistant(id, userText);
+      const reading: AssistantBattery = {
+        percent: typeof battery.percent === 'number' ? battery.percent : null,
+        charging: battery.charging,
+      };
+      const result = await window.electronAPI.startAssistant(id, userText, reading);
       if (request.current !== id) return;
       request.current = null;
       if (result.status === 'complete') {
@@ -55,7 +60,7 @@ export function useAssistant() {
         detail: error instanceof Error ? error.message : String(error),
       });
     }
-  }, [cancel, userText]);
+  }, [battery.charging, battery.percent, cancel, userText]);
   const resetAssistant = useCallback(() => {
     cancel();
     setAsked(false);

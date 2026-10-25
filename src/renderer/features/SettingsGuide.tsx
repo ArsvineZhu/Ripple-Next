@@ -149,8 +149,8 @@ export function SettingsGuide({ navigate }: { navigate(category: SettingsCategor
               </ol>
               {topic.id === 'ai' && (
                 <p>
-                  {t('guideAIVariables')} <code>{'{{current_time}}'}</code>{' '}
-                  <code>{'{{product}}'}</code>
+                  {t('guideAIVariables')} <code>{'{{product}}'}</code> <code>{'{{website}}'}</code>{' '}
+                  <code>{'{{battery}}'}</code>
                 </p>
               )}
               <button

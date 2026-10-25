@@ -59,6 +59,33 @@ export function selectAutomaticSession(
   );
 }
 
+export function formatMediaPrompt(snapshot: MediaSnapshot) {
+  const selected =
+    snapshot.sessions.find((session) => session.id === snapshot.activeSessionId) ??
+    selectAutomaticSession(snapshot.sessions, snapshot.activeSessionId);
+  if (!selected) return snapshot.error ?? 'idle';
+  const lines = [
+    `Title: ${selected.name || 'unknown'}`,
+    `Artist: ${selected.artist || 'unknown'}`,
+    ...(selected.album ? [`Album: ${selected.album}`] : []),
+    `Player: ${selected.playerName || selected.source}`,
+    `State: ${selected.state}${selected.stale ? ', stale' : ''}`,
+  ];
+  const others = snapshot.sessions.filter(
+    (session) => session.id !== selected.id && !session.stale,
+  );
+  if (others.length > 0)
+    lines.push(
+      `Other sessions: ${others
+        .map(
+          (session) =>
+            `${session.playerName || session.source}: ${session.name || 'unknown'} (${session.state})`,
+        )
+        .join('; ')}`,
+    );
+  return lines.join('\n');
+}
+
 export function mediaCommandSupported(session: MediaSession, command: MediaCommand): boolean {
   if (session.stale) return false;
   if (command !== 'playpause') return session.capabilities[command] !== false;

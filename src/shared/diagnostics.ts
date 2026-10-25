@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { InvokeMap, IslandMode } from './contracts';
+import type { DiagnosticSignificance } from './diagnosticFacts';
 import { PageIdSchema } from './pages';
 
 const DimensionsSchema = z
@@ -79,6 +80,8 @@ export type DiagnosticEvent =
       operationId?: number;
       sender?: 'island' | 'settings';
       fields?: string[];
+      facts?: string[];
+      significance?: DiagnosticSignificance;
       outcome?: string;
       elapsedMs: number;
       error?: SerializedDiagnosticError;

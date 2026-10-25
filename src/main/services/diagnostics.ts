@@ -40,6 +40,8 @@ export interface DiagnosticsService {
   receiveRenderer(event: RendererDiagnostic, role: 'island' | 'settings'): void;
   setRendererContext(context: RendererDiagnosticContext): void;
   getRendererContext(role: 'island' | 'settings'): RendererViewContext | undefined;
+  /** Compact runtime snapshot for AI prompt injection (`{{diagnose}}`). */
+  promptSnapshot(): string;
   openFolder(): Promise<void>;
 }
 
@@ -100,6 +102,9 @@ export async function initializeDiagnostics(userDataPath: string): Promise<Diagn
     : 2;
   let rendererContext: RendererDiagnosticContext | undefined;
   let settingsContext: SettingsDiagnosticContext | undefined;
+  let appStart: Extract<DiagnosticEvent, { kind: 'app-start' }> | undefined;
+  let platformCapabilities: Extract<DiagnosticEvent, { kind: 'platform-capabilities' }> | undefined;
+  let graphicsStatus: Extract<DiagnosticEvent, { kind: 'graphics-status' }> | undefined;
 
   const write = (record: DiagnosticRecord, forceStderr = false) => {
     if (levels.indexOf(record.level) > threshold) return;
@@ -189,8 +194,59 @@ export async function initializeDiagnostics(userDataPath: string): Promise<Diagn
     recordError('diagnostics', error);
   }
 
+  const REPEAT_WINDOW_MS = 60_000;
+  let burst:
+    | {
+        channel: string;
+        signature: string;
+        sender?: 'island' | 'settings';
+        count: number;
+        loggedAt: number;
+      }
+    | undefined;
+  const flushBurst = () => {
+    if (!burst || burst.count === 0) {
+      burst = undefined;
+      return;
+    }
+    const pending = burst;
+    burst = undefined;
+    write({
+      level: 'debug',
+      scope: `main/${pending.sender ?? 'ipc'}`,
+      message: `updates suppressed: ${pending.count} (${pending.signature})`,
+    });
+  };
   const diagnostics: DiagnosticsService = {
     record(event) {
+      if (event.kind === 'app-start') appStart = event;
+      if (event.kind === 'platform-capabilities') platformCapabilities = event;
+      if (event.kind === 'graphics-status') graphicsStatus = event;
+      if (
+        event.kind === 'ipc-operation' &&
+        event.phase === 'completed' &&
+        event.significance === 'continuous'
+      ) {
+        const signature = event.facts?.join(' ') || event.outcome || event.channel;
+        const now = Date.now();
+        if (
+          burst &&
+          burst.channel === event.channel &&
+          burst.signature === signature &&
+          now - burst.loggedAt < REPEAT_WINDOW_MS
+        ) {
+          burst.count += 1;
+          return;
+        }
+        flushBurst();
+        burst = {
+          channel: event.channel,
+          signature,
+          sender: event.sender,
+          count: 0,
+          loggedAt: now,
+        };
+      } else flushBurst();
       const record = formatDiagnosticEvent(event);
       const role =
         event.kind === 'ipc-operation' && event.phase === 'failed'
@@ -226,6 +282,18 @@ export async function initializeDiagnostics(userDataPath: string): Promise<Diagn
     getRendererContext(role) {
       const context = role === 'island' ? rendererContext : settingsContext;
       return context ? structuredClone(context) : undefined;
+    },
+    promptSnapshot() {
+      const lines: string[] = [`session ${sessionId}`];
+      for (const event of [appStart, platformCapabilities, graphicsStatus]) {
+        if (!event) continue;
+        const record = formatDiagnosticEvent(event);
+        lines.push(record.message);
+        if (record.details?.length) lines.push(...record.details);
+      }
+      if (rendererContext) lines.push(formatContext(rendererContext));
+      if (settingsContext) lines.push(formatContext(settingsContext));
+      return lines.join('\n');
     },
     async openFolder() {
       const error = await shell.openPath(directory);

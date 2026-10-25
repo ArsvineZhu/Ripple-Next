@@ -13,7 +13,11 @@ import { Select } from '../components/Select';
 import type { AIProtocol } from '../../shared/aiConfiguration';
 import { type SettingsDetail, detailEntryId } from '../lib/settingsDetails';
 import { useAIConfiguration } from '../hooks/useAIConfiguration';
-import { AIModelCustomization } from './AIModelCustomization';
+import {
+  AIModelCustomization,
+  AISharedSettings,
+  PerceptionChannelPage,
+} from './AIModelCustomization';
 import { AIField } from './AIField';
 import { DangerAction } from '../components/DangerAction';
 import styles from '../components/preferences/Preferences.module.css';
@@ -54,10 +58,10 @@ export function AIConfigurationEntries({ navigate }: { navigate(detail: Settings
       count: p.ai.models.length,
     },
     {
-      page: 'aiCustomizations' as const,
+      page: 'aiShared' as const,
       icon: SlidersHorizontal,
-      label: 'aiModelCustomization' as const,
-      hint: 'aiModelCustomizationHint' as const,
+      label: 'aiSharedSettings' as const,
+      hint: 'aiSharedSettingsHint' as const,
       count: undefined,
     },
   ];
@@ -278,23 +282,9 @@ export function AISettingsPage({
         </PreferenceGroup>
       </>
     );
-  if (detail.page === 'aiCustomizations')
-    return (
-      <PreferenceGroup caption={t('selectModelFirst')}>
-        {p.ai.models
-          .filter((item) => item.name)
-          .map((item) => (
-            <div key={item.id}>
-              {entry(
-                { page: 'aiCustomization', id: item.id },
-                aiDisplayLabel(p.ai.models, item, item.name),
-                undefined,
-                t('baseUrlNumber', { count: aiDisplayNumber(p.ai.endpoints, item.endpointId) }),
-              )}
-            </div>
-          ))}
-      </PreferenceGroup>
-    );
+  if (detail.page === 'aiShared') return <AISharedSettings controller={p} navigate={navigate} />;
+  if (detail.page === 'perceptionChannel')
+    return <PerceptionChannelPage channel={detail.channel} />;
   if (!('id' in detail)) return null;
   if (detail.page === 'aiEndpoint') {
     const item = p.ai.endpoints.find((value) => value.id === detail.id);
@@ -344,10 +334,13 @@ export function AISettingsPage({
   if (detail.page === 'aiModel') {
     const item = p.ai.models.find((value) => value.id === detail.id);
     if (!item) return null;
-    return <ModelEditor key={item.id} controller={p} id={item.id} />;
+    return (
+      <>
+        <ModelEditor key={item.id} controller={p} id={item.id} />
+        <AIModelCustomization controller={p} id={item.id} />
+      </>
+    );
   }
-  if (detail.page === 'aiCustomization')
-    return <AIModelCustomization controller={p} id={detail.id} />;
   return null;
 }
 function CredentialEditor({

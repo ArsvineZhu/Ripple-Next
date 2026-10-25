@@ -4,6 +4,8 @@ import { createReactFixture, fillInput as fill } from '../../shared/fixtures/rea
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { AISettingsPage } from '../../../src/renderer/features/AISettings';
 import { AIModelCustomization } from '../../../src/renderer/features/AIModelCustomization';
+import { SettingsAbout } from '../../../src/renderer/features/SettingsAbout';
+import { NotificationProvider } from '../../../src/renderer/components/NotificationProvider';
 import { defaultAIConfiguration, defaultCustomization } from '../../../src/shared/aiConfiguration';
 import { defaultAppState } from '../../../src/shared/appState';
 
@@ -66,6 +68,11 @@ it('steps and bounds numeric parameters, resets to provider default and rejects 
       }),
     ),
   );
+  expect(host.textContent).toContain('visionCapability');
+  expect(host.textContent).toContain('probeVision');
+  expect(host.textContent).not.toContain('customInstruction');
+  expect(host.textContent).not.toContain('perceptionBattery');
+  expect(host.textContent).not.toContain('contextAwarenessReserved');
   const temperature = host.querySelector<HTMLInputElement>('input[aria-label=modelTemperature]')!;
   const controls = temperature
     .closest('[data-number-field]')!
@@ -91,6 +98,25 @@ it('steps and bounds numeric parameters, resets to provider default and rejects 
   await fill(tokens, '2048.5');
   expect(tokens.getAttribute('aria-invalid')).toBe('true');
   expect(mutate).not.toHaveBeenCalled();
+});
+it('lists developers with avatars and the product website', async () => {
+  await act(async () =>
+    root.render(
+      createElement(
+        NotificationProvider,
+        null,
+        createElement(SettingsAbout, { onOpenDetail: vi.fn() }),
+      ),
+    ),
+  );
+  expect(host.textContent).toContain('Arsvine');
+  expect(host.textContent).toContain('TopMyster');
+  expect(host.textContent).toContain('Thomas Boom');
+  expect(host.textContent).toContain('Hackintosh_HD');
+  expect(host.textContent).toContain('Kandarp Gajjar');
+  expect(host.textContent).toContain('ripple.arsvine.com');
+  expect(host.querySelector('img[src*="github.com/ArsvineZhu.png"]')).toBeTruthy();
+  expect(host.textContent).toContain('developerWebsite');
 });
 it('renders contiguous endpoint numbers and edits the original stable ID', async () => {
   const ai = defaultAIConfiguration();

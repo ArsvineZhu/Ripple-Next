@@ -35,9 +35,18 @@ import { setAutoLaunch } from './platform/autostart';
 import { createMediaService } from './services/media';
 import { devices } from './platform/devices';
 import { RendererDiagnosticSchema, serializeDiagnosticError } from '../shared/diagnostics';
+import type { SerializedDiagnosticError } from '../shared/diagnosticError';
 import { DiagnosticError, validationProblems } from '../shared/diagnosticError';
+import {
+  describeAIMutation,
+  describeVisionProbe,
+  type AssistantRunLog,
+  type DiagnosticSignificance,
+} from '../shared/diagnosticFacts';
 import { withDiagnosticOperation } from './services/diagnosticScope';
 import type { AssistantEvent, AssistantResult } from '../shared/contracts';
+import { AssistantBatterySchema } from '../shared/aiPerception';
+import type { AssistantBattery, AssistantContextPreview } from '../shared/aiPerception';
 import type { createFontService } from './services/fonts';
 import { RGB_HEX } from '../shared/color';
 import { showNativeColorPicker } from './services/colorPicker';
@@ -56,9 +65,17 @@ interface AssistantService {
   start(
     requestId: string,
     prompt: string,
+    battery: AssistantBattery,
     send: (event: AssistantEvent) => void,
-  ): Promise<AssistantResult>;
+  ): Promise<AssistantRunLog>;
   cancel(requestId: string): void;
+  preview(battery: AssistantBattery): Promise<AssistantContextPreview>;
+  useMedia(read: () => Promise<import('../shared/media').MediaSnapshot>): void;
+  probeVision(modelId: number): Promise<{
+    status: 'supported' | 'unsupported' | 'inconclusive';
+    detail?: string;
+    state?: AppState;
+  }>;
 }
 
 interface NoticeService {
@@ -112,6 +129,31 @@ function channelErrorCode(channel: keyof InvokeMap): NoticeCode | null {
 }
 
 let operationSequence = 0;
+const operationLogKey = Symbol('operationLog');
+interface OperationLog {
+  significance?: DiagnosticSignificance;
+  facts?: string[];
+  outcome?: string;
+  error?: SerializedDiagnosticError;
+}
+function withOperationLog<T extends object>(value: T, log: OperationLog): T {
+  return { ...value, [operationLogKey]: log };
+}
+function takeOperationLog(value: unknown): { value: unknown; log?: OperationLog } {
+  if (!value || typeof value !== 'object' || !(operationLogKey in value)) return { value };
+  const log = (value as { [operationLogKey]: OperationLog })[operationLogKey];
+  const copy = { ...(value as object) } as Record<PropertyKey, unknown>;
+  delete copy[operationLogKey];
+  return { value: copy, log };
+}
+function operationDetails(log: OperationLog | undefined, outcome?: string) {
+  const text = log?.outcome ?? outcome;
+  return {
+    ...(text ? { outcome: text } : {}),
+    ...(log?.facts?.length ? { facts: log.facts } : {}),
+    ...(log?.significance ? { significance: log.significance } : {}),
+  };
+}
 function handle<K extends keyof InvokeMap>(
   services: IPCServices,
   channel: K,
@@ -150,16 +192,20 @@ function handle<K extends keyof InvokeMap>(
         elapsedMs: 0,
         ...context,
       });
-      const result = await withDiagnosticOperation(
+      const produced = await withDiagnosticOperation(
         { id: operationId, channel, sender, fields },
         () => listener(event, ...(args as InvokeMap[K]['args'])),
       );
+      const { value: result, log } = takeOperationLog(produced);
       const outcome =
         channel === 'launch-targets'
           ? (result as InvokeMap['launch-targets']['result']).failures.length
             ? 'target-failures'
             : 'launched'
-          : channel === 'start-assistant'
+          : channel === 'start-assistant' &&
+              result &&
+              typeof result === 'object' &&
+              'status' in result
             ? (result as AssistantResult).status
             : undefined;
       const domainError =
@@ -175,13 +221,19 @@ function handle<K extends keyof InvokeMap>(
               typeof result === 'object' &&
               'error' in result
             ? result.error
-            : channel === 'start-assistant' && (result as AssistantResult).status === 'error'
+            : channel === 'start-assistant' &&
+                result &&
+                typeof result === 'object' &&
+                'status' in result &&
+                (result as AssistantResult).status === 'error'
               ? (result as Extract<AssistantResult, { status: 'error' }>).code
               : outcome === 'target-failures'
                 ? 'One or more launch targets failed'
                 : null;
-      if (domainError) {
-        const summary = serializeDiagnosticError(new DiagnosticError(String(domainError)));
+      const details = operationDetails(log, outcome);
+      if (log?.error || domainError) {
+        const summary =
+          log?.error ?? serializeDiagnosticError(new DiagnosticError(String(domainError)));
         const signature = JSON.stringify(summary);
         const now = Date.now();
         if (
@@ -196,6 +248,7 @@ function handle<K extends keyof InvokeMap>(
             phase: 'failed',
             elapsedMs: Math.round(performance.now() - started),
             ...context,
+            ...details,
             error: summary,
             ...(failure ? { repeated: failure.suppressed } : {}),
           });
@@ -208,22 +261,21 @@ function handle<K extends keyof InvokeMap>(
             phase: 'failed-repeat',
             elapsedMs: Math.round(performance.now() - started),
             ...context,
+            ...details,
             repeated: failure.suppressed,
           });
         }
         return result;
       }
-      {
-        services.diagnostics.record({
-          kind: 'ipc-operation',
-          channel,
-          ...context,
-          ...(outcome ? { outcome } : {}),
-          phase: failure ? 'recovered' : 'completed',
-          elapsedMs: Math.round(performance.now() - started),
-          ...(failure ? { repeated: failure.suppressed } : {}),
-        });
-      }
+      services.diagnostics.record({
+        kind: 'ipc-operation',
+        channel,
+        ...context,
+        ...details,
+        phase: failure ? 'recovered' : 'completed',
+        elapsedMs: Math.round(performance.now() - started),
+        ...(failure ? { repeated: failure.suppressed } : {}),
+      });
       failure = undefined;
       return result;
     } catch (error) {
@@ -334,6 +386,7 @@ export function registerIPC(services: IPCServices) {
     }
   });
   media.start();
+  services.assistant.useMedia(() => media.getSnapshot());
   const unsubscribeDevices =
     'subscribe' in devices
       ? devices.subscribe?.(() => {
@@ -422,9 +475,15 @@ export function registerIPC(services: IPCServices) {
   handle(services, 'mutate-ai-configuration', async (event, mutation) => {
     if (getWindowRole(event.sender) !== 'settings')
       throw new DiagnosticError('AI configuration requires Settings');
-    const result = await services.aiConfiguration.mutate(AIMutationSchema.parse(mutation));
+    const parsed = AIMutationSchema.parse(mutation);
+    const described = describeAIMutation(parsed);
+    const result = await services.aiConfiguration.mutate(parsed);
     broadcastToRegisteredWindows('app-state-changed', result.state);
-    return result.state;
+    return withOperationLog(result.state, {
+      significance: described.significance,
+      facts: described.facts,
+      outcome: described.facts.join(' '),
+    });
   });
   handle(services, 'save-ai-credential', async (event, id, key) => {
     if (getWindowRole(event.sender) !== 'settings')
@@ -451,12 +510,42 @@ export function registerIPC(services: IPCServices) {
       services.notices.rendererReady('settings');
     }
   });
-  handle(services, 'start-assistant', (_event, requestId, prompt) => {
+  handle(services, 'start-assistant', async (_event, requestId, prompt, battery) => {
     const id = getText(requestId, 'Request ID', 128);
     const userPrompt = getText(prompt, 'Prompt', 30000);
-    return services.assistant.start(id, userPrompt, (payload) => {
-      _event.sender.send('assistant-event', payload);
+    const run = await services.assistant.start(
+      id,
+      userPrompt,
+      AssistantBatterySchema.parse(battery),
+      (payload) => {
+        _event.sender.send('assistant-event', payload);
+      },
+    );
+    return withOperationLog(run.result, {
+      outcome: run.outcome,
+      ...(run.error ? { error: run.error } : {}),
     });
+  });
+  handle(services, 'preview-assistant-context', (event, battery) => {
+    if (getWindowRole(event.sender) !== 'settings')
+      throw new DiagnosticError('Assistant preview requires Settings');
+    return services.assistant.preview(AssistantBatterySchema.parse(battery));
+  });
+  handle(services, 'probe-model-vision', async (event, modelId) => {
+    if (getWindowRole(event.sender) !== 'settings')
+      throw new DiagnosticError('AI configuration requires Settings');
+    if (!Number.isInteger(modelId) || modelId < 1) throw new DiagnosticError('Invalid model ID');
+    const result = await services.assistant.probeVision(modelId);
+    if (result.state) broadcastToRegisteredWindows('app-state-changed', result.state);
+    const described = describeVisionProbe(result.status);
+    return withOperationLog(
+      { status: result.status, detail: result.detail },
+      {
+        significance: described.significance,
+        facts: described.facts,
+        outcome: described.facts.join(' '),
+      },
+    );
   });
   handle(services, 'cancel-assistant', (_event, requestId) => {
     services.assistant.cancel(getText(requestId, 'Request ID', 128));

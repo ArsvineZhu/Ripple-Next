@@ -49,6 +49,8 @@ import { DiagnosticError, validationProblems } from '../../src/shared/diagnostic
 import { AppStatePatchSchema } from '../../src/shared/appState';
 import { createDiagnosticSourceMapper } from '../../src/main/services/diagnosticSourceMaps';
 import { withDiagnosticOperation } from '../../src/main/services/diagnosticScope';
+import { formatDiagnosticEvent } from '../../src/shared/diagnosticFormat';
+import { describeAIMutation, describeAssistantRun } from '../../src/shared/diagnosticFacts';
 import type { RendererDiagnosticContext } from '../../src/shared/diagnostics';
 
 const temporaryDirectories: string[] = [];
@@ -224,6 +226,64 @@ describe('local diagnostics', () => {
 
     expect(diagnostics.getRendererContext('island')).toEqual(context);
   });
+
+  it('promptSnapshot includes startup, platform, graphics and live view context', async () => {
+    const diagnostics = await initializeDiagnostics(await makeTemporaryDirectory());
+    diagnostics.record({
+      kind: 'app-start',
+      appVersion: '4.1.0-beta.2',
+      electronVersion: '44.0.0',
+      chromiumVersion: '130.0.0',
+      nodeVersion: '22.0.0',
+      platform: 'win32',
+      architecture: 'x64',
+      osRelease: '10.0.26300',
+    });
+    diagnostics.record({
+      kind: 'platform-capabilities',
+      packaged: false,
+      displayCount: 1,
+      scaleFactors: [1],
+      mediaBackend: 'winrt',
+      inputBackend: 'windows-cursor-region',
+      sessionType: 'windows',
+      secureStorage: true,
+    });
+    diagnostics.record({
+      kind: 'graphics-status',
+      hardwareAcceleration: true,
+      compositing: 'enabled',
+      rasterization: 'enabled',
+      webgl: 'enabled',
+    });
+    diagnostics.receiveRenderer(
+      {
+        kind: 'renderer-context',
+        context: {
+          tabId: 'assistant',
+          mode: 'large',
+          expanded: true,
+          asked: true,
+          answerCharacters: 8,
+          viewport: { width: 1920, height: 1080 },
+          inputRegion: { width: 400, height: 120 },
+        },
+      },
+      'island',
+    );
+    diagnostics.receiveRenderer(
+      { kind: 'settings-context', context: { category: 'integrations', page: 'ai' } },
+      'settings',
+    );
+    const snapshot = diagnostics.promptSnapshot();
+    expect(snapshot).toContain('session ');
+    expect(snapshot).toContain('Ripple Next 4.1.0-beta.2 starting on win32/x64');
+    expect(snapshot).toContain('development');
+    expect(snapshot).toContain('media=winrt');
+    expect(snapshot).toContain('hardware acceleration=true');
+    expect(snapshot).toContain('Island page=assistant');
+    expect(snapshot).toContain('Settings category=integrations');
+  });
 });
 
 it('renders invalid preferences as a readable field diagnosis with the correct Settings context and no payload', async () => {
@@ -332,4 +392,168 @@ it('maps bundled main and renderer frames to original sources and keeps map read
   expect(map(`    at missing (${path.join(build, 'missing.cjs')}:1:1)`)).toContain(
     'missing.cjs:1:1',
   );
+});
+
+it('names discrete AI changes, hides continuous text, and keeps assistant facts on one line', async () => {
+  const instruction = describeAIMutation({
+    kind: 'edit-shared',
+    instruction: 'PRIVATE_INSTRUCTION',
+  });
+  const endpoint = describeAIMutation({
+    kind: 'edit-endpoint',
+    id: 1,
+    baseUrl: 'https://secret.example/v1',
+  });
+  const perception = describeAIMutation({
+    kind: 'edit-shared',
+    perception: { desktop: true },
+  });
+  const temperature = describeAIMutation({
+    kind: 'customize-model',
+    id: 4,
+    customization: { temperature: 0.25 },
+  });
+  const vision = describeAIMutation({
+    kind: 'customize-model',
+    id: 4,
+    customization: { vision: 'supported', thinkingBudget: 4096 },
+  });
+  expect(instruction).toEqual({ significance: 'continuous', facts: ['edit-shared instruction'] });
+  expect(endpoint.facts).toEqual(['edit-endpoint id=1 baseUrl']);
+  expect(perception).toEqual({ significance: 'discrete', facts: ['perception.desktop=on'] });
+  expect(temperature).toEqual({
+    significance: 'continuous',
+    facts: ['customize-model id=4 temperature'],
+  });
+  expect(vision.facts).toEqual(['vision=supported']);
+  expect(JSON.stringify({ instruction, endpoint, temperature, vision })).not.toMatch(
+    /PRIVATE_INSTRUCTION|secret\.example|0\.25|4096/,
+  );
+  expect(
+    formatDiagnosticEvent({
+      kind: 'ipc-operation',
+      channel: 'mutate-ai-configuration',
+      phase: 'completed',
+      elapsedMs: 1,
+      significance: 'continuous',
+      outcome: 'edit-shared instruction',
+    }).level,
+  ).toBe('debug');
+  const probe = formatDiagnosticEvent({
+    kind: 'ipc-operation',
+    channel: 'probe-model-vision',
+    phase: 'completed',
+    elapsedMs: 4,
+    significance: 'discrete',
+    outcome: 'inconclusive',
+  });
+  expect(probe.level).toBe('info');
+  expect(probe.message).toContain('inconclusive');
+  expect(probe.message).not.toContain('provider');
+
+  vi.stubEnv('RIPPLE_LOG_LEVEL', 'info');
+  const quiet = await initializeDiagnostics(await makeTemporaryDirectory());
+  mock.logger.info.mockClear();
+  mock.logger.debug.mockClear();
+  mock.logger.error.mockClear();
+  const continuous = {
+    kind: 'ipc-operation' as const,
+    channel: 'mutate-ai-configuration' as const,
+    phase: 'completed' as const,
+    elapsedMs: 1,
+    sender: 'settings' as const,
+    significance: instruction.significance,
+    facts: instruction.facts,
+    outcome: instruction.facts.join(' '),
+  };
+  quiet.record(continuous);
+  quiet.record(continuous);
+  quiet.record({
+    kind: 'ipc-operation',
+    channel: 'mutate-ai-configuration',
+    phase: 'completed',
+    elapsedMs: 2,
+    sender: 'settings',
+    significance: perception.significance,
+    facts: perception.facts,
+    outcome: perception.facts.join(' '),
+  });
+  const assistant = describeAssistantRun({
+    status: 'complete',
+    modelId: 3,
+    protocol: 'completion',
+    promptCharacters: 12,
+    outputCharacters: 842,
+    desktop: 'attached',
+    vision: 'supported',
+    inputTokens: 20,
+    outputTokens: 8,
+  });
+  expect(assistant).toBe(
+    'complete model=3 protocol=completion prompt=12 chars=842 desktop=attached vision=supported in=20 out=8',
+  );
+  quiet.record({
+    kind: 'ipc-operation',
+    channel: 'start-assistant',
+    phase: 'completed',
+    elapsedMs: 19077,
+    sender: 'island',
+    outcome: assistant,
+  });
+  const infoLines = mock.logger.info.mock.calls.map(([line]) => String(line));
+  expect(infoLines.some((line) => line.includes('edit-shared'))).toBe(false);
+  expect(infoLines.some((line) => line.includes('perception.desktop=on'))).toBe(true);
+  expect(
+    infoLines.some((line) => line.includes('model=3') && line.includes('desktop=attached')),
+  ).toBe(true);
+  expect(infoLines.some((line) => line.includes('updates suppressed'))).toBe(false);
+  expect(mock.logger.debug).not.toHaveBeenCalled();
+
+  const failure = serializeDiagnosticError(
+    Object.assign(new Error('PRIVATE_PROVIDER'), { statusCode: 401 }),
+  );
+  failure.message = `aiRequestFailed; ${failure.message}`;
+  quiet.record({
+    kind: 'ipc-operation',
+    channel: 'start-assistant',
+    phase: 'failed',
+    elapsedMs: 20,
+    sender: 'island',
+    outcome: 'error model=3 protocol=completion prompt=12 desktop=unavailable vision=supported',
+    error: failure,
+  });
+  expect(mock.logger.error).toHaveBeenCalledTimes(1);
+  const errorLine = String(mock.logger.error.mock.calls[0]![0]);
+  expect(errorLine).toContain('HTTP 401');
+  expect(errorLine).toContain('model=3');
+  expect(errorLine).toContain('desktop=unavailable');
+  expect(errorLine).not.toContain('PRIVATE_PROVIDER');
+
+  vi.stubEnv('RIPPLE_LOG_LEVEL', 'debug');
+  const verbose = await initializeDiagnostics(await makeTemporaryDirectory());
+  mock.logger.debug.mockClear();
+  mock.logger.info.mockClear();
+  verbose.record(continuous);
+  verbose.record(continuous);
+  verbose.record(continuous);
+  verbose.record({
+    kind: 'ipc-operation',
+    channel: 'start-assistant',
+    phase: 'completed',
+    elapsedMs: 5,
+    sender: 'island',
+    outcome: 'complete model=3 desktop=off',
+  });
+  const debugLines = mock.logger.debug.mock.calls.map(([line]) => String(line));
+  expect(
+    debugLines.filter(
+      (line) => line.includes('completed') && line.includes('edit-shared instruction'),
+    ),
+  ).toHaveLength(1);
+  expect(
+    debugLines.some((line) => line.includes('updates suppressed: 2 (edit-shared instruction)')),
+  ).toBe(true);
+  const next = String(mock.logger.info.mock.calls.at(-1)![0]);
+  expect(next).toContain('complete model=3 desktop=off');
+  expect(next).not.toContain('updates suppressed');
 });

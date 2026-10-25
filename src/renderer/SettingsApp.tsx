@@ -12,7 +12,7 @@ import { SETTINGS_CATEGORIES, type SettingsCategoryId } from './lib/settingsCate
 import styles from './styles/SettingsApp.module.css';
 import { useReducedMotionPreference } from './hooks/useReducedMotionPreference';
 import { GlassBackButton } from './components/GlassBackButton';
-import { detailLabels, detailEntryId, type SettingsDetail } from './lib/settingsDetails';
+import { detailEntryId, detailTitleKey, type SettingsDetail } from './lib/settingsDetails';
 import { GlassPreferencesContext } from './components/liquidGlass/GlassPreferences';
 
 export default function SettingsApp() {
@@ -74,7 +74,7 @@ export default function SettingsApp() {
   // HIG: "Update the window's title to reflect the currently visible pane." The pane name belongs to
   // the title bar, so it is not repeated as a heading in the content area.
   useEffect(() => {
-    document.title = t(detail ? detailLabels[detail.page] : active.labelKey);
+    document.title = t(detail ? detailTitleKey(detail) : active.labelKey);
   }, [active.labelKey, detail, t]);
 
   const openDetail = (next: SettingsDetail) => {
@@ -217,7 +217,7 @@ export default function SettingsApp() {
         <div className={styles.pane}>
           <header className={styles.detailHeader}>
             {detail && <GlassBackButton label={t('backToSettings')} onClick={closeDetail} />}
-            <h1>{t(detail ? detailLabels[detail.page] : active.labelKey)}</h1>
+            <h1>{t(detail ? detailTitleKey(detail) : active.labelKey)}</h1>
           </header>
           <main className={styles.main}>
             <SettingsTab

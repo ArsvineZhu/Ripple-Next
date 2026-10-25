@@ -71,13 +71,13 @@ export function useIslandController() {
       largeStandby: largeStandbyEnabled,
       leaveDelayMs,
     });
-  const assistant = useAssistant();
+  const battery = useBattery();
+  const assistant = useAssistant(battery);
   const { asked } = assistant;
   const tasks = appState.tasks;
   const workflows = appState.workflows;
   const clipboard = useClipboard();
   const overview = useOverview();
-  const battery = useBattery();
   const { percent, charging } = battery;
   const { alert, chargingAlert } = useBatteryAlerts({
     percent,

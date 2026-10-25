@@ -311,8 +311,8 @@ export function SettingsEditor(input: Omit<Props, 'settings'>) {
           'aiCredential',
           'aiModels',
           'aiModel',
-          'aiCustomizations',
-          'aiCustomization',
+          'aiShared',
+          'perceptionChannel',
         ].includes(page) ? (
         <AISettingsPage detail={props.detail} navigate={props.onOpenDetail} />
       ) : page === 'weatherLocation' ? (

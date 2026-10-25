@@ -61,7 +61,10 @@ const api: ElectronAPI = {
   launchTargets: (targets) => invoke('launch-targets', targets),
   discoverApps: (query) => invoke('discover-apps', query),
   rendererReady: () => invoke('renderer-ready'),
-  startAssistant: (requestId, prompt) => invoke('start-assistant', requestId, prompt),
+  startAssistant: (requestId, prompt, battery) =>
+    invoke('start-assistant', requestId, prompt, battery),
+  previewAssistantContext: (battery) => invoke('preview-assistant-context', battery),
+  probeModelVision: (modelId) => invoke('probe-model-vision', modelId),
   cancelAssistant: (requestId) => invoke('cancel-assistant', requestId),
   onAppNotice: (callback: (notice: AppNotice) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, notice: AppNotice) => callback(notice);

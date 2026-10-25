@@ -138,11 +138,14 @@ async function startApplication() {
       : {}),
   });
   const aiConfiguration = createAIConfigurationService(stateStore, secretStore);
-  const assistant = createAssistantService(
-    aiConfiguration,
-    () => app.getVersion(),
-    (error) => diagnosticsService.recordError('assistant', error),
-  );
+  const weather = createWeatherService(secretStore);
+  const assistant = createAssistantService(aiConfiguration, {
+    loadSettings: async () => (await stateStore.load()).settings,
+    getWeather: (preferences) => weather.get(preferences),
+    getDiagnoseSnapshot: () => diagnosticsService.promptSnapshot(),
+    getSystemLocale: () => app.getLocale(),
+    getAppVersion: () => app.getVersion(),
+  });
   // macOS honors showTray; Windows/Linux always keep the tray.
   const applyShowTray = (visible: boolean) => {
     try {
@@ -244,7 +247,7 @@ async function startApplication() {
       stateStore,
       secretStore,
       assistant,
-      weather: createWeatherService(secretStore),
+      weather,
       aiConfiguration,
       notices,
       diagnostics: diagnosticsService,

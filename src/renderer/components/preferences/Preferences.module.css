@@ -158,6 +158,17 @@
   min-width: 0;
 }
 
+.perceptionValue {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--settings-muted, inherit);
+  user-select: text;
+}
+
 .prefRowStacked {
   flex-direction: column;
   align-items: stretch;
@@ -304,6 +315,58 @@
 
 .aboutLink svg {
   flex-shrink: 0;
+}
+
+.developerList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 12px 16px 14px;
+  list-style: none;
+}
+
+.developerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.developerIdentity {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.developerIdentity:hover,
+.developerIdentity:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
+
+.developerAvatar,
+.developerFallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.developerFallback {
+  display: grid;
+  place-items: center;
+  background: var(--settings-accent-soft, rgba(127, 127, 127, 0.16));
+  font-size: 14px;
 }
 
 .row {

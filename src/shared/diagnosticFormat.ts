@@ -75,7 +75,6 @@ export function formatDiagnosticEvent(
       ];
       const action = [
         'update-app-state',
-        'mutate-ai-configuration',
         'save-ai-credential',
         'save-weather-api-key',
         'launch-targets',
@@ -87,6 +86,7 @@ export function formatDiagnosticEvent(
         'open-media-session',
         'open-external',
       ];
+      const suffix = event.outcome ?? (event.facts?.length ? event.facts.join(' ') : undefined);
       const level =
         event.phase === 'failed'
           ? 'error'
@@ -96,26 +96,30 @@ export function formatDiagnosticEvent(
                 event.phase === 'failed-repeat' ||
                 quiet.includes(event.channel)
               ? 'trace'
-              : action.includes(event.channel) &&
-                  (event.channel !== 'update-app-state' ||
-                    event.fields?.some((field) =>
-                      [
-                        'theme',
-                        'uiFont',
-                        'language',
-                        'autoLaunch',
-                        'displayId',
-                        'tasks',
-                        'workflows',
-                        'quickApps',
-                      ].includes(field),
-                    ))
-                ? 'info'
-                : 'debug';
+              : event.significance === 'continuous'
+                ? 'debug'
+                : event.significance === 'structural' || event.significance === 'discrete'
+                  ? 'info'
+                  : action.includes(event.channel) &&
+                      (event.channel !== 'update-app-state' ||
+                        event.fields?.some((field) =>
+                          [
+                            'theme',
+                            'uiFont',
+                            'language',
+                            'autoLaunch',
+                            'displayId',
+                            'tasks',
+                            'workflows',
+                            'quickApps',
+                          ].includes(field),
+                        ))
+                    ? 'info'
+                    : 'debug';
       return {
         level,
         scope: `main/${event.sender ?? 'ipc'}`,
-        message: `${event.operationId ? '#' + event.operationId + ' ' : ''}${event.channel} ${event.phase} (${event.elapsedMs} ms)${event.outcome ? ': ' + event.outcome : ''}`,
+        message: `${event.operationId ? '#' + event.operationId + ' ' : ''}${event.channel} ${event.phase} (${event.elapsedMs} ms)${suffix ? ': ' + suffix : ''}`,
         details: [
           ...(event.fields?.length ? ['Changed fields: ' + event.fields.join(', ')] : []),
           ...(event.repeated ? ['Repeated failures suppressed: ' + event.repeated] : []),

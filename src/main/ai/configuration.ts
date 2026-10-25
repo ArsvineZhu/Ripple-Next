@@ -8,7 +8,6 @@ import {
 } from '../../shared/aiConfiguration';
 import type { AIConfiguration, AIMutation } from '../../shared/aiConfiguration';
 import type { AppState, AppStatePatch } from '../../shared/appState';
-import { randomUUID } from 'node:crypto';
 import { AIError } from './error';
 
 interface StateStore {
@@ -51,9 +50,9 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
       throw new DiagnosticError('Save the credential first');
   };
   return {
-    async activeModel() {
+    async modelBinding(id: number) {
       const { settings } = await stateStore.load();
-      const model = settings.ai.models.find((item) => item.id === settings.ai.activeModelId);
+      const model = settings.ai.models.find((item) => item.id === id);
       const endpoint = settings.ai.endpoints.find((item) => item.id === model?.endpointId);
       if (!model?.name || !endpoint)
         throw new AIError('invalidAISettings', 'Select a configured model');
@@ -63,6 +62,12 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
           : await secrets.getSecret(aiSecretName(model.credentialId));
       if (!apiKey) throw new AIError('missingApiKey', 'Save the selected model credential');
       return { model, endpoint, apiKey, timeZone: settings.timeZone };
+    },
+    async activeModel() {
+      const { settings } = await stateStore.load();
+      if (settings.ai.activeModelId === null)
+        throw new AIError('invalidAISettings', 'Select a configured model');
+      return this.modelBinding(settings.ai.activeModelId);
     },
     async status() {
       return metadata((await stateStore.load()).settings.ai);
@@ -170,40 +175,10 @@ export function createAIConfigurationService(stateStore: StateStore, secrets: Se
           case 'customize-model':
             Object.assign(model(command.id).customization, command.customization);
             break;
-          case 'add-injection':
-            model(command.id).customization.injections.push({
-              id: randomUUID(),
-              name: '',
-              text: '',
-              enabled: true,
-            });
+          case 'edit-shared':
+            if (command.instruction !== undefined) config.instruction = command.instruction;
+            if (command.perception) Object.assign(config.perception, command.perception);
             break;
-          case 'edit-injection': {
-            const item = model(command.id).customization.injections.find(
-              (value) => value.id === command.injectionId,
-            );
-            if (!item) throw new DiagnosticError('Injection is missing');
-            if (command.name !== undefined) item.name = command.name;
-            if (command.text !== undefined) item.text = command.text;
-            if (command.enabled !== undefined) item.enabled = command.enabled;
-            break;
-          }
-          case 'remove-injection': {
-            const profile = model(command.id).customization;
-            profile.injections = profile.injections.filter(
-              (item) => item.id !== command.injectionId,
-            );
-            break;
-          }
-          case 'move-injection': {
-            const list = model(command.id).customization.injections;
-            const index = list.findIndex((item) => item.id === command.injectionId),
-              next = index + command.direction;
-            if (index < 0) throw new DiagnosticError('Injection is missing');
-            if (next >= 0 && next < list.length)
-              [list[index], list[next]] = [list[next], list[index]];
-            break;
-          }
           case 'remove-model':
             model(command.id);
             config.models = config.models.filter((item) => item.id !== command.id);

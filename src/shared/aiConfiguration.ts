@@ -1,21 +1,17 @@
 import { z } from 'zod';
+import {
+  defaultPerception,
+  PerceptionPatchSchema,
+  PerceptionSchema,
+  VisionSchema,
+} from './aiPerception';
 
 const AIProtocolSchema = z.enum(['completion', 'responses', 'anthropic']);
 export type AIProtocol = z.infer<typeof AIProtocolSchema>;
 const Id = z.number().int().positive().max(2_147_483_647);
-const InjectionSchema = z
+const ModelCustomizationObject = z
   .object({
-    id: z.string().min(1).max(128),
-    name: z.string().max(128),
-    text: z.string().max(65_536),
-    enabled: z.boolean(),
-  })
-  .strict();
-export const ModelCustomizationSchema = z
-  .object({
-    systemPrompt: z.string().max(65_536).nullable().default(null),
-    injections: z.array(InjectionSchema).max(128).default([]),
-    contextAwareness: z.literal(false).default(false),
+    vision: VisionSchema.default('unknown'),
     temperature: z.number().finite().min(0).max(2).nullable().default(null),
     reasoningEffort: z
       .enum(['default', 'none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'])
@@ -26,22 +22,29 @@ export const ModelCustomizationSchema = z
     contextLimitCharacters: z.number().int().min(100).max(4_000_000).nullable().default(null),
   })
   .strict();
+
+function withoutLegacyAwareness(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  const { contextAwareness: _legacy, ...rest } = value as Record<string, unknown>;
+  return rest;
+}
+
+const ModelCustomizationSchema = z.preprocess(withoutLegacyAwareness, ModelCustomizationObject);
 export type ModelCustomization = z.infer<typeof ModelCustomizationSchema>;
 const ModelCustomizationPatchSchema = z
   .object({
-    systemPrompt: ModelCustomizationSchema.shape.systemPrompt.removeDefault().optional(),
-    injections: ModelCustomizationSchema.shape.injections.removeDefault().optional(),
-    contextAwareness: ModelCustomizationSchema.shape.contextAwareness.removeDefault().optional(),
-    temperature: ModelCustomizationSchema.shape.temperature.removeDefault().optional(),
-    reasoningEffort: ModelCustomizationSchema.shape.reasoningEffort.removeDefault().optional(),
-    thinkingMode: ModelCustomizationSchema.shape.thinkingMode.removeDefault().optional(),
-    thinkingBudget: ModelCustomizationSchema.shape.thinkingBudget.removeDefault().optional(),
-    maxOutputTokens: ModelCustomizationSchema.shape.maxOutputTokens.removeDefault().optional(),
-    contextLimitCharacters: ModelCustomizationSchema.shape.contextLimitCharacters
+    vision: ModelCustomizationObject.shape.vision.removeDefault().optional(),
+    temperature: ModelCustomizationObject.shape.temperature.removeDefault().optional(),
+    reasoningEffort: ModelCustomizationObject.shape.reasoningEffort.removeDefault().optional(),
+    thinkingMode: ModelCustomizationObject.shape.thinkingMode.removeDefault().optional(),
+    thinkingBudget: ModelCustomizationObject.shape.thinkingBudget.removeDefault().optional(),
+    maxOutputTokens: ModelCustomizationObject.shape.maxOutputTokens.removeDefault().optional(),
+    contextLimitCharacters: ModelCustomizationObject.shape.contextLimitCharacters
       .removeDefault()
       .optional(),
   })
   .strict();
+export type ModelCustomizationPatch = z.infer<typeof ModelCustomizationPatchSchema>;
 const AIEndpointSchema = z
   .object({
     id: Id,
@@ -70,12 +73,14 @@ const AIModelSchema = z
   })
   .strict();
 
-export const AIConfigurationSchema = z
+const AIConfigurationObject = z
   .object({
     endpoints: z.array(AIEndpointSchema).max(128),
     credentials: z.array(AICredentialSchema).max(256),
     models: z.array(AIModelSchema).max(256),
     activeModelId: Id.nullable(),
+    instruction: z.string().max(65_536).default(''),
+    perception: PerceptionSchema.default(() => ({ ...defaultPerception })),
     nextId: z.object({ endpoint: Id, credential: Id, model: Id }).strict(),
   })
   .strict()
@@ -110,15 +115,6 @@ export const AIConfigurationSchema = z
         (model.credentialId !== null && key?.endpointId !== model.endpointId)
       )
         context.addIssue({ code: 'custom', message: 'Model binding is invalid', path: ['models'] });
-      if (
-        new Set(model.customization.injections.map((item) => item.id)).size !==
-        model.customization.injections.length
-      )
-        context.addIssue({
-          code: 'custom',
-          message: 'Injection IDs must be unique',
-          path: ['models'],
-        });
       const { thinkingBudget, maxOutputTokens } = model.customization;
       if (thinkingBudget && maxOutputTokens && thinkingBudget >= maxOutputTokens)
         context.addIssue({
@@ -137,6 +133,50 @@ export const AIConfigurationSchema = z
         path: ['activeModelId'],
       });
   });
+
+function migrateSharedAI(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  const input = { ...(value as Record<string, unknown>) };
+  const models = Array.isArray(input.models) ? input.models : [];
+  const active = models.find(
+    (item) =>
+      item && typeof item === 'object' && (item as { id?: unknown }).id === input.activeModelId,
+  ) as { customization?: Record<string, unknown> } | undefined;
+  const first = models.find((item) => item && typeof item === 'object') as
+    { customization?: Record<string, unknown> } | undefined;
+  const source = active?.customization ?? first?.customization;
+  if (typeof input.instruction !== 'string') {
+    const injections = Array.isArray(source?.injections) ? source.injections : [];
+    input.instruction = injections
+      .filter(
+        (item) =>
+          item && typeof item === 'object' && (item as { enabled?: boolean }).enabled !== false,
+      )
+      .map((item) => String((item as { text?: unknown }).text ?? '').trim())
+      .filter(Boolean)
+      .join('\n\n');
+  }
+  if (input.perception === undefined && source?.perception) input.perception = source.perception;
+  input.models = models.map((item) => {
+    if (!item || typeof item !== 'object') return item;
+    const model = { ...(item as Record<string, unknown>) };
+    const customization = model.customization;
+    if (!customization || typeof customization !== 'object' || Array.isArray(customization))
+      return model;
+    const {
+      injections: _injections,
+      perception: _perception,
+      systemPrompt: _systemPrompt,
+      contextAwareness: _contextAwareness,
+      ...rest
+    } = customization as Record<string, unknown>;
+    model.customization = rest;
+    return model;
+  });
+  return input;
+}
+
+export const AIConfigurationSchema = z.preprocess(migrateSharedAI, AIConfigurationObject);
 export type AIConfiguration = z.infer<typeof AIConfigurationSchema>;
 
 export function defaultAIConfiguration(): AIConfiguration {
@@ -147,6 +187,8 @@ export function defaultAIConfiguration(): AIConfiguration {
     credentials: [],
     models: [],
     activeModelId: null,
+    instruction: '',
+    perception: { ...defaultPerception },
     nextId: { endpoint: 2, credential: 1, model: 1 },
   };
 }
@@ -196,30 +238,11 @@ export const AIMutationSchema = z.discriminatedUnion('kind', [
     })
     .strict(),
   z.object({ kind: z.literal('select-model'), id: Id.nullable() }).strict(),
-  z.object({ kind: z.literal('add-injection'), id: Id }).strict(),
   z
     .object({
-      kind: z.literal('edit-injection'),
-      id: Id,
-      injectionId: z.string().min(1).max(128),
-      name: z.string().max(128).optional(),
-      text: z.string().max(65536).optional(),
-      enabled: z.boolean().optional(),
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.literal('remove-injection'),
-      id: Id,
-      injectionId: z.string().min(1).max(128),
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.literal('move-injection'),
-      id: Id,
-      injectionId: z.string().min(1).max(128),
-      direction: z.union([z.literal(-1), z.literal(1)]),
+      kind: z.literal('edit-shared'),
+      instruction: z.string().max(65_536).optional(),
+      perception: PerceptionPatchSchema.optional(),
     })
     .strict(),
 ]);
