@@ -23,7 +23,7 @@ pnpm check
 pnpm test
 pnpm package
 pnpm make
-node scripts/release-notes.mjs v4.1.0-beta.2
+node scripts/release-notes.mjs v<version>
 ```
 
 `package` 生成可运行目录，`make` 在对应系统生成安装程序和便携归档。Linux 需要 cc、dpkg、fakeroot、rpm，Windows MSI 需要 WiX，macOS 需要 Xcode 命令行工具。Forge 构建／分发 Linux inotify 程序及目标架构 macOS 窗口模块；macOS 使用临时签名。

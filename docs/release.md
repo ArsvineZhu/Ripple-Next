@@ -23,7 +23,7 @@ pnpm check
 pnpm test
 pnpm package
 pnpm make
-node scripts/release-notes.mjs v4.1.0-beta.2
+node scripts/release-notes.mjs v<version>
 ```
 
 `package` produces a runnable directory. `make` creates native installers and portable archives on the matching host. Linux needs `cc`, dpkg, fakeroot and rpm; Windows MSI needs WiX; macOS needs Xcode Command Line Tools. Forge builds/ships Linux's inotify executable and the target-architecture macOS window addon. macOS packages use an ad-hoc signature.

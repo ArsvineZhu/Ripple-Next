@@ -21,7 +21,7 @@ The superellipse field uses exponent 2^K, CSS-pixel distances and analytic norma
 
 ## Preferences and preview
 
-Appearance & Position → Liquid Glass (Exp) owns a sticky preview of actual slider, switch, menu and button controls. Preview values stay local; material changes use the shared Settings context. Disabling Settings glass displays ordinary controls and removes glass pointer response. Island glass is unavailable.
+Appearance & Position → Liquid Glass owns a sticky preview of actual slider, switch, menu and button controls. Preview values stay local; material changes use the shared Settings context. Disabling Settings glass displays ordinary controls and removes glass pointer response. Island glass is unavailable.
 
 Reset sets IOR 2, refraction 1.5, dispersion 0.08, menu blur 3, saturation 1.5, specular multiplier 1, elasticity 0.5, attraction radius 20 and drag deformation on. Saved preferences change only through their normal commits/reset action.
 

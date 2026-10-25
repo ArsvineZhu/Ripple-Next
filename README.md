@@ -14,7 +14,7 @@ Music is playing. A link needs opening. A copied command is waiting in the clipb
 
 Glance while idle, hover for more, click to open a full page. Configure everything in a dedicated Settings window. Your drafts stay with you when the Island folds.
 
-[Ripple Next 4.1.0-beta.2](docs/releases/4.1.0-beta.2.en.md). [Website](https://ripple.arsvine.com) · [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
+Ripple Next 4.2.0. [Website](https://ripple.arsvine.com) · [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > Screenshots and recordings show the actual application with isolated demo content. The assistant example uses a local fixture response, and the media sessions use demonstration players. Chinese images demonstrate the corresponding language feature.
 
@@ -50,7 +50,7 @@ Give a workflow a name and one app or address per row. Launch once to open the g
 
 ## An assistant with your choice of service
 
-Configure Chat Completions, OpenAI Responses or Anthropic Messages, save an encrypted key and bind a model. Each model has parameters and ordered personal instructions. The system prompt stays built in. Answers stream as Markdown; code blocks have native-copy actions. Requests go to the endpoint you configure.
+Configure Chat Completions, OpenAI Responses or Anthropic Messages, save an encrypted key and bind a model. The system prompt is built in. Each model has its own parameters; one personal instruction and the perception channels apply to every model. Answers stream as Markdown; code blocks have native-copy actions. Requests go to the endpoint you configure.
 
 ![Assistant sample response](docs/assets/screenshots/assistant.png)
 

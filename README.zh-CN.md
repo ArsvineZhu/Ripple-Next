@@ -14,7 +14,7 @@
 
 闲置时简短显示，悬停查看更多，点击展开完整页面；独立设置窗口负责配置，折叠时草稿仍然保留。
 
-[Ripple Next 4.1.0-beta.2](docs/releases/4.1.0-beta.2.zh-CN.md)。[官网](https://ripple.arsvine.com) · [下载](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) · [使用指南](instructions.zh-CN.md) · [反馈](https://github.com/ArsvineZhu/Ripple-Next/issues)
+Ripple Next 4.2.0。[官网](https://ripple.arsvine.com) · [下载](https://github.com/ArsvineZhu/Ripple-Next/releases) · [使用指南](instructions.zh-CN.md) · [反馈](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > 截图与录像来自独立演示配置中的实际应用。助手展示本地演示服务返回的示例回答，媒体来自演示播放器；中文图片用于介绍对应语言功能。
 
@@ -50,7 +50,7 @@
 
 ## 自选服务的助手
 
-配置 Chat Completions、OpenAI Responses 或 Anthropic Messages，保存加密密钥并绑定模型。模型可有独立提示词、参数和有序注入；回答流式显示 Markdown，代码块支持原生复制。请求发送到你配置的接口。
+配置 Chat Completions、OpenAI Responses 或 Anthropic Messages，保存加密密钥并绑定模型。系统提示词是内置的。每个模型有自己的参数；一段个人指令和感知渠道对所有模型生效。回答流式显示 Markdown，代码块支持原生复制。请求发送到你配置的接口。
 
 ![助手示例回答](docs/assets/screenshots/assistant.png)
 

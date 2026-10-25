@@ -4,13 +4,13 @@
 
 Main owns application lifetime, windows, tray, native effects and durable state. `index.ts` initializes the application profile, diagnostics, SQLite and secure store before renderer bootstrap. A native lock keeps one instance; launching again opens Settings. Development and installed builds use separate data/cache profiles.
 
-`ipc.ts` validates sender roles and payloads, applies system effects before preference commits and broadcasts committed state. Settings owns editor/credential writes; Island owns daily interaction. `appStateStore.ts` owns the SQLite schema, prepared statements and transactions. Read errors remain errors; related AI graph and credential deletion is atomic.
+`ipc.ts` validates sender roles and payloads, applies system effects before preference commits and broadcasts committed state. Settings owns editor/credential writes; Island owns daily interaction. `appStateStore.ts` owns the SQLite schema, prepared statements and transactions. Read errors remain errors. A profile the schema rejects is backed up or replaced only through the recovery actions; related AI graph and credential deletion is atomic.
 
 ## Domain services
 
 - Apps executes one ordered LaunchTarget array and returns indexed results. Platform adapters own native application discovery, preparation and activation.
-- Media owns automatic/manual selection, serialized commands, stale/error snapshots and shared observation. Controls and activation carry the visible session ID; metadata and cover work do not precede a control.
-- AI configuration owns graph IDs, bindings and per-model perception/vision. Streaming resolves the default system/user templates, enabled perception channels and injections, then delegates Chat Completions, Responses or Anthropic to the SDK. A desktop frame is captured only when that channel is enabled and vision is supported. Cancellation and terminal results belong to the request.
+- Media owns automatic/manual selection, serialized commands, stale/error snapshots and shared observation. Controls and activation carry the visible session ID; metadata and cover work do not precede a control. Identical samples are not broadcast.
+- AI configuration owns graph IDs, bindings, per-model vision and the shared instruction and perception channels. Streaming resolves the built-in system and user templates and the enabled perception channels, then delegates Chat Completions, Responses or Anthropic to the SDK. A desktop frame is captured only when that channel is enabled and vision is supported. Cancellation and terminal results belong to the request.
 - Weather owns provider query assembly, protected credentials, request coalescing and a bounded cache. Local background images use the dedicated protocol restricted to the configured resource.
 - Color picker owns its helper lifetime and Settings window. Diagnostics owns bounded readable logs, operation correlation, native failure codes and source-map resolution. Licenses returns known bundled records.
 

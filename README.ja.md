@@ -14,7 +14,7 @@
 
 待機中にひと目、ホバーでもう少し、クリックでページを展開。設定は専用ウィンドウで行い、折りたたんでも下書きを保ちます。
 
-[Ripple Next 4.1.0-beta.2](docs/releases/4.1.0-beta.2.en.md)。[ウェブサイト](https://ripple.arsvine.com) · [ダウンロード](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) · [使い方（英語）](instructions.md) · [フィードバック](https://github.com/ArsvineZhu/Ripple-Next/issues)
+Ripple Next 4.2.0。[ウェブサイト](https://ripple.arsvine.com) · [ダウンロード](https://github.com/ArsvineZhu/Ripple-Next/releases) · [使い方（英語）](instructions.md) · [フィードバック](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > 画像と動画は独立デモ設定の実際のアプリです。アシスタントはローカルのサンプル応答、音楽はデモプレイヤーを使用。中国語画像は言語固有機能を紹介します。
 
@@ -50,7 +50,7 @@
 
 ## サービスを選べるアシスタント
 
-Chat Completions、OpenAI Responses、Anthropic Messages の接続先と暗号化キー、モデルを設定。モデルごとのプロンプト、パラメーター、順序付き注入を使えます。回答は Markdown で逐次表示、コードはネイティブコピー。設定したサービスへ送信します。
+Chat Completions、OpenAI Responses、Anthropic Messages の接続先と暗号化キー、モデルを設定。システムプロンプトは内蔵です。各モデルは自分のパラメーターを持ち、一つの個人向け指示と知覚チャネルがすべてのモデルに適用されます。回答は Markdown で逐次表示、コードはネイティブコピー。設定したサービスへ送信します。
 
 ![アシスタントの応答例](docs/assets/screenshots/assistant.png)
 

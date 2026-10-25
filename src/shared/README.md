@@ -6,7 +6,7 @@ Shared contains runtime-neutral serializable data, validation schemas and pure p
 
 Application/LaunchTarget describes installed apps, HTTP(S) shortcuts and command argv/working directories. MediaSession/MediaSnapshot describes capabilities, automatic/manual selection, freshness and bounded operation errors; commands require the displayed session ID. Stable page IDs and layout policies are independent of navigation order.
 
-AppState owns persisted defaults and preferences, including weather, fonts, music and the structured AI graph. AI schemas validate stable IDs, bindings, model customization and ordered injections. Credentials are named secure-store records owned by main. Related graph/credential changes share the durable transaction.
+AppState owns persisted defaults and preferences, including weather, fonts, music and the structured AI graph. AI schemas validate stable IDs, bindings, per-model parameters and the shared instruction and perception channels. A shape those schemas reject stays rejected. Profile recovery chooses a timestamped backup path and allows a fresh store only after a completed backup or an explicit confirmation. Credentials are named secure-store records owned by main. Related graph/credential changes share the durable transaction.
 
 Input geometry handles fractional scales and viewport limits. Background/color policies normalize resources and preserve alpha. Diagnostic schemas accept bounded operation/view/error metadata; clipboard text and native protocol payloads are not diagnostic event fields.
 

@@ -36,11 +36,11 @@ Start playback in a supported player. Idle displays a shorter track capsule with
 
 With multiple players, A selects Automatic and each indicator selects a player for this run until it exits. Automatic prefers active playback. Controls address the displayed session; a departed player cannot redirect an old command to another one. A missing cover uses the music placeholder. Long text resumes after returning to a hidden page.
 
-Overview shows time, date, battery and configured weather. Set clock cycle, period display, time zone, Celsius/Fahrenheit and automatic/manual location. Automatic location uses network IP and may reflect VPN/proxy routing; a blank manual location hides weather. Weather credentials use the built-in source or your saved key.
+Overview shows time, date, battery and configured weather. Celsius is the default. Set clock cycle, period display, time zone, Celsius/Fahrenheit and automatic/manual location. Automatic location uses network IP and may reflect VPN/proxy routing; a blank manual location hides weather. Weather credentials use the built-in source or your saved key.
 
 ## AI, clipboard and tasks
 
-In Integrations, add a Base URL, choose Chat Completions/Responses/Anthropic, save a credential and bind the exact model identifier. The system prompt is built in. Models have ordered personal instructions, reasoning/temperature/output settings and a local character limit. Select a default model or switch in the assistant.
+In Integrations, add a Base URL, choose Chat Completions/Responses/Anthropic, save a credential and bind the exact model identifier. The system prompt is built in. One personal instruction and the perception channels apply to every model. Each model has reasoning/temperature/output settings, image understanding and a local character limit. Select a default model or switch in the assistant.
 
 Submit a question to stream Markdown and copy code using native clipboard actions. Ask another starts a new exchange. Partial failures retain received content; cancellation belongs to the active request. Requests go to your configured service. Perception channels choose which live values are included. A desktop frame is sent only when that channel is enabled and the model is marked as supporting images; Ripple Next does not store the frame.
 
@@ -54,10 +54,12 @@ Choose Default, Sleek Black or Windows 95 (W95FA Latin and HYPixel 11px U Chines
 
 General → Font arranges built-in, installed and imported fonts in priority order. Move a preferred font above the fonts that supply its missing glyphs; the editable preview shows the combined result. Import TTF, OTF, WOFF or WOFF2 files from any folder. Files are copied unchanged into the app profile, and styles of the same family are grouped together. An explicit font list also overrides theme typography. Explicit Simplified Chinese reveals Standard/Microsoft Chinese/Apple Chinese expression. Playful wording covers contextual hints and empty states, with ordinary technical/critical labels and zh-CN date/number formatting. User content and AI answers are not translated.
 
-Appearance & Position → Liquid Glass (Exp) shows a sticky live preview. Pressed handles become clear lenses, held switches change across the midpoint, and dragging near stops attracts the actual value. Disable Settings glass for ordinary controls. Island glass is unavailable.
+Appearance & Position → Liquid Glass shows a sticky live preview. Pressed handles become clear lenses, held switches change across the midpoint, and dragging near stops attracts the actual value. Disable Settings glass for ordinary controls. Island glass is unavailable.
 
 ## Data and support
 
 Preferences, tasks, workflows, quick apps and encrypted credential records live in `ripple-next.sqlite` in the Ripple Next user-data directory. The whole database is not encrypted. Back it up with the application closed; encrypted keys may require re-entry on a different machine/OS. Linux key saving requires OS-backed encryption.
+
+If a saved profile does not match the current schema, Ripple Next leaves it unchanged and opens a centered screen. Back up copies the store, including its write-ahead files, into a timestamped folder under the user-data directory and shows that path. Start fresh replaces the live store with an empty current profile only after that backup, or after a confirmation that names the loss. Old records are not converted.
 
 Settings → About → Diagnostics opens bounded local logs and crash data. Inspect crash dumps before sharing because they can contain process memory. See [platform support](docs/platform-compatibility.md), [diagnostics](docs/diagnostics.md) and the [release page](https://github.com/ArsvineZhu/Ripple-Next/releases).
