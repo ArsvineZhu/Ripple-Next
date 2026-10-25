@@ -7,17 +7,46 @@ import {
 } from '../components/preferences';
 import { useTranslation } from 'react-i18next';
 import { ExternalLink } from 'lucide-react';
-import { author, bugs, license, productName, repository, version } from '../../../package.json';
+import { useState } from 'react';
+import { bugs, license, productName, repository, version } from '../../../package.json';
+import {
+  githubAvatarUrl,
+  githubProfileUrl,
+  productDevelopers,
+  productWebsite,
+} from '../../shared/productCredits';
 import appIcon from '../../assets/icons/icon.png';
 import { InlineNotices } from '../components/InlineNotices';
 import { DangerAction } from '../components/DangerAction';
 import { type SettingsDetail } from '../lib/settingsDetails';
 import styles from '../components/preferences/Preferences.module.css';
 
+function DeveloperAvatar({ name, github }: { name: string; github: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed)
+    return (
+      <span className={styles.developerFallback} aria-hidden="true">
+        {[...name][0] ?? '?'}
+      </span>
+    );
+  return (
+    <img
+      className={styles.developerAvatar}
+      src={githubAvatarUrl(github)}
+      alt=""
+      width={36}
+      height={36}
+      draggable={false}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 export function SettingsAbout({ onOpenDetail }: { onOpenDetail(detail: SettingsDetail): void }) {
   const { t } = useTranslation();
   const repositoryUrl = repository.url.replace(/\.git$/, '');
   const licenseUrl = `${repositoryUrl}/blob/main/LICENSE`;
+  const open = (url: string) => void window.electronAPI.openExternal(url);
   return (
     <>
       <section className={styles.aboutHero} aria-labelledby="about-product-title" data-about-hero>
@@ -29,35 +58,26 @@ export function SettingsAbout({ onOpenDetail }: { onOpenDetail(detail: SettingsD
         </span>
       </section>
       <PreferenceGroup>
-        <PreferenceRow label={t('developer')}>
-          <span className={styles.aboutValue}>{author.name}</span>
+        <PreferenceRow label={t('website')}>
+          <button type="button" className={styles.aboutLink} onClick={() => open(productWebsite)}>
+            {productWebsite.replace(/^https:\/\//, '')}
+            <ExternalLink size={13} aria-hidden="true" />
+          </button>
         </PreferenceRow>
         <PreferenceRow label={t('license')}>
-          <button
-            type="button"
-            className={styles.aboutLink}
-            onClick={() => void window.electronAPI.openExternal(licenseUrl)}
-          >
+          <button type="button" className={styles.aboutLink} onClick={() => open(licenseUrl)}>
             {license}
             <ExternalLink size={13} aria-hidden="true" />
           </button>
         </PreferenceRow>
         <PreferenceRow label={t('repository')}>
-          <button
-            type="button"
-            className={styles.aboutLink}
-            onClick={() => void window.electronAPI.openExternal(repositoryUrl)}
-          >
+          <button type="button" className={styles.aboutLink} onClick={() => open(repositoryUrl)}>
             {repositoryUrl.replace(/^https:\/\//, '')}
             <ExternalLink size={13} aria-hidden="true" />
           </button>
         </PreferenceRow>
         <PreferenceRow label={t('feedback')}>
-          <button
-            type="button"
-            className={styles.aboutLink}
-            onClick={() => void window.electronAPI.openExternal(bugs.url)}
-          >
+          <button type="button" className={styles.aboutLink} onClick={() => open(bugs.url)}>
             {t('reportIssue')}
             <ExternalLink size={13} aria-hidden="true" />
           </button>
@@ -74,6 +94,34 @@ export function SettingsAbout({ onOpenDetail }: { onOpenDetail(detail: SettingsD
           </PreferenceButton>
         </PreferenceRow>
       </PreferenceGroup>
+      <PreferenceCard caption={t('developers')}>
+        <ul className={styles.developerList}>
+          {productDevelopers.map((person) => (
+            <li key={person.github} className={styles.developerRow}>
+              <button
+                type="button"
+                className={styles.developerIdentity}
+                onClick={() => open(githubProfileUrl(person.github))}
+              >
+                <DeveloperAvatar name={person.name} github={person.github} />
+                <span>{person.name}</span>
+              </button>
+              {person.website && (
+                <button
+                  type="button"
+                  className={styles.aboutLink}
+                  onClick={() => {
+                    if (person.website) open(person.website);
+                  }}
+                >
+                  {t('developerWebsite')}
+                  <ExternalLink size={13} aria-hidden="true" />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      </PreferenceCard>
       <InlineNotices area="settings" codes={['diagnosticsFolderOpenFailed']} />
       <PreferenceGroup>
         <SettingLink
