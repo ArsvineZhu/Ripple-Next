@@ -14,7 +14,6 @@ let settingsWindow: BrowserWindow | null = null;
 let translucentSidebar = true;
 const supportsBackdrop = () =>
   process.platform === 'darwin' ||
-  process.platform === 'linux' ||
   (process.platform === 'win32' && Number(release().split('.')[2]) >= 22621);
 
 export function setSettingsSidebarTranslucent(enabled: boolean): void {
@@ -135,7 +134,8 @@ export function openSettingsWindow(): BrowserWindow {
             height: 44,
           },
         }),
-    ...(process.platform === 'linux' ? { transparent: true } : {}),
+    // A transparent Linux window leaves the window-controls overlay empty, so
+    // minimize, maximize and close are not drawn.
     ...(process.platform === 'win32'
       ? {
           thickFrame: true,

@@ -13,7 +13,7 @@ pnpm package
 pnpm make
 ```
 
-Linux development requires a working Chromium sandbox. A matching installed helper can be supplied through `CHROME_DEVEL_SANDBOX`; the helper is root-owned with mode 4755. Forge starts the transparent window through X11/XWayland. Restart the application after main/preload changes.
+Linux development requires a working Chromium sandbox. Chromium uses the `chrome-sandbox` beside the Electron binary when that file is present, and reads `CHROME_DEVEL_SANDBOX` only while it is absent. The helper must be root-owned with mode 4755. `pnpm start` moves the development helper aside and selects `/usr/lib/ripple-next/chrome-sandbox` when that installed file has those permissions and the same bytes. Set `CHROME_DEVEL_SANDBOX` to use another matching helper. Forge starts the transparent window through X11/XWayland. Restart the application after main/preload changes.
 
 ## Commands and configuration
 

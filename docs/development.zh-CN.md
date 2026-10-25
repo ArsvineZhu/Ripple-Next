@@ -13,7 +13,7 @@ pnpm package
 pnpm make
 ```
 
-Linux 开发需要有效 Chromium 沙盒，可通过 `CHROME_DEVEL_SANDBOX` 指定匹配的已安装 helper，其所有者为 root、权限为 4755。Forge 使用 X11／XWayland 运行透明窗口；修改主进程／preload 后重启应用。
+Linux 开发需要有效 Chromium 沙盒。Electron 二进制旁存在 `chrome-sandbox` 时 Chromium 使用该文件，仅在其不存在时读取 `CHROME_DEVEL_SANDBOX`。helper 须为 root 所有且权限为 4755。当 `/usr/lib/ripple-next/chrome-sandbox` 满足该权限且与开发版二进制字节相同时，`pnpm start` 会移开开发版 helper 并选用它。需要其他匹配 helper 时设置 `CHROME_DEVEL_SANDBOX`。Forge 使用 X11／XWayland 运行透明窗口；修改主进程／preload 后重启应用。
 
 ## 命令与配置
 

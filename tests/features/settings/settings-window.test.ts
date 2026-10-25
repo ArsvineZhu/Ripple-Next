@@ -145,9 +145,11 @@ describe('settings window singleton', () => {
     expect(getSettingsWindow()).toBe(first);
     expect(getWindowRole(first.webContents as unknown as WebContents)).toBe('settings');
     expect(mock.lastOptions?.skipTaskbar).toBe(false);
-    expect(mock.lastOptions?.backgroundColor).toBe('#00000000');
+    expect(mock.lastOptions?.backgroundColor).toBe(
+      process.platform === 'linux' ? '#f5f5f7' : '#00000000',
+    );
     expect(mock.lastOptions).not.toHaveProperty('type');
-    expect(mock.lastOptions?.transparent ?? false).toBe(process.platform === 'linux');
+    expect(mock.lastOptions).not.toHaveProperty('transparent');
     const second = openSettingsWindow();
     expect(mock.windows).toHaveLength(1);
     expect(second).toBe(first);
@@ -232,7 +234,10 @@ it.each(['win32', 'darwin', 'linux'])(
       });
       const window = openSettingsWindow();
       expect(mock.lastOptions?.titleBarStyle).toBe('hidden');
-      expect(mock.lastOptions?.backgroundColor).toBe('#00000000');
+      expect(mock.lastOptions?.backgroundColor).toBe(
+        platform === 'linux' ? '#f5f5f7' : '#00000000',
+      );
+      expect(mock.lastOptions).not.toHaveProperty('transparent');
       if (platform === 'darwin') expect(window.setVibrancy).toHaveBeenLastCalledWith('sidebar');
       else expect(window.setMenu).toHaveBeenCalledWith(null);
       if (platform === 'win32')
