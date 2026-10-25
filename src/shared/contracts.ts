@@ -132,6 +132,8 @@ export interface InvokeMap {
   'get-weather': { args: [preferences: WeatherPreferences]; result: WeatherSnapshot };
   'save-weather-api-key': { args: [key: string]; result: void };
   'get-app-bootstrap': { args: []; result: AppBootstrap };
+  'backup-incompatible-profile': { args: []; result: { path: string } };
+  'reset-incompatible-profile': { args: [confirmedDiscard: boolean]; result: void };
   'open-diagnostics-folder': { args: []; result: void };
   'show-color-picker': { args: [initialColor: string]; result: string | null };
   'read-clipboard-text': { args: []; result: string };
@@ -197,6 +199,8 @@ export interface ElectronAPI {
   saveWeatherApiKey(key: string): Promise<void>;
   showColorPicker(initialColor: string): Promise<string | null>;
   getAppBootstrap(): Promise<AppBootstrap>;
+  backupIncompatibleProfile(): Promise<{ path: string }>;
+  resetIncompatibleProfile(confirmedDiscard: boolean): Promise<void>;
   openDiagnosticsFolder(): Promise<void>;
   readClipboardText(): Promise<string>;
   writeClipboardText(text: string): Promise<void>;
