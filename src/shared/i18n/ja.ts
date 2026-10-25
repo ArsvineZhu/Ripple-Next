@@ -83,16 +83,16 @@ export const ja: Messages = {
   guideOpenSection: '関連する設定を開く',
   guideAITitle: 'AI：エンドポイント、キー、モデルを接続',
   guideAIBody:
-    '録画ではモデルの編集、システムプロンプトの変更、時刻の注入を追加します。接続先とキーはデモ用で、モデルへのリクエストは送信しません。',
+    '録画ではデモ用の接続先とキーを使い、モデルへのリクエストは送信しません。システムプロンプトは内蔵です。各モデルは自分のパラメーターを持ち、一つの個人向け指示と知覚チャネルがすべてのモデルに適用されます。',
   guideAIStep1:
     '名前付き Base URL を追加し、/v1 などサービスの API パスを含めます。その接続先のキーを追加して保存します。',
   guideAIStep2:
     '完全なモデル ID を入力し、接続先、キー、プロトコルを選びます。OpenAI 互換 Chat Completions、OpenAI Responses、Anthropic Messages に対応します。',
   guideAIStep3:
-    '初期モデルを設定するか助手で切り替えます。モデルごとにシステムプロンプト、温度、推論強度、出力上限、ローカルコンテキスト上限を調整できます。',
+    '初期モデルを設定するか助手で切り替えます。モデルごとに画像理解、温度、推論強度、出力上限、ローカルコンテキスト上限を設定できます。',
   guideAIStep4:
-    '注入リストは有効な名前付きテキストを順番に追加します。順序で最終システムプロンプトを調整できます。コンテキスト認識はまだ利用できません。',
-  guideAIVariables: 'プロンプトと注入に使える変数：',
+    '個人向けの指示を一つ書き、知覚チャネルを選びます。{{battery}} などのプレースホルダは現在の値に置き換わります。デスクトップのフレームは、そのチャネルがオンでモデルが画像に対応しているときだけ送信されます。',
+  guideAIVariables: '知覚プレースホルダには次を使えます：',
   guideWorkflowTitle: 'アプリとワークフロー：作業環境を開く',
   guideWorkflowBody:
     'クイックアプリは一つの対象を、ワークフローは複数を順番に開きます。録画では名前と二つの URL を入力し、一覧に戻ります。',
@@ -205,22 +205,6 @@ export const ja: Messages = {
   confirmRemove: '削除を確認',
   aiModelBindingLocked:
     'この画面では接続先とモデル名を固定します。変更する場合はモデル設定を開いてください。',
-  systemPrompt: 'システムプロンプト',
-  useDefaultSystemPrompt: '内蔵システムプロンプトを使用',
-  promptVariablesHint: '変数：{{variables}}。',
-  injectionList: '注入一覧',
-  injectionsHint:
-    '有効なテキストをこの順序でユーザープロンプトに入れます。{{battery}} などの知覚プレースホルダは現在の値に置き換わります。',
-  additionalInstructions: '個人向けの指示',
-  additionalInstructionsHint:
-    '有効なテキストをこの順序でユーザープロンプトに入れます。{{battery}} などの知覚プレースホルダは現在の値に置き換わります。',
-  enableInjection: '注入 {{count}} を有効にする',
-  moveInjectionUp: '注入を上へ',
-  moveInjectionDown: '注入を下へ',
-  removeInjection: '注入を削除',
-  injectionName: '名前',
-  injectionText: '内容',
-  addInjection: '注入を追加',
   modelParameters: 'モデルのパラメーター',
   modelTemperature: '温度',
   reasoningEffort: '推論の強度',
@@ -229,7 +213,7 @@ export const ja: Messages = {
   maxOutputTokens: '最大出力（tokens）',
   contextLimitCharacters: 'ローカルコンテキスト上限（文字）',
   modelParametersHint:
-    '数値を空にするとサービスの既定値を使います。ローカル上限はプロンプト・有効な注入・入力の文字数を数え、超過時は送信しません。利用可能な設定はモデルによります。',
+    '数値を空にするとサービスの既定値を使います。ローカル上限は内蔵システムプロンプト、個人向けの指示、質問の文字数を数え、超過時は送信しません。利用可能な設定はモデルによります。',
   perception: '知覚',
   perceptionHint:
     'これらのスイッチはすべてのモデルに適用されます。項目を開くと現在の値を確認できます。',

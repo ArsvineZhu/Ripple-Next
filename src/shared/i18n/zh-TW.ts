@@ -76,16 +76,16 @@ export const zhTW: Messages = {
   guideOpenSection: '開啟相關設定',
   guideAITitle: 'AI：關聯介面、金鑰和模型',
   guideAIBody:
-    '錄影示範編輯模型、替換系統提示詞及新增時間注入。介面與金鑰是示範資料，不會傳送模型請求。',
+    '錄影使用示範介面與金鑰，過程中不傳送模型請求。系統提示詞是內建的。每個模型保留自己的參數；一段個人化指令和感知渠道對所有模型生效。',
   guideAIStep1:
     '新增有名稱的 Base URL，包含服務 API 路徑，例如 /v1。為該介面新增金鑰，並點擊儲存。',
   guideAIStep2:
     '填寫完整模型 ID，再選擇介面、金鑰和協定：OpenAI 相容 Chat Completions、OpenAI Responses 或 Anthropic Messages。',
   guideAIStep3:
-    '設為預設模型，或在助手中切換。每個模型可獨立調整系統提示詞、溫度、思考強度、輸出上限與本機上下文上限。',
+    '設為預設模型，或在助手中切換。每個模型可獨立設定影像理解、溫度、思考強度、輸出上限與本機上下文上限。',
   guideAIStep4:
-    '注入清單依序追加已啟用的命名文字片段。調整順序即可改變最終系統提示詞。上下文感知選項尚未開放。',
-  guideAIVariables: '提示詞和注入片段可使用這些變數：',
+    '寫一段個人化指令，並選擇感知渠道。出現 {{battery}} 這類占位符時會填入目前的值。桌面畫面只在該渠道開啟且模型支援影像時傳送。',
+  guideAIVariables: '感知占位符可以包括：',
   guideWorkflowTitle: '快捷應用與工作流程：開啟工作環境',
   guideWorkflowBody:
     '快捷應用程式開啟一個目標，工作流程依序開啟多個目標。錄影示範命名及分行填入兩個網址，再返回清單。',
@@ -100,7 +100,7 @@ export const zhTW: Messages = {
   guideGlassStep1: '按下即放大手柄。接近節點時，拖曳會減慢並吸引實際取值；繼續拖曳即可越過節點。',
   guideGlassStep2: '按住開關向左或向右越過中點，便會切換狀態。放開後恢復白色手柄。',
   guideGlassStep3:
-    '在位置設定之後開啟液態玻璃實驗頁。上方即時預覽在調整參數時保持可見。關閉設定玻璃會恢復一般控制項；靈動島玻璃尚未開放。',
+    '在位置設定之後開啟液態玻璃。上方即時預覽在調整參數時保持可見。關閉設定玻璃會恢復一般控制項；靈動島玻璃尚未開放。',
   liquidGlassExperimental: '液態玻璃',
   liquidGlassExperimentalHint: '調整設定控制項的材質與滑鼠回應。',
   settingsGlassEnabled: '設定頁啟用 Liquid Glass',
@@ -185,22 +185,6 @@ export const zhTW: Messages = {
   confirmationFailed: '操作未完成，請重試。',
   confirmRemove: '確認刪除',
   aiModelBindingLocked: '此處鎖定對應關係。變更介面或模型名稱，請返回模型設定。',
-  systemPrompt: '系統提示詞',
-  useDefaultSystemPrompt: '使用內建系統提示詞',
-  promptVariablesHint: '支援變數：{{variables}}。',
-  injectionList: '注入清單',
-  injectionsHint:
-    '啟用的文字依此順序寫入使用者提示詞。出現感知占位符（如 {{battery}}）時會填入目前的值。',
-  additionalInstructions: '個人化指令',
-  additionalInstructionsHint:
-    '啟用的文字依此順序寫入使用者提示詞。出現感知占位符（如 {{battery}}）時會填入目前的值。',
-  enableInjection: '啟用第 {{count}} 條注入',
-  moveInjectionUp: '上移注入',
-  moveInjectionDown: '下移注入',
-  removeInjection: '刪除注入',
-  injectionName: '名稱',
-  injectionText: '內容',
-  addInjection: '新增注入',
   modelParameters: '模型參數',
   modelTemperature: '溫度',
   reasoningEffort: '思考強度',
@@ -209,7 +193,7 @@ export const zhTW: Messages = {
   maxOutputTokens: '最大輸出（tokens）',
   contextLimitCharacters: '本機上下文上限（字元）',
   modelParametersHint:
-    '數字留空使用服務預設值。本機上限統計系統提示詞、啟用的注入及目前輸入，超限時不送出請求。可用參數由模型決定。',
+    '數字留空使用服務預設值。本機上限統計內建系統提示詞、個人化指令及目前的問題，超限時不送出請求。可用參數由模型決定。',
   perception: '感知',
   perceptionHint: '這些開關對所有模型生效。打開一項可查看目前的值。',
   perceptionCurrentValue: '目前的值',

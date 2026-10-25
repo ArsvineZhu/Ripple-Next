@@ -72,7 +72,6 @@ it('steps and bounds numeric parameters, resets to provider default and rejects 
   expect(host.textContent).toContain('probeVision');
   expect(host.textContent).not.toContain('customInstruction');
   expect(host.textContent).not.toContain('perceptionBattery');
-  expect(host.textContent).not.toContain('contextAwarenessReserved');
   const temperature = host.querySelector<HTMLInputElement>('input[aria-label=modelTemperature]')!;
   const controls = temperature
     .closest('[data-number-field]')!

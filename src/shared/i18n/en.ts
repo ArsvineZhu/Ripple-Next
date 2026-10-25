@@ -83,16 +83,16 @@ export const en = {
   guideOpenSection: 'Open related settings',
   guideAITitle: 'AI: connect an endpoint, key and model',
   guideAIBody:
-    'The recording edits a model, replaces its system prompt and adds a named time injection. Its example endpoint and key are demonstration values; it sends no model request.',
+    'The recording uses a demonstration endpoint and key and sends no model request. The system prompt is built in. Each model keeps its own parameters; one personal instruction and the perception channels apply to every model.',
   guideAIStep1:
     'Add a named Base URL with the service API path, such as /v1. Add a key for that endpoint and explicitly save it.',
   guideAIStep2:
     'Add the exact model ID, then select its endpoint, key and protocol: OpenAI-compatible Chat Completions, OpenAI Responses or Anthropic Messages.',
   guideAIStep3:
-    'Set a default model or switch in the assistant. Each model can override its system prompt, temperature, reasoning effort, output limit and local context limit.',
+    'Set a default model or switch in the assistant. Each model can set image understanding, temperature, reasoning, an output limit and a local context limit.',
   guideAIStep4:
-    'The injection list appends enabled, named text fragments in order. Reorder them to control the final system prompt. The context-awareness option remains unavailable.',
-  guideAIVariables: 'Prompt and injection variables can include:',
+    'Write one personal instruction and choose perception channels. Placeholders such as {{battery}} are filled when they appear. A desktop frame is sent only when that channel is on and the model supports images.',
+  guideAIVariables: 'Perception placeholders can include:',
   guideWorkflowTitle: 'Quick apps and workflows: open a working context',
   guideWorkflowBody:
     'A quick app opens one target; a workflow opens several in order. The recording creates a named workflow, enters two addresses on separate rows and returns to its list.',
@@ -210,22 +210,6 @@ export const en = {
   confirmRemove: 'Confirm removal',
   aiModelBindingLocked:
     'These bindings are fixed here. Edit the model configuration to change its endpoint or identifier.',
-  systemPrompt: 'System prompt',
-  useDefaultSystemPrompt: 'Use the built-in system prompt',
-  promptVariablesHint: 'Variables: {{variables}}.',
-  injectionList: 'Prompt injections',
-  injectionsHint:
-    'Enabled snippets fill the user prompt in this order. Perception placeholders such as {{battery}} are filled when present.',
-  additionalInstructions: 'Personal instructions',
-  additionalInstructionsHint:
-    'Enabled snippets fill the user prompt in this order. Perception placeholders such as {{battery}} are filled when present.',
-  enableInjection: 'Enable injection {{count}}',
-  moveInjectionUp: 'Move injection up',
-  moveInjectionDown: 'Move injection down',
-  removeInjection: 'Remove injection',
-  injectionName: 'Name',
-  injectionText: 'Content',
-  addInjection: 'Add injection',
   modelParameters: 'Model parameters',
   modelTemperature: 'Temperature',
   reasoningEffort: 'Reasoning effort',
@@ -234,7 +218,7 @@ export const en = {
   maxOutputTokens: 'Maximum output tokens',
   contextLimitCharacters: 'Local context limit (characters)',
   modelParametersHint:
-    'Blank numeric fields use the service default. The local context limit counts the system prompt, enabled injections and input; exceeding it prevents the request. Available parameters depend on the model.',
+    'Blank numeric fields use the service default. The local context limit counts the built-in system prompt, the personal instruction and the question; exceeding it prevents the request. Available parameters depend on the model.',
   perception: 'Perception',
   perceptionHint: 'These switches apply to every model. Open a channel to read its current value.',
   perceptionCurrentValue: 'Current value',

@@ -76,16 +76,16 @@ export const zhCN: Messages = {
   guideOpenSection: '打开相关设置',
   guideAITitle: 'AI：关联接口、密钥和模型',
   guideAIBody:
-    '录像展示编辑模型、替换系统提示词并添加具名的时间注入。示例接口与密钥是演示数据，过程中不发送模型请求。',
+    '录像使用演示接口与密钥，过程中不发送模型请求。系统提示词是内置的。每个模型保留自己的参数；一段个人指令和感知渠道对所有模型生效。',
   guideAIStep1:
     '添加带名称的 Base URL，包含服务 API 路径，例如 /v1。为该接口添加密钥，并点击保存。',
   guideAIStep2:
     '填写完整模型 ID，再选择接口、密钥和协议：OpenAI 兼容 Chat Completions、OpenAI Responses 或 Anthropic Messages。',
   guideAIStep3:
-    '设为默认模型，或在助手中切换。每个模型可单独调整系统提示词、温度、思考强度、输出上限与本地上下文上限。',
+    '设为默认模型，或在助手中切换。每个模型可单独设置图像理解、温度、思考强度、输出上限与本地上下文上限。',
   guideAIStep4:
-    '注入列表按顺序追加已启用的命名文本片段。调整顺序即可改变最终系统提示词。上下文感知选项尚未开放。',
-  guideAIVariables: '提示词和注入片段可使用这些变量：',
+    '写一段个人指令，并选择感知渠道。出现 {{battery}} 这类占位符时会填入当前值。桌面画面只在该渠道开启且模型支持图像时发送。',
+  guideAIVariables: '感知占位符可以包括：',
   guideWorkflowTitle: '快捷应用与工作流：打开工作环境',
   guideWorkflowBody:
     '快捷应用打开一个目标，工作流依次打开多个目标。录像展示命名工作流、分行填写两个地址，再返回列表。',
@@ -185,22 +185,6 @@ export const zhCN: Messages = {
   confirmationFailed: '操作未完成，请重试。',
   confirmRemove: '确认删除',
   aiModelBindingLocked: '此处锁定对应关系。修改接口或模型名称，请返回模型配置。',
-  systemPrompt: '系统提示词',
-  useDefaultSystemPrompt: '使用内置系统提示词',
-  promptVariablesHint: '支持变量：{{variables}}。',
-  injectionList: '注入列表',
-  injectionsHint:
-    '启用的文本按此顺序写入用户提示词。出现感知占位符（如 {{battery}}）时会填入当前值。',
-  additionalInstructions: '个性化指令',
-  additionalInstructionsHint:
-    '启用的文本按此顺序写入用户提示词。出现感知占位符（如 {{battery}}）时会填入当前值。',
-  enableInjection: '启用第 {{count}} 条注入',
-  moveInjectionUp: '上移注入',
-  moveInjectionDown: '下移注入',
-  removeInjection: '删除注入',
-  injectionName: '名称',
-  injectionText: '内容',
-  addInjection: '新增注入',
   modelParameters: '模型参数',
   modelTemperature: '温度',
   reasoningEffort: '思考强度',
@@ -209,7 +193,7 @@ export const zhCN: Messages = {
   maxOutputTokens: '最大输出（tokens）',
   contextLimitCharacters: '本地上下文上限（字符）',
   modelParametersHint:
-    '数字留空使用服务默认值。本地上下文上限统计系统提示词、启用的注入和当前输入，超限时不发送请求。可用参数由模型决定。',
+    '数字留空使用服务默认值。本地上下文上限统计内置系统提示词、个人指令和当前问题，超限时不发送请求。可用参数由模型决定。',
   perception: '感知',
   perceptionHint: '这些开关对所有模型生效。打开一项可查看当前值。',
   perceptionCurrentValue: '当前值',
