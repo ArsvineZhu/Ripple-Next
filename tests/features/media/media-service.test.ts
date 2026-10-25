@@ -2,6 +2,19 @@ import { expect, it, vi } from 'vitest';
 import { createMediaService } from '../../../src/main/services/media';
 import type { MediaSession } from '../../../src/shared/media';
 import { mediaCommandSupported } from '../../../src/shared/media';
+it('does not broadcast a repeated identical media sample', async () => {
+  const x = setup([session('one', 'playing')]);
+  const listener = vi.fn();
+  x.media.subscribe(listener);
+  await x.media.getSnapshot();
+  expect(listener).toHaveBeenCalledTimes(1);
+  await x.media.getSnapshot();
+  expect(listener).toHaveBeenCalledTimes(1);
+  x.set([{ ...session('one', 'playing'), state: 'paused' }]);
+  await x.media.getSnapshot();
+  expect(listener).toHaveBeenCalledTimes(2);
+  x.media.close();
+});
 it('owns one fallback sampler for multiple renderers and stops it on closure', async () => {
   vi.useFakeTimers();
   const x = setup([session('one', 'playing')]);

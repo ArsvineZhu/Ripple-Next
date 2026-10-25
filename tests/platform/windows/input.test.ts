@@ -19,6 +19,26 @@ function makeWindow() {
     setIgnoreMouseEvents: vi.fn(),
   });
 }
+it('does not poll the cursor while the island window is hidden', () => {
+  const window = makeWindow();
+  window.isVisible = () => false;
+  const region = createWindowsInputRegion(window, { record: vi.fn() });
+  region.apply({ x: 500, y: 50, width: 170, height: 40, scaleFactor: 1.5 });
+  vi.advanceTimersByTime(64);
+  expect(window.setIgnoreMouseEvents).not.toHaveBeenCalled();
+  window.isVisible = () => true;
+  window.emit('show');
+  expect(window.setIgnoreMouseEvents).toHaveBeenLastCalledWith(false, { forward: true });
+  cursor.x = 400;
+  vi.advanceTimersByTime(32);
+  expect(window.setIgnoreMouseEvents).toHaveBeenLastCalledWith(true, { forward: true });
+  window.emit('hide');
+  window.setIgnoreMouseEvents.mockClear();
+  cursor.x = 115;
+  vi.advanceTimersByTime(64);
+  expect(window.setIgnoreMouseEvents).not.toHaveBeenCalled();
+  region.close();
+});
 it('restores native input inside the Island without waiting for forwarded renderer hover', () => {
   const window = makeWindow();
   const region = createWindowsInputRegion(window, { record: vi.fn() });

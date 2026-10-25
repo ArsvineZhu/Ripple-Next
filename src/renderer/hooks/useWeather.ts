@@ -12,21 +12,29 @@ export function useWeather(enabled = true, refreshMs = 600_000) {
   useEffect(() => {
     if (!enabled) return;
     let active = true,
-      pending = false;
+      pending = false,
+      shown = false;
     const update = async () => {
       if (pending) return;
       pending = true;
-      setLoading(true);
+      if (!shown) setLoading(true);
       try {
         const next = await request();
-        if (active) setSnapshot(next);
+        if (active) {
+          shown = true;
+          setSnapshot(next);
+        }
       } catch {
-        if (active) setSnapshot({ reading: null, location: null, error: 'lookup-failed' });
+        if (active) {
+          shown = true;
+          setSnapshot({ reading: null, location: null, error: 'lookup-failed' });
+        }
       } finally {
         pending = false;
         if (active) setLoading(false);
       }
     };
+    shown = false;
     setSnapshot(null);
     void update();
     window.addEventListener('focus', update);

@@ -2,6 +2,7 @@ import type {
   MediaCommand,
   MediaError,
   MediaOperationResult,
+  MediaSession,
   MediaSnapshot,
 } from '../../shared/media';
 import {
@@ -12,6 +13,37 @@ import {
 import { nativeMedia } from '../platform/media';
 import type { MediaBackend } from '../platform/media';
 import { serializeDiagnosticError } from '../../shared/diagnostics';
+
+function sameSession(left: MediaSession, right: MediaSession) {
+  return (
+    left.id === right.id &&
+    left.source === right.source &&
+    left.playerName === right.playerName &&
+    left.name === right.name &&
+    left.artist === right.artist &&
+    left.album === right.album &&
+    left.artworkUrl === right.artworkUrl &&
+    left.state === right.state &&
+    left.isCurrent === right.isCurrent &&
+    left.stale === right.stale &&
+    left.capabilities.previous === right.capabilities.previous &&
+    left.capabilities.next === right.capabilities.next &&
+    left.capabilities.play === right.capabilities.play &&
+    left.capabilities.pause === right.capabilities.pause &&
+    left.capabilities.toggle === right.capabilities.toggle
+  );
+}
+
+function sameSnapshot(left: MediaSnapshot, right: MediaSnapshot) {
+  return (
+    left.status === right.status &&
+    left.error === right.error &&
+    left.activeSessionId === right.activeSessionId &&
+    left.manualSessionId === right.manualSessionId &&
+    left.sessions.length === right.sessions.length &&
+    left.sessions.every((session, index) => sameSession(session, right.sessions[index]!))
+  );
+}
 
 export function createMediaService(
   backend: MediaBackend = nativeMedia,
@@ -25,6 +57,11 @@ export function createMediaService(
   const listeners = new Set<(snapshot: MediaSnapshot) => void>();
   const publish = () => {
     if (!closed) listeners.forEach((listener) => listener(snapshot));
+  };
+  const replaceSnapshot = (next: MediaSnapshot) => {
+    if (sameSnapshot(snapshot, next)) return;
+    snapshot = next;
+    publish();
   };
   let dirty = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -74,7 +111,7 @@ export function createMediaService(
       const manual = available.find((session) => session.id === snapshot.manualSessionId);
       const selected = manual ?? selectAutomaticSession(available, snapshot.activeSessionId);
       const lostManual = snapshot.manualSessionId !== null && !manual;
-      snapshot = {
+      replaceSnapshot({
         sessions: available,
         activeSessionId: selected?.id ?? null,
         manualSessionId: manual?.id ?? null,
@@ -90,18 +127,17 @@ export function createMediaService(
             : lostManual
               ? 'mediaSessionGone'
               : null,
-      };
+      });
     } catch (error) {
       if (closed) return snapshot;
       reportOnce(error);
-      snapshot = {
+      replaceSnapshot({
         ...snapshot,
         sessions: snapshot.sessions.map((session) => ({ ...session, stale: true })),
         status: 'error',
         error: 'mediaReadFailed',
-      };
+      });
     }
-    publish();
     return snapshot;
   }
   function getSnapshot() {

@@ -52,15 +52,29 @@ export function createWindowsInputRegion(
     sync();
   };
   webContents.on('input-event', input);
-  window.on('show', sync);
+  let timer: ReturnType<typeof setInterval> | undefined;
+  const watchCursor = () => {
+    if (closed || timer || window.isDestroyed() || !window.isVisible()) return;
+    timer = setInterval(sync, 16);
+  };
+  const stopCursor = () => {
+    if (!timer) return;
+    clearInterval(timer);
+    timer = undefined;
+  };
+  window.on('show', () => {
+    watchCursor();
+    sync();
+  });
   window.on('hide', () => {
     held = false;
+    stopCursor();
   });
-  const timer = setInterval(sync, 16);
+  watchCursor();
   const close = () => {
     if (closed) return;
     closed = true;
-    clearInterval(timer);
+    stopCursor();
     webContents.removeListener('input-event', input);
   };
   window.on('closed', close);
