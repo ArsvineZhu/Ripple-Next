@@ -14,7 +14,7 @@ function makeWindow() {
   return Object.assign(new EventEmitter(), {
     webContents: new EventEmitter(),
     isDestroyed: (): boolean => false,
-    isVisible: () => true,
+    isVisible: (): boolean => true,
     getBounds: () => ({ x: -400, y: 0, width: 800, height: 600 }),
     setIgnoreMouseEvents: vi.fn(),
   });
