@@ -100,8 +100,8 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           mapfile -d '' release_files < <(find release-assets -type f -print0 | sort -z)
-          if [ "${#release_files[@]}" -eq 0 ]; then
-            echo "No package files were downloaded" >&2
+          if [ "${#release_files[@]}" -ne 9 ]; then
+            echo "Expected nine release packages; found ${#release_files[@]}" >&2
             exit 1
           fi
 
@@ -109,16 +109,15 @@ jobs:
           node scripts/release-notes.mjs "$RELEASE_TAG" > "$release_notes_file"
           release_notes_args=(--notes-file "$release_notes_file")
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            if [ "$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft')" = true ]; then
-              gh release upload "$RELEASE_TAG" "${release_files[@]}" --clobber
-              gh release edit "$RELEASE_TAG" --notes-file "$release_notes_file" --draft=false --prerelease=false --latest
+            if [ "$(gh release view "$RELEASE_TAG" --json isDraft --jq '.isDraft')" = false ]; then
+              echo "Release $RELEASE_TAG already exists; keeping its original artifacts"
               exit 0
             fi
-            echo "Release $RELEASE_TAG already exists; keeping its original artifacts"
-            exit 0
+          else
+            gh release create "$RELEASE_TAG" \
+              --verify-tag --draft \
+              --title "Ripple Next $RELEASE_TAG" \
+              "${release_notes_args[@]}"
           fi
-          gh release create "$RELEASE_TAG" \
-            --verify-tag --latest \
-            --title "Ripple Next $RELEASE_TAG" \
-            "${release_notes_args[@]}" \
-            "${release_files[@]}"
+          gh release upload "$RELEASE_TAG" "${release_files[@]}" --clobber
+          gh release edit "$RELEASE_TAG" --notes-file "$release_notes_file" --draft=false --prerelease=false --latest
