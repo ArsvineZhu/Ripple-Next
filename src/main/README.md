@@ -10,7 +10,7 @@ Main owns application lifetime, windows, tray, native effects and durable state.
 
 - Apps executes one ordered LaunchTarget array and returns indexed results. Platform adapters own native application discovery, preparation and activation.
 - Media owns automatic/manual selection, serialized commands, stale/error snapshots and shared observation. Controls and activation carry the visible session ID; metadata and cover work do not precede a control.
-- AI configuration owns graph IDs and bindings; streaming resolves model prompts/injections and delegates Chat Completions, Responses or Anthropic to the SDK. Cancellation and terminal results belong to the request.
+- AI configuration owns graph IDs, bindings and per-model perception/vision. Streaming resolves the default system/user templates, enabled perception channels and injections, then delegates Chat Completions, Responses or Anthropic to the SDK. A desktop frame is captured only when that channel is enabled and vision is supported. Cancellation and terminal results belong to the request.
 - Weather owns provider query assembly, protected credentials, request coalescing and a bounded cache. Local background images use the dedicated protocol restricted to the configured resource.
 - Color picker owns its helper lifetime and Settings window. Diagnostics owns bounded readable logs, operation correlation, native failure codes and source-map resolution. Licenses returns known bundled records.
 

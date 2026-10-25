@@ -14,7 +14,7 @@
 
 閒置時簡短顯示，懸停查看更多，點擊展開完整頁面；獨立設定視窗負責配置，摺疊時草稿仍然保留。
 
-[Ripple Next 4.1.0-beta.2](docs/releases/4.1.0-beta.2.zh-CN.md)。[下載](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) · [使用指南（簡體中文）](instructions.zh-CN.md) · [回饋](https://github.com/ArsvineZhu/Ripple-Next/issues)
+[Ripple Next 4.1.0-beta.2](docs/releases/4.1.0-beta.2.zh-CN.md)。[官網](https://ripple.arsvine.com) · [下載](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) · [使用指南（簡體中文）](instructions.zh-CN.md) · [回饋](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > 截圖與影片來自獨立示範設定中的實際應用。助手展示本機示範服務傳回的範例回答，媒體來自示範播放器；中文圖片介紹對應語言功能。
 
@@ -90,7 +90,7 @@
 | Linux   | x64        | DEB／RPM／可攜式 ZIP |
 | macOS   | x64／arm64 | DMG／可攜式 ZIP      |
 
-macOS 使用臨時簽章。Linux 需要 X11／XWayland，金鑰需要系統安全加密；可選工具見[平台支持（簡體中文）](docs/platform-compatibility.zh-CN.md)。Island 液態玻璃與 AI 上下文感知尚未開放，Windows／Linux 保留系統匣。
+macOS 使用臨時簽章。Linux 需要 X11／XWayland，金鑰需要系統安全加密；可選工具見[平台支持（簡體中文）](docs/platform-compatibility.zh-CN.md)。Island 液態玻璃尚未開放。AI 感知只有在開啟桌面通道且模型被標為支援影像後，才會在提問時傳送一幀。Windows／Linux 保留系統匣。
 
 偏好、工作流程、快捷應用與任務保存在 Ripple Next 使用者目錄，憑據經系統加密，剪貼簿歷史屬於本次執行。見[使用與資料](instructions.zh-CN.md)、[診斷](docs/diagnostics.zh-CN.md)及[素材來源](docs/assets/screenshots/README.md)。
 

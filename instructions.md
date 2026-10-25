@@ -40,9 +40,9 @@ Overview shows time, date, battery and configured weather. Set clock cycle, peri
 
 ## AI, clipboard and tasks
 
-In Integrations, add a Base URL, choose Chat Completions/Responses/Anthropic, save a credential and bind the exact model identifier. Models have their own system prompt, ordered enabled injections, reasoning/temperature/output settings and local character limit. Select a default model or switch in the assistant.
+In Integrations, add a Base URL, choose Chat Completions/Responses/Anthropic, save a credential and bind the exact model identifier. The system prompt is built in. Models have ordered personal instructions, reasoning/temperature/output settings and a local character limit. Select a default model or switch in the assistant.
 
-Submit a question to stream Markdown and copy code using native clipboard actions. Ask another starts a new exchange. Partial failures retain received content; cancellation belongs to the active request. Requests go to your configured service. AI context awareness is unavailable and does not collect desktop content.
+Submit a question to stream Markdown and copy code using native clipboard actions. Ask another starts a new exchange. Partial failures retain received content; cancellation belongs to the active request. Requests go to your configured service. Perception channels choose which live values are included. A desktop frame is sent only when that channel is enabled and the model is marked as supporting images; Ripple Next does not store the frame.
 
 Clipboard history collects nonempty text for this run, at most 100 entries/one million characters. Repeats move to the front; the copy button writes the exact entry. Tasks persist until marked complete; completing removes the entry without a completed-task archive.
 

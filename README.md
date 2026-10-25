@@ -14,7 +14,7 @@ Music is playing. A link needs opening. A copied command is waiting in the clipb
 
 Glance while idle, hover for more, click to open a full page. Configure everything in a dedicated Settings window. Your drafts stay with you when the Island folds.
 
-[Ripple Next 4.1.0-beta.2](docs/releases/4.1.0-beta.2.en.md). [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
+[Ripple Next 4.1.0-beta.2](docs/releases/4.1.0-beta.2.en.md). [Website](https://ripple.arsvine.com) · [Downloads](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) · [User guide](instructions.md) · [Feedback](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > Screenshots and recordings show the actual application with isolated demo content. The assistant example uses a local fixture response, and the media sessions use demonstration players. Chinese images demonstrate the corresponding language feature.
 
@@ -50,7 +50,7 @@ Give a workflow a name and one app or address per row. Launch once to open the g
 
 ## An assistant with your choice of service
 
-Configure Chat Completions, OpenAI Responses or Anthropic Messages, save an encrypted key and bind a model. Each model has its own system prompt, parameters and ordered injections. Answers stream as Markdown; code blocks have native-copy actions. Requests go to the endpoint you configure.
+Configure Chat Completions, OpenAI Responses or Anthropic Messages, save an encrypted key and bind a model. Each model has parameters and ordered personal instructions. The system prompt stays built in. Answers stream as Markdown; code blocks have native-copy actions. Requests go to the endpoint you configure.
 
 ![Assistant sample response](docs/assets/screenshots/assistant.png)
 
@@ -90,7 +90,7 @@ Download the package for your platform, install it or extract the portable ZIP, 
 | Linux    | x64          | DEB / RPM / portable ZIP |
 | macOS    | x64 / arm64  | DMG / portable ZIP       |
 
-macOS packages use an ad-hoc signature. Linux needs X11/XWayland and OS-backed encryption for keys; optional native integrations use the tools listed in [platform support](docs/platform-compatibility.md). Island Liquid Glass and AI context awareness are unavailable. Windows/Linux keep the tray visible.
+macOS packages use an ad-hoc signature. Linux needs X11/XWayland and OS-backed encryption for keys; optional native integrations use the tools listed in [platform support](docs/platform-compatibility.md). Island Liquid Glass is unavailable. AI perception can include one desktop frame only after that channel is enabled and the model is marked as supporting images. Windows/Linux keep the tray visible.
 
 Preferences, workflows, quick apps and tasks persist in Ripple Next’s user-data directory; credentials are OS-encrypted. Clipboard history belongs to this run. See [usage and data](instructions.md), [diagnostics](docs/diagnostics.md) and [capture provenance](docs/assets/screenshots/README.md).
 

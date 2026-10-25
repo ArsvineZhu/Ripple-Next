@@ -14,7 +14,7 @@
 
 待機中にひと目、ホバーでもう少し、クリックでページを展開。設定は専用ウィンドウで行い、折りたたんでも下書きを保ちます。
 
-[Ripple Next 4.1.0-beta.2](docs/releases/4.1.0-beta.2.en.md)。[ダウンロード](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) · [使い方（英語）](instructions.md) · [フィードバック](https://github.com/ArsvineZhu/Ripple-Next/issues)
+[Ripple Next 4.1.0-beta.2](docs/releases/4.1.0-beta.2.en.md)。[ウェブサイト](https://ripple.arsvine.com) · [ダウンロード](https://github.com/ArsvineZhu/Ripple-Next/releases/tag/v4.1.0-beta.2) · [使い方（英語）](instructions.md) · [フィードバック](https://github.com/ArsvineZhu/Ripple-Next/issues)
 
 > 画像と動画は独立デモ設定の実際のアプリです。アシスタントはローカルのサンプル応答、音楽はデモプレイヤーを使用。中国語画像は言語固有機能を紹介します。
 
@@ -90,7 +90,7 @@ Chat Completions、OpenAI Responses、Anthropic Messages の接続先と暗号�
 | Linux   | x64            | DEB / RPM / ポータブル ZIP |
 | macOS   | x64 / arm64    | DMG / ポータブル ZIP       |
 
-macOS はアドホック署名です。Linux は X11/XWayland とキー用の OS 暗号化が必要です。連携ツールは[対応状況](docs/platform-compatibility.md)を参照。Island Glass と AI コンテキスト認識は未提供、Windows/Linux はトレイを表示します。
+macOS はアドホック署名です。Linux は X11/XWayland とキー用の OS 暗号化が必要です。連携ツールは[対応状況](docs/platform-compatibility.md)を参照。Island Glass は未提供です。AI の知覚は、デスクトップのチャネルを有効にし、モデルを画像対応にしたときだけ、質問ごとに 1 フレームを送ります。Windows/Linux はトレイを表示します。
 
 設定、ワークフロー、クイックアプリ、タスクは Ripple Next のユーザーデータに保存し、キーは OS 暗号化。クリップボード履歴はこの実行のみです。[使い方](instructions.md)、[診断](docs/diagnostics.md)、[撮影情報](docs/assets/screenshots/README.md)をご覧ください。
 

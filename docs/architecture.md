@@ -68,6 +68,6 @@ The persisted uiFont list owns font priority across Settings and Island. Main fo
 
 Fonts and third-party notices ship as original resources. Guide videos and promotional screenshots capture actual application flows with isolated demo data; English is the default capture language. Tests are organized by [platform, feature and shared ownership](../tests/README.md).
 
-Island Liquid Glass and AI context awareness are unavailable. Windows/Linux keep the tray visible. The application does not collect desktop content for AI context awareness or maintain a completed-task archive. These states are reflected in the interface and usage guide.
+Island Liquid Glass is unavailable. Windows/Linux keep the tray visible. AI perception is off for desktop frames until that channel is enabled and the model is marked as supporting images; a frame is sent with that request and is not stored. The application does not maintain a completed-task archive. These states are reflected in the interface and usage guide.
 
 Settings controls share compact dimensions, blue accent states and OS light/dark surface tokens. Slider hit testing uses the same thumb width as its CSS geometry; glass handles reveal a restrained lens while pressed without moving the value axis.
