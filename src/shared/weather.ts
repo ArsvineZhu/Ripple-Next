@@ -15,7 +15,7 @@ export const WeatherPreferencesSchema = z
 export type WeatherPreferences = z.infer<typeof WeatherPreferencesSchema>;
 export const defaultWeatherPreferences: WeatherPreferences = {
   location: { mode: 'manual', city: '', region: '', country: '' },
-  unit: 'f',
+  unit: 'c',
   keySource: 'builtin',
 };
 

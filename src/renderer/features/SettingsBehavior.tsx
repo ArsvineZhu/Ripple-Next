@@ -54,7 +54,7 @@ export function SettingsBehavior() {
             min={0}
             max={2000}
             step={50}
-            stages={3}
+            stages={5}
             value={p.settings.leaveDelayMs}
             onValueChange={(value) => p.updateSettings({ leaveDelayMs: value })}
           />

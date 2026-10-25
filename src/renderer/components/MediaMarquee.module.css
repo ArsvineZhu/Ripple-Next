@@ -29,6 +29,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.clip[data-center='true'] {
+  display: flex;
+  justify-content: center;
+}
 @keyframes marquee {
   from {
     transform: translateX(0);

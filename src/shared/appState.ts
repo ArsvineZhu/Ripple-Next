@@ -133,7 +133,7 @@ export const defaultAppState: AppState = {
     defaultTabId: DEFAULT_PAGE_ID,
     tabOrder: [...DEFAULT_PAGE_IDS],
     hiddenTabs: [],
-    leaveDelayMs: 400,
+    leaveDelayMs: 500,
   },
   tasks: [],
   workflows: [] as Workflow[],

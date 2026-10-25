@@ -7,11 +7,13 @@ export function MediaMarquee({
   children,
   enabled,
   active = true,
+  center = false,
   className,
 }: {
   children: ReactNode;
   enabled: boolean;
   active?: boolean;
+  center?: boolean;
   className?: string;
 }) {
   const clip = useRef<HTMLDivElement>(null);
@@ -42,7 +44,12 @@ export function MediaMarquee({
   }, [children]);
   const scroll = enabled && active && !reduced && distance > 0;
   return (
-    <div ref={clip} className={styles.clip} data-marquee={scroll}>
+    <div
+      ref={clip}
+      className={styles.clip}
+      data-marquee={scroll}
+      data-center={center && distance === 0}
+    >
       <div
         className={`${styles.text} ${className ?? ''}`}
         style={{ '--marquee-distance': `${-distance}px` } as CSSProperties}

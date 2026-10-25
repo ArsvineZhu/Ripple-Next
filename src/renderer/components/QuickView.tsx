@@ -127,7 +127,7 @@ export function QuickView({
                       showArtist ? trackArtist : '',
                     ])}
                   >
-                    <MediaMarquee enabled={music.marquee} className={styles.trackText}>
+                    <MediaMarquee enabled={music.marquee} center className={styles.trackText}>
                       {trackTitle}
                       {showArtist && <span className={styles.artist}> • {trackArtist}</span>}
                     </MediaMarquee>
